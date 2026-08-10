@@ -1,4 +1,14 @@
-export type DeviceType = 'iphone16pro' | 'pixel9pro' | 'ipadpro' | 'minimal';
+export type DeviceType = 
+  | 'iphone16pro' 
+  | 'iphone15pro' 
+  | 'samsung-s25ultra' 
+  | 'samsung-s24' 
+  | 'pixel9pro' 
+  | 'pixel8pro' 
+  | 'ipadpro' 
+  | 'minimal';
+
+export type DeviceBrand = 'apple' | 'samsung' | 'google' | 'other';
 
 export type AspectRatioPreset = 'appstore-6.7' | 'appstore-6.5' | 'playstore-portrait' | 'game-landscape' | 'square' | 'custom';
 
@@ -11,6 +21,15 @@ export interface CanvasPreset {
   height: number;
   subtitle: string;
   category: 'iOS App Store' | 'Google Play' | 'Mobile Game' | 'Social';
+}
+
+export interface DeviceModelInfo {
+  id: DeviceType;
+  brand: DeviceBrand;
+  name: string;
+  tag: string;
+  defaultRatio: number;
+  colors: { id: string; name: string; hex: string; borderHex: string }[];
 }
 
 export interface MockupConfig {
@@ -26,7 +45,7 @@ export interface MockupConfig {
   
   // Frame & Image settings
   deviceType: DeviceType;
-  deviceColor: 'natural' | 'dark' | 'silver' | 'gold';
+  deviceColor: string;
   screenshotUrl: string | null;
   screenshotScale: number;
   screenshotOffsetX: number;

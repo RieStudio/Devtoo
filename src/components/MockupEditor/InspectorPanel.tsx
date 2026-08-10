@@ -1,9 +1,12 @@
-import React, { useRef } from 'react';
-import type { MockupConfig, DeviceType, BackgroundType } from '../../types/mockup';
+import React, { useState, useRef } from 'react';
+import type { MockupConfig, DeviceType, BackgroundType, DeviceBrand } from '../../types/mockup';
+import { DEVICE_MODELS } from '../../constants/devices';
 import { 
   Upload, 
   Trash2,
-  Sliders
+  Sliders,
+  Smartphone,
+  Check
 } from 'lucide-react';
 
 interface InspectorPanelProps {
@@ -31,6 +34,10 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Active Brand tab state ('apple', 'samsung', 'google', 'other')
+  const currentDeviceModel = DEVICE_MODELS.find((m) => m.id === config.deviceType) || DEVICE_MODELS[0];
+  const [selectedBrand, setSelectedBrand] = useState<DeviceBrand>(currentDeviceModel.brand);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       onFileSelect(e.target.files[0]);
@@ -39,9 +46,21 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+    if (e.dataTransfer.files && e.target) {
       onFileSelect(e.dataTransfer.files[0]);
     }
+  };
+
+  // Filter models for selected brand tab
+  const brandModels = DEVICE_MODELS.filter((m) => m.brand === selectedBrand);
+
+  const handleSelectModel = (modelId: DeviceType) => {
+    const modelDef = DEVICE_MODELS.find((m) => m.id === modelId);
+    const defaultColor = modelDef?.colors[0].id || 'dark';
+    onChangeConfig({
+      deviceType: modelId,
+      deviceColor: defaultColor,
+    });
   };
 
   return (
@@ -87,35 +106,107 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
         )}
       </div>
 
-      {/* Section 2: Device Frame Selector */}
+      {/* Section 2: Categorized Device Selector (Apple, Samsung, Google, Other) */}
       <div className="inspector-section">
-        <div className="section-label">Cihaz Çerçevesi</div>
-        <div className="control-group">
-          <div className="control-label">Cihaz Modeli</div>
-          <select
-            className="input-select"
-            value={config.deviceType}
-            onChange={(e) => onChangeConfig({ deviceType: e.target.value as DeviceType })}
-          >
-            <option value="iphone16pro">iPhone 16 Pro (Titanium)</option>
-            <option value="pixel9pro">Google Pixel 9 Pro</option>
-            <option value="ipadpro">iPad Pro / Tablet</option>
-            <option value="minimal">Minimal Bezel</option>
-          </select>
+        <div className="section-label">Gerçekçi Cihaz Seçimi</div>
+
+        {/* Brand Tabs */}
+        <div style={{ display: 'flex', gap: '4px', backgroundColor: '#F1F3F5', padding: '3px', borderRadius: '8px' }}>
+          {[
+            { id: 'apple', label: 'Apple 🍎' },
+            { id: 'samsung', label: 'Samsung 🪐' },
+            { id: 'google', label: 'Google 🌐' },
+            { id: 'other', label: 'Diğer 📱' },
+          ].map((tab) => {
+            const isTabActive = selectedBrand === tab.id;
+            return (
+              <button
+                key={tab.id}
+                style={{
+                  flex: 1,
+                  padding: '6px 2px',
+                  fontSize: '11px',
+                  fontWeight: isTabActive ? 700 : 500,
+                  borderRadius: '6px',
+                  border: isTabActive ? '1px solid #FFCCD5' : '1px solid transparent',
+                  backgroundColor: isTabActive ? '#FFFFFF' : 'transparent',
+                  color: isTabActive ? '#D90429' : '#475569',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+                onClick={() => setSelectedBrand(tab.id as DeviceBrand)}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
 
-        <div className="control-group">
-          <div className="control-label">Çerçeve Rengi</div>
-          <select
-            className="input-select"
-            value={config.deviceColor}
-            onChange={(e) => onChangeConfig({ deviceColor: e.target.value as any })}
-          >
-            <option value="dark">Titanium Dark (Siyah)</option>
-            <option value="natural">Natural Titanium</option>
-            <option value="silver">Silver (Gümüş)</option>
-            <option value="gold">Gold (Altın)</option>
-          </select>
+        {/* Model Cards List for Active Brand */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px' }}>
+          {brandModels.map((model) => {
+            const isSelected = config.deviceType === model.id;
+            return (
+              <div
+                key={model.id}
+                onClick={() => handleSelectModel(model.id)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '9px 12px',
+                  borderRadius: '8px',
+                  border: isSelected ? '1px solid #D90429' : '1px solid #E2E8F0',
+                  backgroundColor: isSelected ? '#FFF0F3' : '#FFFFFF',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <Smartphone size={16} color={isSelected ? '#D90429' : '#64748B'} />
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: isSelected ? 700 : 600, color: isSelected ? '#D90429' : '#0F172A' }}>
+                      {model.name}
+                    </div>
+                    <div style={{ fontSize: '10px', color: '#94A3B8', fontFamily: 'var(--font-mono)' }}>
+                      {model.tag}
+                    </div>
+                  </div>
+                </div>
+                {isSelected && <Check size={16} color="#D90429" />}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Authentic Color Swatches for Selected Model */}
+        <div className="control-group" style={{ marginTop: '6px' }}>
+          <div className="control-label">
+            <span>Kasasının Metal Rengi</span>
+            <span className="control-value">
+              {currentDeviceModel.colors.find((c) => c.id === config.deviceColor)?.name || config.deviceColor}
+            </span>
+          </div>
+          <div className="color-picker-row" style={{ flexWrap: 'wrap', gap: '8px' }}>
+            {currentDeviceModel.colors.map((color) => {
+              const isColorActive = config.deviceColor === color.id;
+              return (
+                <button
+                  key={color.id}
+                  title={color.name}
+                  className={`color-swatch-btn ${isColorActive ? 'selected' : ''}`}
+                  style={{
+                    backgroundColor: color.hex,
+                    borderColor: color.borderHex,
+                    width: '28px',
+                    height: '28px',
+                    boxShadow: isColorActive ? '0 0 0 2px #D90429' : '0 1px 3px rgba(0,0,0,0.15)'
+                  }}
+                  onClick={() => onChangeConfig({ deviceColor: color.id })}
+                />
+              );
+            })}
+          </div>
         </div>
       </div>
 
