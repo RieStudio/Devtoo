@@ -99,12 +99,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTool, onSelectTool }) =>
       {/* Brand Header */}
       <div className="sidebar-header">
         <div className="logo-badge">🌶️</div>
-        <div className="logo-text">
-          <div className="brand-name">
-            Devtoo
-            <span className="brand-tag">DEV</span>
-          </div>
-          <span className="brand-sub">Mobil & Oyun Dev Suite</span>
+        <div className="brand-name">
+          Devtoo
         </div>
       </div>
 

@@ -9,6 +9,8 @@ interface DeviceFrameProps {
   shadowDepth: string;
   onUploadClick?: () => void;
   scale?: number;
+  presetWidth?: number;
+  presetHeight?: number;
 }
 
 export const DeviceFrame: React.FC<DeviceFrameProps> = ({
@@ -18,8 +20,10 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
   borderRadius,
   shadowDepth,
   onUploadClick,
+  presetWidth = 1290,
+  presetHeight = 2796,
 }) => {
-  // Color presets for device titanium body
+  // Color presets for device body
   const bodyColors = {
     natural: '#8D8D92',
     dark: '#2A2B2E',
@@ -28,6 +32,10 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
   };
 
   const currentBodyColor = bodyColors[deviceColor] || bodyColors.dark;
+
+  // Aspect ratio calculation
+  const targetRatio = presetWidth / presetHeight;
+  const isLandscape = presetWidth > presetHeight;
 
   // Compute shadow CSS
   const getShadowCss = () => {
@@ -60,16 +68,17 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
-            padding: '20px',
+            padding: '16px',
             textAlign: 'center',
-            gap: '12px',
+            gap: '10px',
             border: '2px dashed #CBD5E1',
-            borderRadius: `${borderRadius}px`
+            borderRadius: `${borderRadius}px`,
+            boxSizing: 'border-box'
           }}
         >
           <div style={{
-            width: '48px',
-            height: '48px',
+            width: '42px',
+            height: '42px',
             borderRadius: '50%',
             backgroundColor: '#FFF0F3',
             color: '#D90429',
@@ -77,16 +86,17 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: '20px',
-            fontWeight: 'bold'
+            fontWeight: 'bold',
+            flexShrink: 0
           }}>
             +
           </div>
           <div>
-            <div style={{ fontSize: '13px', fontWeight: 600, color: '#0F172A' }}>
+            <div style={{ fontSize: '12px', fontWeight: 600, color: '#0F172A' }}>
               Ekran Görüntüsü Yükleyin
             </div>
-            <div style={{ fontSize: '11px', color: '#94A3B8', marginTop: '4px' }}>
-              PNG, JPG veya WebP sürükleyip bırakın
+            <div style={{ fontSize: '10px', color: '#94A3B8', marginTop: '3px' }}>
+              {presetWidth} x {presetHeight} px ({presetWidth > presetHeight ? 'Yatay' : 'Dikey'})
             </div>
           </div>
         </div>
@@ -108,12 +118,24 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
     );
   };
 
+  // 1. MINIMAL BEZEL
   if (deviceType === 'minimal') {
+    let frameWidth = 250;
+    let frameHeight = Math.round(frameWidth / targetRatio);
+
+    if (isLandscape) {
+      frameWidth = 440;
+      frameHeight = Math.round(frameWidth / targetRatio);
+    } else if (presetWidth === presetHeight) {
+      frameWidth = 300;
+      frameHeight = 300;
+    }
+
     return (
       <div
         style={{
-          width: '280px',
-          height: '580px',
+          width: `${frameWidth}px`,
+          height: `${frameHeight}px`,
           borderRadius: `${borderRadius}px`,
           boxShadow: getShadowCss(),
           overflow: 'hidden',
@@ -127,33 +149,86 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
     );
   }
 
+  // 2. IPHONE 16 PRO
   if (deviceType === 'iphone16pro') {
+    if (isLandscape) {
+      const screenHeight = 200;
+      const screenWidth = Math.round(screenHeight * targetRatio);
+      return (
+        <div
+          style={{
+            position: 'relative',
+            width: `${screenWidth + 20}px`,
+            height: `${screenHeight + 20}px`,
+            backgroundColor: currentBodyColor,
+            borderRadius: '28px',
+            padding: '10px',
+            boxShadow: getShadowCss(),
+            border: '1px solid rgba(255,255,255,0.2)'
+          }}
+        >
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+              backgroundColor: '#000000',
+              borderRadius: '20px',
+              position: 'relative',
+              overflow: 'hidden',
+              border: '2px solid #000'
+            }}
+          >
+            {/* Dynamic Island Left */}
+            <div
+              style={{
+                position: 'absolute',
+                left: '10px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '24px',
+                height: '75px',
+                backgroundColor: '#000000',
+                borderRadius: '16px',
+                zIndex: 10
+              }}
+            />
+            <div style={{ width: '100%', height: '100%', borderRadius: '18px', overflow: 'hidden' }}>
+              {renderContent()}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Portrait iPhone 16 Pro
+    const screenWidth = 240;
+    const screenHeight = Math.round(screenWidth / targetRatio);
+
     return (
       <div
         style={{
           position: 'relative',
-          width: '290px',
-          height: '600px',
+          width: `${screenWidth + 20}px`,
+          height: `${screenHeight + 20}px`,
           backgroundColor: currentBodyColor,
-          borderRadius: '46px',
+          borderRadius: '40px',
           padding: '10px',
           boxShadow: getShadowCss(),
           border: '1px solid rgba(255,255,255,0.2)'
         }}
       >
-        {/* Side Buttons Visual accents */}
-        <div style={{ position: 'absolute', left: '-3px', top: '100px', width: '3px', height: '26px', backgroundColor: currentBodyColor, borderRadius: '2px 0 0 2px' }} />
-        <div style={{ position: 'absolute', left: '-3px', top: '140px', width: '3px', height: '44px', backgroundColor: currentBodyColor, borderRadius: '2px 0 0 2px' }} />
-        <div style={{ position: 'absolute', left: '-3px', top: '195px', width: '3px', height: '44px', backgroundColor: currentBodyColor, borderRadius: '2px 0 0 2px' }} />
-        <div style={{ position: 'absolute', right: '-3px', top: '150px', width: '3px', height: '60px', backgroundColor: currentBodyColor, borderRadius: '0 2px 2px 0' }} />
+        {/* Side Buttons */}
+        <div style={{ position: 'absolute', left: '-3px', top: '80px', width: '3px', height: '24px', backgroundColor: currentBodyColor, borderRadius: '2px 0 0 2px' }} />
+        <div style={{ position: 'absolute', left: '-3px', top: '115px', width: '3px', height: '38px', backgroundColor: currentBodyColor, borderRadius: '2px 0 0 2px' }} />
+        <div style={{ position: 'absolute', right: '-3px', top: '120px', width: '3px', height: '50px', backgroundColor: currentBodyColor, borderRadius: '0 2px 2px 0' }} />
 
-        {/* Screen Bezel & Dynamic Island Area */}
+        {/* Screen Container */}
         <div
           style={{
             width: '100%',
             height: '100%',
             backgroundColor: '#000000',
-            borderRadius: '36px',
+            borderRadius: '32px',
             position: 'relative',
             overflow: 'hidden',
             border: '2px solid #000'
@@ -163,25 +238,24 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
           <div
             style={{
               position: 'absolute',
-              top: '10px',
+              top: '8px',
               left: '50%',
               transform: 'translateX(-50%)',
-              width: '85px',
-              height: '24px',
+              width: '75px',
+              height: '20px',
               backgroundColor: '#000000',
-              borderRadius: '20px',
+              borderRadius: '16px',
               zIndex: 10,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'flex-end',
-              paddingRight: '8px'
+              paddingRight: '6px'
             }}
           >
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#0B1021', border: '1px solid #1E293B' }} />
+            <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#0B1021', border: '1px solid #1E293B' }} />
           </div>
 
-          {/* Screenshot Content */}
-          <div style={{ width: '100%', height: '100%', borderRadius: '34px', overflow: 'hidden' }}>
+          <div style={{ width: '100%', height: '100%', borderRadius: '30px', overflow: 'hidden' }}>
             {renderContent()}
           </div>
         </div>
@@ -189,40 +263,78 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
     );
   }
 
+  // 3. PIXEL 9 PRO
   if (deviceType === 'pixel9pro') {
+    if (isLandscape) {
+      const screenHeight = 200;
+      const screenWidth = Math.round(screenHeight * targetRatio);
+      return (
+        <div
+          style={{
+            position: 'relative',
+            width: `${screenWidth + 16}px`,
+            height: `${screenHeight + 16}px`,
+            backgroundColor: currentBodyColor,
+            borderRadius: '26px',
+            padding: '8px',
+            boxShadow: getShadowCss(),
+            border: '1px solid rgba(255,255,255,0.15)'
+          }}
+        >
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+              backgroundColor: '#000000',
+              borderRadius: '20px',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+          >
+            <div style={{ width: '100%', height: '100%', borderRadius: '18px', overflow: 'hidden' }}>
+              {renderContent()}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Portrait Pixel 9 Pro
+    const screenWidth = 240;
+    const screenHeight = Math.round(screenWidth / targetRatio);
+
     return (
       <div
         style={{
           position: 'relative',
-          width: '290px',
-          height: '590px',
+          width: `${screenWidth + 16}px`,
+          height: `${screenHeight + 16}px`,
           backgroundColor: currentBodyColor,
-          borderRadius: '38px',
+          borderRadius: '34px',
           padding: '8px',
           boxShadow: getShadowCss(),
           border: '1px solid rgba(255,255,255,0.15)'
         }}
       >
-        {/* Screen Container */}
         <div
           style={{
             width: '100%',
             height: '100%',
             backgroundColor: '#000000',
-            borderRadius: '30px',
+            borderRadius: '28px',
             position: 'relative',
             overflow: 'hidden'
           }}
         >
-          {/* Android Punch Hole Camera */}
+          {/* Camera Punch Hole */}
           <div
             style={{
               position: 'absolute',
-              top: '12px',
+              top: '10px',
               left: '50%',
               transform: 'translateX(-50%)',
-              width: '14px',
-              height: '14px',
+              width: '12px',
+              height: '12px',
               backgroundColor: '#000000',
               border: '2px solid #111',
               borderRadius: '50%',
@@ -230,7 +342,7 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
             }}
           />
 
-          <div style={{ width: '100%', height: '100%', borderRadius: '28px', overflow: 'hidden' }}>
+          <div style={{ width: '100%', height: '100%', borderRadius: '26px', overflow: 'hidden' }}>
             {renderContent()}
           </div>
         </div>
@@ -238,15 +350,23 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
     );
   }
 
-  // Tablet / iPad Pro
+  // 4. IPAD PRO / TABLET
+  let screenWidth = 340;
+  let screenHeight = Math.round(screenWidth / targetRatio);
+
+  if (isLandscape) {
+    screenWidth = 420;
+    screenHeight = Math.round(screenWidth / targetRatio);
+  }
+
   return (
     <div
       style={{
         position: 'relative',
-        width: '420px',
-        height: '560px',
+        width: `${screenWidth + 24}px`,
+        height: `${screenHeight + 24}px`,
         backgroundColor: currentBodyColor,
-        borderRadius: '24px',
+        borderRadius: '22px',
         padding: '12px',
         boxShadow: getShadowCss(),
         border: '1px solid rgba(255,255,255,0.2)'
@@ -257,27 +377,12 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
           width: '100%',
           height: '100%',
           backgroundColor: '#000000',
-          borderRadius: '14px',
+          borderRadius: '12px',
           position: 'relative',
           overflow: 'hidden'
         }}
       >
-        {/* Front Camera */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '8px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '8px',
-            height: '8px',
-            backgroundColor: '#222',
-            borderRadius: '50%',
-            zIndex: 10
-          }}
-        />
-
-        <div style={{ width: '100%', height: '100%', borderRadius: '12px', overflow: 'hidden' }}>
+        <div style={{ width: '100%', height: '100%', borderRadius: '10px', overflow: 'hidden' }}>
           {renderContent()}
         </div>
       </div>

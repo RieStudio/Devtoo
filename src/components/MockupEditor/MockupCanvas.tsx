@@ -25,18 +25,18 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
     });
   };
 
-  // Determine container dimensions based on ratio for responsive fit
+  // Determine outer container dimensions for responsive fit
   const getCanvasDimensions = () => {
-    const isLandscape = config.preset === 'game-landscape';
-    const isSquare = config.preset === 'square';
+    const isLandscape = config.width > config.height;
+    const isSquare = config.width === config.height;
 
     if (isLandscape) {
-      return { width: '640px', height: '360px' };
+      return { width: '660px', minHeight: '380px' };
     }
     if (isSquare) {
-      return { width: '420px', height: '420px' };
+      return { width: '440px', minHeight: '440px' };
     }
-    return { width: '380px', height: '620px' };
+    return { width: '400px', minHeight: '640px' };
   };
 
   const dims = getCanvasDimensions();
@@ -54,7 +54,7 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
         className={`mockup-render-box ${config.bgType !== 'solid' ? `bg-${config.bgType}` : ''}`}
         style={{
           width: dims.width,
-          height: dims.height,
+          minHeight: dims.minHeight,
           backgroundColor: config.bgColor,
           padding: `${config.padding}px`,
           transform: `rotate(${config.frameRotation}deg)`,
@@ -79,6 +79,8 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
           borderRadius={config.borderRadius}
           shadowDepth={config.shadowDepth}
           onUploadClick={onUploadImageClick}
+          presetWidth={config.width}
+          presetHeight={config.height}
         />
       </div>
     </div>
