@@ -163,7 +163,7 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
     switch (deviceType) {
       case 'iphone16pro':
       case 'iphone15pro':
-        return { top: '2.5%', left: '3.6%', width: '92.8%', height: '95.0%', cornerRadius: 38 };
+        return { top: '2.4%', left: '3.6%', width: '92.8%', height: '95.2%', cornerRadius: 42 };
       case 'samsung-s25ultra':
       case 'samsung-s24':
         return { top: '1.6%', left: '2.4%', width: '95.2%', height: '96.8%', cornerRadius: 12 };
@@ -173,7 +173,7 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
       case 'ipadpro':
         return { top: '3.2%', left: '4.0%', width: '91.8%', height: '93.6%', cornerRadius: 20 };
       default:
-        return { top: '2.5%', left: '3.6%', width: '92.8%', height: '95.0%', cornerRadius: 38 };
+        return { top: '2.4%', left: '3.6%', width: '92.8%', height: '95.2%', cornerRadius: 42 };
     }
   };
 
@@ -214,7 +214,7 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
         {renderScreenContent(specs.cornerRadius)}
       </div>
 
-      {/* LAYER 2: 100% REAL PHOTOREALISTIC TRANSPARENT DEVICE FRAME OVERLAY */}
+      {/* LAYER 2: 100% REAL PHOTOREALISTIC TRANSPARENT FLAT FRONT-FACING DEVICE OVERLAY */}
       <img
         src={assetPath}
         alt={modelInfo.name}
