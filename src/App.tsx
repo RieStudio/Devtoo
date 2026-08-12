@@ -13,7 +13,7 @@ const INITIAL_CONFIG: MockupConfig = {
   bgType: 'solid',
   bgColor: '#FFF0F3',
   patternOpacity: 0.1,
-  deviceType: 'iphone16pro',
+  deviceType: 'iphone17promax',
   deviceColor: 'dark',
   screenshotUrl: null,
   screenshotScale: 1,

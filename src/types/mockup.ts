@@ -1,12 +1,8 @@
 export type DeviceType = 
-  | 'iphone16pro' 
-  | 'iphone15pro' 
-  | 'samsung-s25ultra' 
-  | 'samsung-s24' 
-  | 'pixel9pro' 
-  | 'pixel8pro' 
-  | 'ipadpro' 
-  | 'minimal';
+  | 'iphone17promax' 
+  | 'samsung-s26ultra' 
+  | 'pixel11pro' 
+  | 'ipadpro';
 
 export type DeviceBrand = 'apple' | 'samsung' | 'google' | 'other';
 

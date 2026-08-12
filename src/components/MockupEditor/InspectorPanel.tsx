@@ -108,15 +108,15 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
 
       {/* Section 2: Categorized Device Selector (Apple, Samsung, Google, Other) */}
       <div className="inspector-section">
-        <div className="section-label">Gerçekçi Cihaz Seçimi</div>
+        <div className="section-label">Cihaz Seçimi</div>
 
         {/* Brand Tabs */}
         <div style={{ display: 'flex', gap: '4px', backgroundColor: '#F1F3F5', padding: '3px', borderRadius: '8px' }}>
           {[
-            { id: 'apple', label: 'Apple 🍎' },
-            { id: 'samsung', label: 'Samsung 🪐' },
-            { id: 'google', label: 'Google 🌐' },
-            { id: 'other', label: 'Diğer 📱' },
+            { id: 'apple', label: 'Apple' },
+            { id: 'samsung', label: 'Samsung' },
+            { id: 'google', label: 'Google' },
+            { id: 'other', label: 'Diğer' },
           ].map((tab) => {
             const isTabActive = selectedBrand === tab.id;
             return (
@@ -164,13 +164,8 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <Smartphone size={16} color={isSelected ? '#D90429' : '#64748B'} />
-                  <div>
-                    <div style={{ fontSize: '13px', fontWeight: isSelected ? 700 : 600, color: isSelected ? '#D90429' : '#0F172A' }}>
-                      {model.name}
-                    </div>
-                    <div style={{ fontSize: '10px', color: '#94A3B8', fontFamily: 'var(--font-mono)' }}>
-                      {model.tag}
-                    </div>
+                  <div style={{ fontSize: '13px', fontWeight: isSelected ? 700 : 600, color: isSelected ? '#D90429' : '#0F172A' }}>
+                    {model.name}
                   </div>
                 </div>
                 {isSelected && <Check size={16} color="#D90429" />}

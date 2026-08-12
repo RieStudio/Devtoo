@@ -142,14 +142,11 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
   // Map device type to real photorealistic transparent frame image
   const getDeviceAssetPath = () => {
     switch (deviceType) {
-      case 'iphone16pro':
-      case 'iphone15pro':
+      case 'iphone17promax':
         return '/devices/iphone16pro.png';
-      case 'samsung-s25ultra':
-      case 'samsung-s24':
+      case 'samsung-s26ultra':
         return '/devices/samsung-s25ultra.png';
-      case 'pixel9pro':
-      case 'pixel8pro':
+      case 'pixel11pro':
         return '/devices/pixel9pro.png';
       case 'ipadpro':
         return '/devices/ipadpro.png';
@@ -161,14 +158,11 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
   // Screen cutout coordinates for each real device photo frame
   const getCutoutSpecs = () => {
     switch (deviceType) {
-      case 'iphone16pro':
-      case 'iphone15pro':
+      case 'iphone17promax':
         return { top: '2.4%', left: '3.6%', width: '92.8%', height: '95.2%', cornerRadius: 42 };
-      case 'samsung-s25ultra':
-      case 'samsung-s24':
+      case 'samsung-s26ultra':
         return { top: '1.6%', left: '2.4%', width: '95.2%', height: '96.8%', cornerRadius: 12 };
-      case 'pixel9pro':
-      case 'pixel8pro':
+      case 'pixel11pro':
         return { top: '2.0%', left: '3.0%', width: '94.0%', height: '96.0%', cornerRadius: 32 };
       case 'ipadpro':
         return { top: '3.2%', left: '4.0%', width: '91.8%', height: '93.6%', cornerRadius: 20 };
