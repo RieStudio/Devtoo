@@ -173,36 +173,6 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             );
           })}
         </div>
-
-        {/* Authentic Color Swatches for Selected Model */}
-        <div className="control-group" style={{ marginTop: '6px' }}>
-          <div className="control-label">
-            <span>Kasasının Metal Rengi</span>
-            <span className="control-value">
-              {currentDeviceModel.colors.find((c) => c.id === config.deviceColor)?.name || config.deviceColor}
-            </span>
-          </div>
-          <div className="color-picker-row" style={{ flexWrap: 'wrap', gap: '8px' }}>
-            {currentDeviceModel.colors.map((color) => {
-              const isColorActive = config.deviceColor === color.id;
-              return (
-                <button
-                  key={color.id}
-                  title={color.name}
-                  className={`color-swatch-btn ${isColorActive ? 'selected' : ''}`}
-                  style={{
-                    backgroundColor: color.hex,
-                    borderColor: color.borderHex,
-                    width: '28px',
-                    height: '28px',
-                    boxShadow: isColorActive ? '0 0 0 2px #D90429' : '0 1px 3px rgba(0,0,0,0.15)'
-                  }}
-                  onClick={() => onChangeConfig({ deviceColor: color.id })}
-                />
-              );
-            })}
-          </div>
-        </div>
       </div>
 
       {/* Section 3: Canvas Background */}

@@ -109,7 +109,7 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
   };
 
   // 1. MINIMAL FRAME (Bezelless clean option)
-  if (deviceType === 'minimal') {
+  if ((deviceType as string) === 'minimal') {
     let frameWidth = 260;
     let frameHeight = Math.round(frameWidth / targetRatio);
 

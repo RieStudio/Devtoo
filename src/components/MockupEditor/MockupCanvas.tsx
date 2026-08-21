@@ -1,30 +1,18 @@
 import React from 'react';
-import type { MockupConfig, AspectRatioPreset, CanvasPreset } from '../../types/mockup';
+import type { MockupConfig } from '../../types/mockup';
 import { DeviceFrame } from './DeviceFrame';
-import { PresetsBar } from './PresetsBar';
 
 interface MockupCanvasProps {
   config: MockupConfig;
-  onChangeConfig: (updated: Partial<MockupConfig>) => void;
   onUploadImageClick: () => void;
   exportRef: React.RefObject<HTMLDivElement | null>;
 }
 
 export const MockupCanvas: React.FC<MockupCanvasProps> = ({
   config,
-  onChangeConfig,
   onUploadImageClick,
   exportRef,
 }) => {
-
-  const handleSelectPreset = (preset: CanvasPreset) => {
-    onChangeConfig({
-      preset: preset.id as AspectRatioPreset,
-      width: preset.width,
-      height: preset.height,
-    });
-  };
-
   // Determine outer container dimensions for responsive fit
   const getCanvasDimensions = () => {
     const isLandscape = config.width > config.height;
@@ -43,11 +31,6 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
 
   return (
     <div className="canvas-viewport">
-      <PresetsBar
-        currentPreset={config.preset}
-        onSelectPreset={handleSelectPreset}
-      />
-
       {/* Render Box for HTML-to-Image Export */}
       <div
         ref={exportRef}

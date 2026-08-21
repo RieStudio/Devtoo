@@ -105,7 +105,6 @@ export function App() {
         <div className="editor-container">
           <MockupCanvas
             config={config}
-            onChangeConfig={handleUpdateConfig}
             onUploadImageClick={handleTriggerUpload}
             exportRef={exportRef}
           />

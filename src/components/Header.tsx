@@ -15,9 +15,6 @@ export const Header: React.FC<HeaderProps> = ({ onExport, onUploadClick, isExpor
           <Smartphone size={18} color="#D90429" />
           <span>Mockup Editor</span>
         </div>
-        <span style={{ fontSize: '12px', color: '#94A3B8', fontWeight: 500 }}>
-          • Mobil App & Oyun Ekran Görseli Hazırlayıcı
-        </span>
       </div>
 
       <div className="header-actions">
