@@ -6,7 +6,8 @@ import {
   Trash2,
   Sliders,
   Smartphone,
-  Check
+  Check,
+  Pipette
 } from 'lucide-react';
 
 interface InspectorPanelProps {
@@ -16,15 +17,12 @@ interface InspectorPanelProps {
 }
 
 const PALETTE_PRESETS = [
-  '#FFFFFF',
-  '#F8F9FA',
-  '#0F172A',
-  '#D90429', // Chili Red
-  '#FFF0F3', // Subtle Red tint
-  '#E2E8F0',
-  '#1E293B',
-  '#3B82F6',
-  '#10B981',
+  '#0F172A', // Siyah / Koyu Lacivert
+  '#D90429', // Şili Kırmızısı
+  '#3B82F6', // Mavi
+  '#10B981', // Yeşil
+  '#8B5CF6', // Mor
+  '#F59E0B', // Turuncu
 ];
 
 export const InspectorPanel: React.FC<InspectorPanelProps> = ({
@@ -33,6 +31,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   onFileSelect,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const colorPickerInputRef = useRef<HTMLInputElement>(null);
 
   // Active Brand tab state ('apple', 'samsung', 'google', 'other')
   const currentDeviceModel = DEVICE_MODELS.find((m) => m.id === config.deviceType) || DEVICE_MODELS[0];
@@ -62,6 +61,8 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
       deviceColor: defaultColor,
     });
   };
+
+  const isCustomColor = !PALETTE_PRESETS.includes(config.bgColor.toUpperCase()) && !PALETTE_PRESETS.includes(config.bgColor.toLowerCase());
 
   return (
     <div className="inspector-panel">
@@ -192,28 +193,49 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
         </div>
 
         <div className="control-group">
-          <div className="control-label">Renk Seçimi</div>
-          <div className="color-picker-row" style={{ flexWrap: 'wrap' }}>
+          <div className="control-label">
+            <span>Renk Seçimi</span>
+            <span className="control-value">{config.bgColor.toUpperCase()}</span>
+          </div>
+          
+          {/* Tek Satırda Hazır Renkler ve Özel Renk Paleti Butonu */}
+          <div className="color-picker-row" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {PALETTE_PRESETS.map((color) => (
               <button
                 key={color}
-                className={`color-swatch-btn ${config.bgColor === color ? 'selected' : ''}`}
+                title={color}
+                className={`color-swatch-btn ${config.bgColor.toLowerCase() === color.toLowerCase() ? 'selected' : ''}`}
                 style={{ backgroundColor: color }}
                 onClick={() => onChangeConfig({ bgColor: color })}
               />
             ))}
-          </div>
-        </div>
 
-        <div className="control-group">
-          <div className="control-label">Özel Hex Kodu</div>
-          <input
-            type="text"
-            className="input-text"
-            value={config.bgColor}
-            onChange={(e) => onChangeConfig({ bgColor: e.target.value })}
-            placeholder="#FFFFFF"
-          />
+            {/* Gizli native color input */}
+            <input
+              ref={colorPickerInputRef}
+              type="color"
+              value={config.bgColor.startsWith('#') && config.bgColor.length === 7 ? config.bgColor : '#D90429'}
+              style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0 }}
+              onChange={(e) => onChangeConfig({ bgColor: e.target.value })}
+            />
+
+            {/* Renk Paleti Açma Butonu */}
+            <button
+              type="button"
+              title="Özel Renk Paletini Aç"
+              className={`color-swatch-btn custom-palette-btn ${isCustomColor ? 'selected' : ''}`}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: isCustomColor ? config.bgColor : 'conic-gradient(from 180deg at 50% 50%, #FF0000 0deg, #FFFF00 60deg, #00FF00 120deg, #00FFFF 180deg, #0000FF 240deg, #FF00FF 300deg, #FF0000 360deg)',
+                color: isCustomColor ? '#FFFFFF' : '#334155',
+              }}
+              onClick={() => colorPickerInputRef.current?.click()}
+            >
+              <Pipette size={14} style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.6))', color: '#FFFFFF' }} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -324,30 +346,6 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             </div>
           </>
         )}
-      </div>
-
-      {/* Section 6: Export Resolution Scale */}
-      <div className="inspector-section">
-        <div className="section-label">Dışa Aktarma Ölçeği</div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          {[1, 2, 3].map((scale) => (
-            <button
-              key={scale}
-              className={`btn-secondary ${config.exportScale === scale ? 'selected' : ''}`}
-              style={{
-                flex: 1,
-                justifyContent: 'center',
-                backgroundColor: config.exportScale === scale ? '#FFF0F3' : undefined,
-                color: config.exportScale === scale ? '#D90429' : undefined,
-                borderColor: config.exportScale === scale ? '#FFCCD5' : undefined,
-                fontWeight: config.exportScale === scale ? 700 : 500
-              }}
-              onClick={() => onChangeConfig({ exportScale: scale as any })}
-            >
-              {scale}x {scale === 2 ? '(Önerilen)' : ''}
-            </button>
-          ))}
-        </div>
       </div>
     </div>
   );
