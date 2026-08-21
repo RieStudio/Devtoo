@@ -3,59 +3,67 @@ import type { DeviceModelInfo } from '../types/mockup';
 export const DEVICE_MODELS: DeviceModelInfo[] = [
   // APPLE
   {
-    id: 'iphone17promax',
+    id: 'iphone-17-pro-max',
     brand: 'apple',
     name: 'iPhone 17 Pro Max',
-    tag: 'Son Amiral Gemisi',
-    defaultRatio: 1290 / 2796,
+    tag: 'Flagship 6.9"',
+    defaultRatio: 389 / 800,
     colors: [
-      { id: 'dark', name: 'Black Titanium', hex: '#2C2B2F', borderHex: '#3E3D42' },
-      { id: 'natural', name: 'Natural Titanium', hex: '#8B8983', borderHex: '#A2A09A' },
-      { id: 'desert', name: 'Desert Titanium', hex: '#C2A58F', borderHex: '#D7BC9F' },
-      { id: 'white', name: 'White Titanium', hex: '#E3E3E5', borderHex: '#F0F0F2' },
+      { id: 'default', name: 'Default', hex: '#2C2B2F', borderHex: '#3E3D42' },
+    ],
+  },
+  {
+    id: 'iphone-17-pro',
+    brand: 'apple',
+    name: 'iPhone 17 Pro',
+    tag: 'Pro 6.3"',
+    defaultRatio: 389 / 800,
+    colors: [
+      { id: 'default', name: 'Default', hex: '#2C2B2F', borderHex: '#3E3D42' },
+    ],
+  },
+  {
+    id: 'iphone-17',
+    brand: 'apple',
+    name: 'iPhone 17',
+    tag: 'Standard 6.1"',
+    defaultRatio: 388 / 800,
+    colors: [
+      { id: 'default', name: 'Default', hex: '#2C2B2F', borderHex: '#3E3D42' },
     ],
   },
 
   // SAMSUNG
   {
-    id: 'samsung-s26ultra',
+    id: 'galaxy-s26-ultra',
     brand: 'samsung',
     name: 'Galaxy S26 Ultra',
-    tag: 'Titanium Armor',
-    defaultRatio: 1440 / 3120,
+    tag: 'Armor Frame 6.8"',
+    defaultRatio: 385 / 800,
     colors: [
-      { id: 'dark', name: 'Titanium Black', hex: '#1E1E20', borderHex: '#333336' },
-      { id: 'gray', name: 'Titanium Gray', hex: '#6F7075', borderHex: '#88898E' },
-      { id: 'silver', name: 'Titanium Silver', hex: '#D1D2D6', borderHex: '#E2E3E7' },
-      { id: 'blue', name: 'Titanium Blue', hex: '#3B4B61', borderHex: '#4F617C' },
+      { id: 'default', name: 'Default', hex: '#1E1E20', borderHex: '#333336' },
     ],
   },
 
   // GOOGLE
   {
-    id: 'pixel11pro',
+    id: 'pixel-10-pro',
     brand: 'google',
-    name: 'Pixel 11 Pro',
-    tag: 'Tensor G5',
-    defaultRatio: 1280 / 2856,
+    name: 'Pixel 10 Pro',
+    tag: 'Tensor Flagship',
+    defaultRatio: 380 / 800,
     colors: [
-      { id: 'obsidian', name: 'Obsidian', hex: '#1C1D1F', borderHex: '#303236' },
-      { id: 'porcelain', name: 'Porcelain', hex: '#F0EFEA', borderHex: '#FAFAFA' },
-      { id: 'hazel', name: 'Hazel', hex: '#585D58', borderHex: '#6F756F' },
-      { id: 'rose', name: 'Rose Quartz', hex: '#E8CAD2', borderHex: '#F5DAE1' },
+      { id: 'default', name: 'Default', hex: '#1C1D1F', borderHex: '#303236' },
     ],
   },
-
-  // OTHER / TABLET
   {
-    id: 'ipadpro',
-    brand: 'other',
-    name: 'iPad Pro 13"',
-    tag: 'M4 Ultra Thin',
-    defaultRatio: 2064 / 2752,
+    id: 'pixel-10',
+    brand: 'google',
+    name: 'Pixel 10',
+    tag: 'Tensor AI',
+    defaultRatio: 379 / 800,
     colors: [
-      { id: 'dark', name: 'Space Black', hex: '#1D1D1F', borderHex: '#313135' },
-      { id: 'silver', name: 'Silver', hex: '#E3E4E6', borderHex: '#F0F1F3' },
+      { id: 'default', name: 'Default', hex: '#1C1D1F', borderHex: '#303236' },
     ],
   },
 ];

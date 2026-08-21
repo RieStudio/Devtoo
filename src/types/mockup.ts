@@ -1,10 +1,12 @@
 export type DeviceType = 
-  | 'iphone17promax' 
-  | 'samsung-s26ultra' 
-  | 'pixel11pro' 
-  | 'ipadpro';
+  | 'iphone-17'
+  | 'iphone-17-pro'
+  | 'iphone-17-pro-max' 
+  | 'galaxy-s26-ultra' 
+  | 'pixel-10'
+  | 'pixel-10-pro';
 
-export type DeviceBrand = 'apple' | 'samsung' | 'google' | 'other';
+export type DeviceBrand = 'apple' | 'samsung' | 'google';
 
 export type AspectRatioPreset = 'appstore-6.7' | 'appstore-6.5' | 'playstore-portrait' | 'game-landscape' | 'square' | 'custom';
 

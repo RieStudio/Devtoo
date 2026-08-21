@@ -57,27 +57,26 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
-            padding: '16px',
+            padding: '20px 16px',
             textAlign: 'center',
             gap: '12px',
-            border: '2px dashed #CBD5E1',
             borderRadius: `${cornerRad}px`,
             boxSizing: 'border-box'
           }}
         >
           <div style={{
-            width: '46px',
-            height: '46px',
+            width: '44px',
+            height: '44px',
             borderRadius: '50%',
             backgroundColor: '#FFF0F3',
             color: '#D90429',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '24px',
+            fontSize: '22px',
             fontWeight: 'bold',
             flexShrink: 0,
-            boxShadow: '0 3px 10px rgba(217, 4, 41, 0.25)'
+            boxShadow: '0 2px 8px rgba(217, 4, 41, 0.2)'
           }}>
             +
           </div>
@@ -86,7 +85,7 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
               Ekran Görüntüsü Yükleyin
             </div>
             <div style={{ fontSize: '11px', color: '#64748B', marginTop: '4px', fontWeight: 500 }}>
-              {modelInfo.name} ({presetWidth}x{presetHeight}px)
+              {modelInfo.name}
             </div>
           </div>
         </div>
@@ -142,44 +141,52 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
   // Map device type to real photorealistic transparent frame image
   const getDeviceAssetPath = () => {
     switch (deviceType) {
-      case 'iphone17promax':
-        return '/devices/iphone16pro.png';
-      case 'samsung-s26ultra':
-        return '/devices/samsung-s25ultra.png';
-      case 'pixel11pro':
-        return '/devices/pixel9pro.png';
-      case 'ipadpro':
-        return '/devices/ipadpro.png';
+      case 'iphone-17-pro-max':
+        return '/devices/iphone-17-pro-max.png';
+      case 'iphone-17-pro':
+        return '/devices/iphone-17-pro.png';
+      case 'iphone-17':
+        return '/devices/iphone-17.png';
+      case 'galaxy-s26-ultra':
+        return '/devices/galaxy-s26-ultra.png';
+      case 'pixel-10-pro':
+        return '/devices/pixel-10-pro.png';
+      case 'pixel-10':
+        return '/devices/pixel-10.png';
       default:
-        return '/devices/iphone16pro.png';
+        return '/devices/iphone-17-pro-max.png';
     }
   };
 
-  // Screen cutout coordinates for each real device photo frame
+  // Screen cutout coordinates: Intentionally tucks 2-3px underneath the opaque device bezels
+  // so the user sees 100% edge-to-edge content right up to the glass edge without any hairline gaps or clipping.
   const getCutoutSpecs = () => {
     switch (deviceType) {
-      case 'iphone17promax':
-        return { top: '2.4%', left: '3.6%', width: '92.8%', height: '95.2%', cornerRadius: 42 };
-      case 'samsung-s26ultra':
-        return { top: '1.6%', left: '2.4%', width: '95.2%', height: '96.8%', cornerRadius: 12 };
-      case 'pixel11pro':
-        return { top: '2.0%', left: '3.0%', width: '94.0%', height: '96.0%', cornerRadius: 32 };
-      case 'ipadpro':
-        return { top: '3.2%', left: '4.0%', width: '91.8%', height: '93.6%', cornerRadius: 20 };
+      case 'iphone-17-pro-max':
+      case 'iphone-17-pro':
+        return { top: '1.2%', left: '3.0%', width: '94.0%', height: '97.6%', cornerRadius: 46 };
+      case 'iphone-17':
+        return { top: '1.2%', left: '3.0%', width: '94.0%', height: '97.6%', cornerRadius: 46 };
+      case 'galaxy-s26-ultra':
+        return { top: '1.0%', left: '2.0%', width: '96.0%', height: '98.0%', cornerRadius: 18 };
+      case 'pixel-10-pro':
+        return { top: '1.3%', left: '3.0%', width: '94.0%', height: '97.4%', cornerRadius: 38 };
+      case 'pixel-10':
+        return { top: '1.6%', left: '3.6%', width: '92.8%', height: '96.8%', cornerRadius: 38 };
       default:
-        return { top: '2.4%', left: '3.6%', width: '92.8%', height: '95.2%', cornerRadius: 42 };
+        return { top: '1.2%', left: '3.0%', width: '94.0%', height: '97.6%', cornerRadius: 46 };
     }
   };
 
   const specs = getCutoutSpecs();
   const assetPath = getDeviceAssetPath();
 
-  // Outer frame display dimensions
+  // Outer frame display dimensions - use device's natural aspect ratio so it doesn't stretch or cause gaps
   let displayWidth = 260;
-  if (deviceType === 'ipadpro') displayWidth = 360;
   if (isLandscape) displayWidth = 440;
 
-  const displayHeight = Math.round(displayWidth / targetRatio);
+  const deviceRatio = modelInfo.defaultRatio || (1290 / 2796);
+  const displayHeight = Math.round(displayWidth / deviceRatio);
 
   return (
     <div
@@ -218,7 +225,7 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
           left: 0,
           width: '100%',
           height: '100%',
-          objectFit: 'fill',
+          objectFit: 'contain',
           pointerEvents: 'none',
           zIndex: 10,
           display: 'block'
