@@ -7,13 +7,15 @@ import {
   Sliders,
   Smartphone,
   Check,
-  Pipette
+  Pipette,
+  Crop
 } from 'lucide-react';
 
 interface InspectorPanelProps {
   config: MockupConfig;
   onChangeConfig: (updated: Partial<MockupConfig>) => void;
   onFileSelect: (file: File) => void;
+  onOpenCropModal: () => void;
 }
 
 const PALETTE_PRESETS = [
@@ -29,6 +31,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   config,
   onChangeConfig,
   onFileSelect,
+  onOpenCropModal,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const colorPickerInputRef = useRef<HTMLInputElement>(null);
@@ -96,14 +99,25 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
         </div>
 
         {config.screenshotUrl && (
-          <button
-            className="btn-secondary"
-            style={{ width: '100%', justifyContent: 'center', color: '#D90429' }}
-            onClick={() => onChangeConfig({ screenshotUrl: null })}
-          >
-            <Trash2 size={14} />
-            Görseli Kaldır
-          </button>
+          <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+            <button
+              className="btn-secondary"
+              style={{ flex: 1, justifyContent: 'center' }}
+              onClick={onOpenCropModal}
+            >
+              <Crop size={14} color="#D90429" />
+              <span>Görseli Kırp</span>
+            </button>
+
+            <button
+              className="btn-secondary"
+              style={{ flex: 1, justifyContent: 'center', color: '#D90429' }}
+              onClick={() => onChangeConfig({ screenshotUrl: null, screenshotScale: 1, screenshotOffsetX: 0, screenshotOffsetY: 0 })}
+            >
+              <Trash2 size={14} />
+              <span>Görseli Kaldır</span>
+            </button>
+          </div>
         )}
       </div>
 

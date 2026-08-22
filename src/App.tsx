@@ -1,10 +1,12 @@
 import { useState, useRef } from 'react';
 import { toPng } from 'html-to-image';
 import type { MockupConfig } from './types/mockup';
+import { DEVICE_MODELS } from './constants/devices';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { MockupCanvas } from './components/MockupEditor/MockupCanvas';
 import { InspectorPanel } from './components/MockupEditor/InspectorPanel';
+import { ImageCropModal } from './components/MockupEditor/ImageCropModal';
 
 const INITIAL_CONFIG: MockupConfig = {
   preset: 'appstore-6.7',
@@ -36,6 +38,7 @@ export function App() {
   const [activeTool, setActiveTool] = useState<string>('mockup-editor');
   const [config, setConfig] = useState<MockupConfig>(INITIAL_CONFIG);
   const [isExporting, setIsExporting] = useState<boolean>(false);
+  const [isCropModalOpen, setIsCropModalOpen] = useState<boolean>(false);
   const exportRef = useRef<HTMLDivElement>(null);
 
   const handleUpdateConfig = (updated: Partial<MockupConfig>) => {
@@ -46,7 +49,15 @@ export function App() {
     const reader = new FileReader();
     reader.onload = (e) => {
       if (e.target?.result) {
-        handleUpdateConfig({ screenshotUrl: e.target.result as string });
+        const rawUrl = e.target.result as string;
+        handleUpdateConfig({ 
+          screenshotUrl: rawUrl,
+          originalScreenshotUrl: rawUrl,
+          cropData: null,
+          screenshotScale: 1,
+          screenshotOffsetX: 0,
+          screenshotOffsetY: 0
+        });
       }
     };
     reader.readAsDataURL(file);
@@ -87,6 +98,10 @@ export function App() {
     }
   };
 
+  // Get current device target aspect ratio for cropper
+  const currentModel = DEVICE_MODELS.find(m => m.id === config.deviceType) || DEVICE_MODELS[0];
+  const targetAspect = currentModel.defaultRatio;
+
   return (
     <div className="devtoo-layout">
       {/* Sol Sabit Menü (Sidebar) */}
@@ -113,9 +128,40 @@ export function App() {
             config={config}
             onChangeConfig={handleUpdateConfig}
             onFileSelect={handleFileSelect}
+            onOpenCropModal={() => setIsCropModalOpen(true)}
           />
         </div>
       </div>
+
+      {/* Interactive Crop Modal */}
+      {isCropModalOpen && (config.originalScreenshotUrl || config.screenshotUrl) && (
+        <ImageCropModal
+          imageSrc={config.originalScreenshotUrl || config.screenshotUrl!}
+          aspectRatio={targetAspect}
+          initialCrop={config.cropData as any}
+          onCropComplete={(croppedDataUrl, cropDetails) => {
+            handleUpdateConfig({
+              screenshotUrl: croppedDataUrl,
+              cropData: cropDetails,
+              screenshotScale: 1,
+              screenshotOffsetX: 0,
+              screenshotOffsetY: 0
+            });
+            setIsCropModalOpen(false);
+          }}
+          onResetToOriginal={() => {
+            handleUpdateConfig({
+              screenshotUrl: config.originalScreenshotUrl || config.screenshotUrl,
+              cropData: null,
+              screenshotScale: 1,
+              screenshotOffsetX: 0,
+              screenshotOffsetY: 0
+            });
+            setIsCropModalOpen(false);
+          }}
+          onCancel={() => setIsCropModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

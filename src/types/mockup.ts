@@ -45,6 +45,8 @@ export interface MockupConfig {
   deviceType: DeviceType;
   deviceColor: string;
   screenshotUrl: string | null;
+  originalScreenshotUrl?: string | null;
+  cropData?: { unit: string; x: number; y: number; width: number; height: number } | null;
   screenshotScale: number;
   screenshotOffsetX: number;
   screenshotOffsetY: number;

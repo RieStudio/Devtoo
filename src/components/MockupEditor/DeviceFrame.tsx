@@ -6,6 +6,9 @@ interface DeviceFrameProps {
   deviceType: DeviceType;
   deviceColor: string;
   screenshotUrl: string | null;
+  screenshotScale?: number;
+  screenshotOffsetX?: number;
+  screenshotOffsetY?: number;
   borderRadius: number;
   shadowDepth: string;
   onUploadClick?: () => void;
@@ -16,6 +19,9 @@ interface DeviceFrameProps {
 export const DeviceFrame: React.FC<DeviceFrameProps> = ({
   deviceType,
   screenshotUrl,
+  screenshotScale = 1,
+  screenshotOffsetX = 0,
+  screenshotOffsetY = 0,
   borderRadius,
   shadowDepth,
   onUploadClick,
@@ -51,7 +57,7 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
           style={{
             width: '100%',
             height: '100%',
-            backgroundColor: '#F8F9FA',
+            backgroundColor: '#FFFFFF',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -93,17 +99,34 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
     }
 
     return (
-      <img
-        src={screenshotUrl}
-        alt="App Screenshot"
+      <div
         style={{
           width: '100%',
           height: '100%',
-          objectFit: 'cover',
-          display: 'block',
-          borderRadius: `${cornerRad}px`
+          overflow: 'hidden',
+          borderRadius: `${cornerRad}px`,
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#000000',
         }}
-      />
+      >
+        <img
+          src={screenshotUrl}
+          alt="App Screenshot"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            display: 'block',
+            transform: `scale(${screenshotScale}) translate(${screenshotOffsetX}px, ${screenshotOffsetY}px)`,
+            transformOrigin: 'center center',
+            transition: 'transform 0.05s ease-out',
+            pointerEvents: 'none',
+          }}
+        />
+      </div>
     );
   };
 
@@ -158,23 +181,23 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
     }
   };
 
-  // Screen cutout coordinates: Intentionally tucks 2-3px underneath the opaque device bezels
-  // so the user sees 100% edge-to-edge content right up to the glass edge without any hairline gaps or clipping.
+  // Screen cutout coordinates: Individually calibrated for every single device model
   const getCutoutSpecs = () => {
     switch (deviceType) {
       case 'iphone-17-pro-max':
+        return { top: '2.0%', left: '8.8%', width: '82.4%', height: '96.0%', cornerRadius: 38 };
       case 'iphone-17-pro':
-        return { top: '1.2%', left: '3.0%', width: '94.0%', height: '97.6%', cornerRadius: 46 };
+        return { top: '2.0%', left: '8.8%', width: '82.4%', height: '96.0%', cornerRadius: 38 };
       case 'iphone-17':
-        return { top: '1.2%', left: '3.0%', width: '94.0%', height: '97.6%', cornerRadius: 46 };
+        return { top: '2.0%', left: '8.8%', width: '82.4%', height: '96.0%', cornerRadius: 38 };
       case 'galaxy-s26-ultra':
-        return { top: '1.0%', left: '2.0%', width: '96.0%', height: '98.0%', cornerRadius: 18 };
+        return { top: '1.6%', left: '8.4%', width: '83.2%', height: '96.8%', cornerRadius: 16 };
       case 'pixel-10-pro':
-        return { top: '1.3%', left: '3.0%', width: '94.0%', height: '97.4%', cornerRadius: 38 };
+        return { top: '2.0%', left: '8.5%', width: '83.0%', height: '96.0%', cornerRadius: 32 };
       case 'pixel-10':
-        return { top: '1.6%', left: '3.6%', width: '92.8%', height: '96.8%', cornerRadius: 38 };
+        return { top: '2.5%', left: '9.2%', width: '81.6%', height: '95.0%', cornerRadius: 32 };
       default:
-        return { top: '1.2%', left: '3.0%', width: '94.0%', height: '97.6%', cornerRadius: 46 };
+        return { top: '2.0%', left: '8.8%', width: '82.4%', height: '96.0%', cornerRadius: 38 };
     }
   };
 
@@ -209,7 +232,7 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
           zIndex: 1,
           borderRadius: `${specs.cornerRadius}px`,
           overflow: 'hidden',
-          backgroundColor: '#FFFFFF'
+          backgroundColor: screenshotUrl ? '#FFFFFF' : 'transparent'
         }}
       >
         {renderScreenContent(specs.cornerRadius)}
