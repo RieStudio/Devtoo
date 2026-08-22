@@ -52,7 +52,7 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
   const renderScreenContent = (cornerRad: number) => {
     if (!screenshotUrl) {
       return (
-        <div 
+        <div
           onClick={onUploadClick}
           style={{
             width: '100%',
@@ -181,42 +181,40 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
     }
   };
 
-  // Screen cutout coordinates: Individually calibrated for every single device model
+  // Screen cutout coordinates: Individually calibrated to tuck slightly under the opaque bezels
+  // ensuring edge-to-edge seamless display with zero white fringes on dark/black screenshots.
   const getCutoutSpecs = () => {
     switch (deviceType) {
       case 'iphone-17-pro-max':
-        return { top: '2.0%', left: '8.8%', width: '82.4%', height: '96.0%', cornerRadius: 38 };
       case 'iphone-17-pro':
-        return { top: '2.0%', left: '8.8%', width: '82.4%', height: '96.0%', cornerRadius: 38 };
+        return { top: '1.2%', left: '3.0%', width: '94.0%', height: '97.6%', cornerRadius: 36 };
       case 'iphone-17':
-        return { top: '2.0%', left: '8.8%', width: '82.4%', height: '96.0%', cornerRadius: 38 };
+        return { top: '1.2%', left: '3.0%', width: '94.0%', height: '97.6%', cornerRadius: 36 };
       case 'galaxy-s26-ultra':
-        return { top: '1.6%', left: '8.4%', width: '83.2%', height: '96.8%', cornerRadius: 16 };
+        return { top: '1.0%', left: '2.0%', width: '96.0%', height: '98.0%', cornerRadius: 16 };
       case 'pixel-10-pro':
-        return { top: '2.0%', left: '8.5%', width: '83.0%', height: '96.0%', cornerRadius: 32 };
+        return { top: '1.2%', left: '2.8%', width: '94.4%', height: '97.6%', cornerRadius: 30 };
       case 'pixel-10':
-        return { top: '2.5%', left: '9.2%', width: '81.6%', height: '95.0%', cornerRadius: 32 };
+        return { top: '1.6%', left: '3.8%', width: '92.4%', height: '96.8%', cornerRadius: 32 };
       default:
-        return { top: '2.0%', left: '8.8%', width: '82.4%', height: '96.0%', cornerRadius: 38 };
+        return { top: '1.2%', left: '3.0%', width: '94.0%', height: '97.6%', cornerRadius: 36 };
     }
   };
 
   const specs = getCutoutSpecs();
   const assetPath = getDeviceAssetPath();
 
-  // Outer frame display dimensions - use device's natural aspect ratio so it doesn't stretch or cause gaps
+  // Outer frame display dimensions
   let displayWidth = 260;
   if (isLandscape) displayWidth = 440;
 
-  const deviceRatio = modelInfo.defaultRatio || (1290 / 2796);
-  const displayHeight = Math.round(displayWidth / deviceRatio);
+  const scaledCornerRad = Math.round(specs.cornerRadius * (displayWidth / 260));
 
   return (
     <div
       style={{
         position: 'relative',
         width: `${displayWidth}px`,
-        height: `${displayHeight}px`,
         filter: getShadowCss(),
         display: 'inline-block'
       }}
@@ -230,25 +228,22 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
           width: specs.width,
           height: specs.height,
           zIndex: 1,
-          borderRadius: `${specs.cornerRadius}px`,
+          borderRadius: `${scaledCornerRad}px`,
           overflow: 'hidden',
-          backgroundColor: screenshotUrl ? '#FFFFFF' : 'transparent'
+          backgroundColor: '#000000'
         }}
       >
-        {renderScreenContent(specs.cornerRadius)}
+        {renderScreenContent(scaledCornerRad)}
       </div>
 
-      {/* LAYER 2: 100% REAL PHOTOREALISTIC TRANSPARENT FLAT FRONT-FACING DEVICE OVERLAY */}
+      {/* LAYER 2: Device frame image - drives container height via natural aspect ratio */}
       <img
         src={assetPath}
         alt={modelInfo.name}
         style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
+          position: 'relative',
           width: '100%',
-          height: '100%',
-          objectFit: 'contain',
+          height: 'auto',
           pointerEvents: 'none',
           zIndex: 10,
           display: 'block'
