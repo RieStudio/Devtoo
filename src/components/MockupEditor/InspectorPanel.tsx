@@ -8,7 +8,10 @@ import {
   Smartphone,
   Check,
   Pipette,
-  Crop
+  Crop,
+  Move,
+  Maximize2,
+  Crosshair
 } from 'lucide-react';
 
 interface InspectorPanelProps {
@@ -250,6 +253,127 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               <Pipette size={14} style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.6))', color: '#FFFFFF' }} />
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Section 4: Device Transform (Position & Scale) */}
+      <div className="inspector-section">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Move size={13} color="#D90429" />
+            <span>Cihaz Konumu ve Boyutu</span>
+          </div>
+          {(config.deviceOffsetX !== 0 || config.deviceOffsetY !== 0 || (config.deviceScale && config.deviceScale !== 1)) && (
+            <button
+              className="btn-text-action"
+              title="Konum ve Boyutu Sıfırla"
+              onClick={() => onChangeConfig({ deviceOffsetX: 0, deviceOffsetY: 0, deviceScale: 1 })}
+            >
+              Sıfırla
+            </button>
+          )}
+        </div>
+
+        {/* Device Scale Slider */}
+        <div className="control-group">
+          <div className="control-label">
+            <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <Maximize2 size={13} color="#64748B" />
+              <span>Cihaz Boyutu</span>
+            </span>
+            <span className="control-value">%{Math.round((config.deviceScale ?? 1) * 100)}</span>
+          </div>
+          <input
+            type="range"
+            min="0.4"
+            max="2.0"
+            step="0.01"
+            value={config.deviceScale ?? 1}
+            onChange={(e) => onChangeConfig({ deviceScale: Number(e.target.value) })}
+          />
+          {/* Quick scale buttons */}
+          <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
+            {[
+              { label: '%75', val: 0.75 },
+              { label: '%100', val: 1.0 },
+              { label: '%125', val: 1.25 },
+              { label: '%150', val: 1.5 },
+            ].map((btn) => (
+              <button
+                key={btn.label}
+                className={`scale-pill-btn ${(config.deviceScale ?? 1) === btn.val ? 'active' : ''}`}
+                onClick={() => onChangeConfig({ deviceScale: btn.val })}
+              >
+                {btn.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Device Horizontal Position (X) */}
+        <div className="control-group">
+          <div className="control-label">
+            <span>Yatay Konum (X)</span>
+            <span className="control-value">
+              {(config.deviceOffsetX ?? 0) > 0 ? `+${config.deviceOffsetX}` : (config.deviceOffsetX ?? 0)}px
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <input
+              type="range"
+              min="-250"
+              max="250"
+              value={config.deviceOffsetX ?? 0}
+              onChange={(e) => onChangeConfig({ deviceOffsetX: Number(e.target.value) })}
+              style={{ flex: 1 }}
+            />
+            <button
+              className="stepper-mini-btn"
+              title="X Sıfırla (0px)"
+              onClick={() => onChangeConfig({ deviceOffsetX: 0 })}
+            >
+              0
+            </button>
+          </div>
+        </div>
+
+        {/* Device Vertical Position (Y) */}
+        <div className="control-group">
+          <div className="control-label">
+            <span>Dikey Konum (Y)</span>
+            <span className="control-value">
+              {(config.deviceOffsetY ?? 0) > 0 ? `+${config.deviceOffsetY}` : (config.deviceOffsetY ?? 0)}px
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <input
+              type="range"
+              min="-350"
+              max="350"
+              value={config.deviceOffsetY ?? 0}
+              onChange={(e) => onChangeConfig({ deviceOffsetY: Number(e.target.value) })}
+              style={{ flex: 1 }}
+            />
+            <button
+              className="stepper-mini-btn"
+              title="Y Sıfırla (0px)"
+              onClick={() => onChangeConfig({ deviceOffsetY: 0 })}
+            >
+              0
+            </button>
+          </div>
+        </div>
+
+        {/* Quick alignment button */}
+        <div style={{ marginTop: '2px' }}>
+          <button
+            className="btn-secondary"
+            style={{ width: '100%', fontSize: '11px', padding: '6px 8px', justifyContent: 'center' }}
+            onClick={() => onChangeConfig({ deviceOffsetX: 0, deviceOffsetY: 0 })}
+          >
+            <Crosshair size={12} color="#D90429" />
+            <span>Merkeze Ortala</span>
+          </button>
         </div>
       </div>
 

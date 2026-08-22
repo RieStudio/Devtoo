@@ -611,3 +611,208 @@ input[type="range"] {
   font-size: 10px;
   color: var(--text-muted);
 }
+
+/* Canvas Quick Floating Toolbar */
+.canvas-quick-toolbar {
+  position: absolute;
+  top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  padding: 5px 10px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-default);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  z-index: 15;
+}
+
+.canvas-quick-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.canvas-quick-btn:hover {
+  background-color: var(--chili-subtle);
+  color: var(--chili-primary);
+  border-color: var(--chili-border);
+}
+
+.canvas-coords-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  background-color: #F1F5F9;
+  padding: 3px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid #E2E8F0;
+  margin-left: 4px;
+}
+
+/* Interactive Device Container */
+.device-interactive-container {
+  position: relative;
+  display: inline-block;
+  user-select: none;
+  border-radius: 40px;
+}
+
+.device-interactive-container.interactive-active {
+  box-shadow: 0 0 0 1.5px rgba(217, 4, 41, 0.35);
+}
+
+.device-interactive-container.is-dragging {
+  box-shadow: 0 0 0 2px var(--chili-primary);
+}
+
+/* Transform & Resize Gizmo */
+.device-transform-gizmo {
+  position: absolute;
+  inset: -6px;
+  border: 1.5px dashed rgba(217, 4, 41, 0.6);
+  border-radius: 42px;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 25;
+}
+
+.resize-handle {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background-color: #FFFFFF;
+  border: 2px solid var(--chili-primary);
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  pointer-events: auto;
+  transition: transform 0.1s ease, background-color 0.1s ease;
+  z-index: 30;
+}
+
+.resize-handle:hover {
+  transform: scale(1.35);
+  background-color: var(--chili-primary);
+}
+
+.handle-nw {
+  top: -7px;
+  left: -7px;
+  cursor: nwse-resize;
+}
+
+.handle-ne {
+  top: -7px;
+  right: -7px;
+  cursor: nesw-resize;
+}
+
+.handle-sw {
+  bottom: -7px;
+  left: -7px;
+  cursor: nesw-resize;
+}
+
+.handle-se {
+  bottom: -7px;
+  right: -7px;
+  cursor: nwse-resize;
+}
+
+/* Floating Info Pill on Drag / Resize */
+.transform-floating-pill {
+  position: absolute;
+  bottom: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #0F172A;
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  padding: 4px 10px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+  z-index: 40;
+}
+
+/* Scale Pill & Stepper Buttons in Inspector */
+.scale-pill-btn {
+  flex: 1;
+  padding: 4px 0;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+  background-color: #FFFFFF;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.scale-pill-btn:hover {
+  border-color: var(--chili-border);
+  color: var(--chili-primary);
+  background-color: var(--chili-subtle);
+}
+
+.scale-pill-btn.active {
+  border-color: var(--chili-primary);
+  background-color: var(--chili-subtle);
+  color: var(--chili-primary);
+  font-weight: 700;
+}
+
+.stepper-mini-btn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  background-color: #F1F5F9;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.stepper-mini-btn:hover {
+  background-color: var(--chili-subtle);
+  color: var(--chili-primary);
+  border-color: var(--chili-border);
+}
+
+.btn-text-action {
+  background: transparent;
+  border: none;
+  color: var(--chili-primary);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.12s ease;
+}
+
+.btn-text-action:hover {
+  background-color: var(--chili-subtle);
+}
+

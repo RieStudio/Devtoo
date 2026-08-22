@@ -51,6 +51,11 @@ export interface MockupConfig {
   screenshotOffsetX: number;
   screenshotOffsetY: number;
   
+  // Device positioning & scaling on canvas
+  deviceScale: number;
+  deviceOffsetX: number;
+  deviceOffsetY: number;
+
   // Layout & Padding
   padding: number;
   borderRadius: number;

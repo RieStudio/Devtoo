@@ -21,6 +21,9 @@ const INITIAL_CONFIG: MockupConfig = {
   screenshotScale: 1,
   screenshotOffsetX: 0,
   screenshotOffsetY: 0,
+  deviceScale: 1,
+  deviceOffsetX: 0,
+  deviceOffsetY: 0,
   padding: 32,
   borderRadius: 24,
   shadowDepth: 'medium',
@@ -120,8 +123,10 @@ export function App() {
         <div className="editor-container">
           <MockupCanvas
             config={config}
+            onChangeConfig={handleUpdateConfig}
             onUploadImageClick={handleTriggerUpload}
             exportRef={exportRef}
+            isExporting={isExporting}
           />
 
           <InspectorPanel
