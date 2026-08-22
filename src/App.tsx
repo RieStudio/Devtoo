@@ -9,6 +9,7 @@ import { InspectorPanel } from './components/MockupEditor/InspectorPanel';
 import { ImageCropModal } from './components/MockupEditor/ImageCropModal';
 
 const INITIAL_CONFIG: MockupConfig = {
+  exportMode: 'full-canvas',
   preset: 'appstore-6.7',
   width: 1290,
   height: 2796,
@@ -43,6 +44,7 @@ export function App() {
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [isCropModalOpen, setIsCropModalOpen] = useState<boolean>(false);
   const exportRef = useRef<HTMLDivElement>(null);
+  const deviceFrameRef = useRef<HTMLDivElement>(null);
 
   const handleUpdateConfig = (updated: Partial<MockupConfig>) => {
     setConfig((prev) => ({ ...prev, ...updated }));
@@ -78,19 +80,31 @@ export function App() {
     input.click();
   };
 
-  const handleExportPng = async () => {
-    if (!exportRef.current) return;
+  const handleExportPng = async (overrideMode?: 'full-canvas' | 'device-only') => {
+    const targetMode = overrideMode || config.exportMode;
+    const targetElement = targetMode === 'device-only' ? deviceFrameRef.current : exportRef.current;
+
+    if (!targetElement) return;
 
     try {
       setIsExporting(true);
       const pixelRatio = config.exportScale || 2;
-      const dataUrl = await toPng(exportRef.current, {
+      const dataUrl = await toPng(targetElement, {
         cacheBust: true,
         pixelRatio: pixelRatio,
+        backgroundColor: targetMode === 'device-only' ? undefined : undefined,
+        style: targetMode === 'device-only' ? {
+          background: 'transparent',
+          backgroundColor: 'transparent',
+          boxShadow: 'none',
+        } : undefined,
       });
 
       const link = document.createElement('a');
-      link.download = `devtoo-mockup-${config.preset}-${Date.now()}.png`;
+      const filename = targetMode === 'device-only'
+        ? `devtoo-${config.deviceType}-transparent-${Date.now()}.png`
+        : `devtoo-mockup-${config.preset}-${Date.now()}.png`;
+      link.download = filename;
       link.href = dataUrl;
       link.click();
     } catch (err) {
@@ -126,6 +140,7 @@ export function App() {
             onChangeConfig={handleUpdateConfig}
             onUploadImageClick={handleTriggerUpload}
             exportRef={exportRef}
+            deviceFrameRef={deviceFrameRef}
             isExporting={isExporting}
           />
 

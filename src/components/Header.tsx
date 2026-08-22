@@ -7,7 +7,11 @@ interface HeaderProps {
   isExporting: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onExport, onUploadClick, isExporting }) => {
+export const Header: React.FC<HeaderProps> = ({ 
+  onExport, 
+  onUploadClick, 
+  isExporting 
+}) => {
   return (
     <header className="devtoo-header">
       <div className="header-title-area">
@@ -31,3 +35,4 @@ export const Header: React.FC<HeaderProps> = ({ onExport, onUploadClick, isExpor
     </header>
   );
 };
+

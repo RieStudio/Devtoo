@@ -816,3 +816,61 @@ input[type="range"] {
   background-color: var(--chili-subtle);
 }
 
+/* Export Mode Tabs in Inspector */
+.export-mode-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  background-color: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.export-mode-tab:hover {
+  color: var(--text-primary);
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.export-mode-tab.active {
+  background-color: #FFFFFF;
+  color: var(--chili-primary);
+  border-color: #CBD5E1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* Clean Device Only Mode */
+.mockup-render-box.mode-device-only-clean {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  overflow: visible !important;
+}
+
+.canvas-mode-indicator {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--chili-primary);
+  background-color: var(--chili-subtle);
+  border: 1px solid var(--chili-border);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  margin-left: 4px;
+}
+
+.device-frame-capture-target {
+  display: inline-block;
+  position: relative;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+

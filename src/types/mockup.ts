@@ -31,6 +31,9 @@ export interface DeviceModelInfo {
 }
 
 export interface MockupConfig {
+  // Output Mode: Full visual or only standalone device (transparent PNG)
+  exportMode: 'full-canvas' | 'device-only';
+
   // Canvas settings
   preset: AspectRatioPreset;
   width: number;

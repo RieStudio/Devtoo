@@ -8,6 +8,7 @@ interface MockupCanvasProps {
   onChangeConfig: (updated: Partial<MockupConfig>) => void;
   onUploadImageClick: () => void;
   exportRef: React.RefObject<HTMLDivElement | null>;
+  deviceFrameRef?: React.RefObject<HTMLDivElement | null>;
   isExporting?: boolean;
 }
 
@@ -18,11 +19,14 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
   onChangeConfig,
   onUploadImageClick,
   exportRef,
+  deviceFrameRef,
   isExporting = false,
 }) => {
   const [dragMode, setDragMode] = useState<DragMode>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [dragMoved, setDragMoved] = useState(false);
+
+  const isDeviceOnly = config.exportMode === 'device-only';
 
   const startPosRef = useRef<{
     clientX: number;
@@ -154,38 +158,47 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
 
   return (
     <div className="canvas-viewport">
-      {/* Top Floating Quick Controls for Canvas */}
-      <div className="canvas-quick-toolbar">
-        <button
-          className="canvas-quick-btn"
-          title="Cihazı Merkeze Hizala (X:0, Y:0)"
-          onClick={handleResetPosition}
-        >
-          <Crosshair size={13} />
-          <span>Ortala</span>
-        </button>
-        {(currentOffsetX !== 0 || currentOffsetY !== 0 || currentScale !== 1) && (
-          <span className="canvas-coords-badge">
-            X: {currentOffsetX > 0 ? `+${currentOffsetX}` : currentOffsetX}px, Y:{' '}
-            {currentOffsetY > 0 ? `+${currentOffsetY}` : currentOffsetY}px (%{Math.round(currentScale * 100)})
-          </span>
-        )}
-      </div>
+      {/* Top Floating Quick Controls for Canvas (Only in Full Canvas Mode) */}
+      {!isDeviceOnly && (
+        <div className="canvas-quick-toolbar">
+          <button
+            className="canvas-quick-btn"
+            title="Cihazı Merkeze Hizala (X:0, Y:0)"
+            onClick={handleResetPosition}
+          >
+            <Crosshair size={13} />
+            <span>Ortala</span>
+          </button>
+          {(currentOffsetX !== 0 || currentOffsetY !== 0 || currentScale !== 1) && (
+            <span className="canvas-coords-badge">
+              X: {currentOffsetX > 0 ? `+${currentOffsetX}` : currentOffsetX}px, Y:{' '}
+              {currentOffsetY > 0 ? `+${currentOffsetY}` : currentOffsetY}px (%{Math.round(currentScale * 100)})
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Render Box for HTML-to-Image Export */}
       <div
         ref={exportRef}
-        className={`mockup-render-box ${config.bgType !== 'solid' ? `bg-${config.bgType}` : ''}`}
+        className={`mockup-render-box ${
+          isDeviceOnly 
+            ? 'mode-device-only-clean' 
+            : config.bgType !== 'solid' ? `bg-${config.bgType}` : ''
+        }`}
         style={{
-          width: dims.width,
-          minHeight: dims.minHeight,
-          backgroundColor: config.bgColor,
-          padding: `${config.padding}px`,
-          transform: `rotate(${config.frameRotation}deg)`,
+          width: isDeviceOnly ? 'auto' : dims.width,
+          minHeight: isDeviceOnly ? 'auto' : dims.minHeight,
+          backgroundColor: isDeviceOnly ? 'transparent' : config.bgColor,
+          boxShadow: isDeviceOnly ? 'none' : undefined,
+          border: isDeviceOnly ? 'none' : undefined,
+          padding: isDeviceOnly ? '0px' : `${config.padding}px`,
+          transform: isDeviceOnly ? 'none' : `rotate(${config.frameRotation}deg)`,
+          overflow: isDeviceOnly ? 'visible' : 'hidden',
         }}
       >
-        {/* Optional Headline Text */}
-        {config.showHeadline && (
+        {/* Optional Headline Text (Only in full-canvas mode) */}
+        {!isDeviceOnly && config.showHeadline && (
           <div
             className="mockup-headline-wrap"
             style={{ color: config.textColor }}
@@ -197,38 +210,41 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
 
         {/* Interactive Device Wrapper */}
         <div
-          className={`device-interactive-container ${isHovered || dragMode ? 'interactive-active' : ''} ${
-            dragMode ? 'is-dragging' : ''
+          className={`device-interactive-container ${!isDeviceOnly && (isHovered || dragMode) ? 'interactive-active' : ''} ${
+            !isDeviceOnly && dragMode ? 'is-dragging' : ''
           }`}
           style={{
-            transform: `translate(${currentOffsetX}px, ${currentOffsetY}px) scale(${currentScale})`,
+            transform: isDeviceOnly ? 'none' : `translate(${currentOffsetX}px, ${currentOffsetY}px) scale(${currentScale})`,
             transformOrigin: 'center center',
-            cursor: dragMode === 'move' ? 'grabbing' : 'grab',
+            cursor: isDeviceOnly ? 'default' : (dragMode === 'move' ? 'grabbing' : 'grab'),
             transition: dragMode ? 'none' : 'transform 0.15s ease-out',
-            touchAction: 'none',
+            touchAction: isDeviceOnly ? 'auto' : 'none',
           }}
-          onPointerDown={(e) => handlePointerDown(e, 'move')}
+          onPointerDown={isDeviceOnly ? undefined : (e) => handlePointerDown(e, 'move')}
           onClick={handleDeviceClick}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
+          onMouseEnter={() => !isDeviceOnly && setIsHovered(true)}
+          onMouseLeave={() => !isDeviceOnly && setIsHovered(false)}
         >
-          {/* Device Frame Display */}
-          <DeviceFrame
-            deviceType={config.deviceType}
-            deviceColor={config.deviceColor}
-            screenshotUrl={config.screenshotUrl}
-            screenshotScale={config.screenshotScale}
-            screenshotOffsetX={config.screenshotOffsetX}
-            screenshotOffsetY={config.screenshotOffsetY}
-            borderRadius={config.borderRadius}
-            shadowDepth={config.shadowDepth}
-            onUploadClick={onUploadImageClick}
-            presetWidth={config.width}
-            presetHeight={config.height}
-          />
+          {/* Target for standalone device export */}
+          <div ref={deviceFrameRef} className="device-frame-capture-target">
+            <DeviceFrame
+              deviceType={config.deviceType}
+              deviceColor={config.deviceColor}
+              screenshotUrl={config.screenshotUrl}
+              screenshotScale={config.screenshotScale}
+              screenshotOffsetX={config.screenshotOffsetX}
+              screenshotOffsetY={config.screenshotOffsetY}
+              borderRadius={config.borderRadius}
+              shadowDepth={config.shadowDepth}
+              onUploadClick={onUploadImageClick}
+              presetWidth={config.width}
+              presetHeight={config.height}
+              isDeviceOnly={isDeviceOnly}
+            />
+          </div>
 
-          {/* Transform & Resize Bounding Box Gizmo (Only visible in editor, hidden in export) */}
-          {!isExporting && (
+          {/* Transform & Resize Bounding Box Gizmo (Only in full visual mode) */}
+          {!isExporting && !isDeviceOnly && (
             <div
               className="device-transform-gizmo"
               style={{

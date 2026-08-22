@@ -14,6 +14,7 @@ interface DeviceFrameProps {
   onUploadClick?: () => void;
   presetWidth?: number;
   presetHeight?: number;
+  isDeviceOnly?: boolean;
 }
 
 export const DeviceFrame: React.FC<DeviceFrameProps> = ({
@@ -27,13 +28,15 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
   onUploadClick,
   presetWidth = 1290,
   presetHeight = 2796,
+  isDeviceOnly = false,
 }) => {
   const modelInfo = DEVICE_MODELS.find((m) => m.id === deviceType) || DEVICE_MODELS[0];
   const targetRatio = presetWidth / presetHeight;
   const isLandscape = presetWidth > presetHeight;
 
-  // Compute shadow CSS
+  // Compute shadow CSS (disabled in device-only mode to prevent browser SVG filter black box)
   const getShadowCss = () => {
+    if (isDeviceOnly) return 'none';
     switch (shadowDepth) {
       case 'soft':
         return 'drop-shadow(0 15px 30px rgba(0, 0, 0, 0.25))';
@@ -216,7 +219,8 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
         position: 'relative',
         width: `${displayWidth}px`,
         filter: getShadowCss(),
-        display: 'inline-block'
+        display: 'inline-block',
+        backgroundColor: 'transparent',
       }}
     >
       {/* LAYER 1: SCREEN CONTENT (Screenshot or Upload Dropzone) */}
