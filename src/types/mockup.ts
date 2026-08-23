@@ -30,6 +30,23 @@ export interface DeviceModelInfo {
   colors: { id: string; name: string; hex: string; borderHex: string }[];
 }
 
+export interface TextLayer {
+  id: string;
+  text: string;
+  x: number;
+  y: number;
+  fontSize: number;
+  color: string;
+  fontFamily: string;
+  isBold: boolean;
+  isItalic: boolean;
+  isUnderline: boolean;
+  textAlign: 'left' | 'center' | 'right';
+  letterSpacing?: number;
+  rotation?: number;
+  width?: number;
+}
+
 export interface MockupConfig {
   // Output Mode: Full visual or only standalone device (transparent PNG)
   exportMode: 'full-canvas' | 'device-only';
@@ -65,13 +82,11 @@ export interface MockupConfig {
   shadowDepth: 'none' | 'soft' | 'medium' | 'dramatic' | 'chili-glow';
   frameRotation: number;
   
-  // Store Headline / Typography
+  // Multi-Text Layers
   showHeadline: boolean;
-  headlineText: string;
-  subtitleText: string;
-  textColor: string;
-  fontFamily: 'sans' | 'serif' | 'mono';
-  textPosition: 'top' | 'bottom';
+  textLayers: TextLayer[];
+  selectedTextId: string | null;
+  selectedTextIds?: string[];
   
   // Export scale
   exportScale: 1 | 2 | 3;

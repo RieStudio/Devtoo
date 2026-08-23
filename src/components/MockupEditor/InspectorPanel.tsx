@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import type { MockupConfig, DeviceType, BackgroundType, DeviceBrand } from '../../types/mockup';
+import type { MockupConfig, DeviceType, BackgroundType, DeviceBrand, TextLayer } from '../../types/mockup';
 import { DEVICE_MODELS } from '../../constants/devices';
 import { 
   Upload, 
@@ -13,7 +13,15 @@ import {
   Maximize2,
   Crosshair,
   Layers,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Bold,
+  Italic,
+  Underline,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Type,
+  Plus
 } from 'lucide-react';
 
 interface InspectorPanelProps {
@@ -32,6 +40,16 @@ const PALETTE_PRESETS = [
   '#F59E0B', // Turuncu
 ];
 
+const TEXT_PALETTE_PRESETS = [
+  '#0F172A', // Siyah
+  '#FFFFFF', // Beyaz
+  '#D90429', // Şili Kırmızısı
+  '#3B82F6', // Mavi
+  '#10B981', // Yeşil
+  '#8B5CF6', // Mor
+  '#F59E0B', // Turuncu
+];
+
 export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   config,
   onChangeConfig,
@@ -40,6 +58,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const colorPickerInputRef = useRef<HTMLInputElement>(null);
+  const textColorPickerInputRef = useRef<HTMLInputElement>(null);
 
   const isDeviceOnly = config.exportMode === 'device-only';
 
@@ -73,6 +92,56 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   };
 
   const isCustomColor = !PALETTE_PRESETS.includes(config.bgColor.toUpperCase()) && !PALETTE_PRESETS.includes(config.bgColor.toLowerCase());
+
+  const selectedLayer = (config.textLayers || []).find((l) => l.id === config.selectedTextId) || null;
+
+  const handleAddTextLayer = () => {
+    const newId = `layer-${Date.now()}`;
+    const newLayer: TextLayer = {
+      id: newId,
+      text: 'Yeni Metin',
+      x: 0,
+      y: 0,
+      fontSize: 22,
+      color: '#0F172A',
+      fontFamily: 'sans',
+      isBold: true,
+      isItalic: false,
+      isUnderline: false,
+      textAlign: 'center',
+    };
+    onChangeConfig({
+      textLayers: [...(config.textLayers || []), newLayer],
+      selectedTextId: newId,
+    });
+  };
+
+  const selectedLayerIds = (config.selectedTextIds && config.selectedTextIds.length > 0)
+    ? config.selectedTextIds
+    : config.selectedTextId
+    ? [config.selectedTextId]
+    : [];
+
+  const handleUpdateSelectedLayer = (updated: Partial<TextLayer>) => {
+    if (!selectedLayer && selectedLayerIds.length === 0) return;
+    const targetIds = selectedLayerIds.length > 0 ? selectedLayerIds : (selectedLayer ? [selectedLayer.id] : []);
+    if (targetIds.length === 0) return;
+    
+    onChangeConfig({
+      textLayers: (config.textLayers || []).map((l) =>
+        targetIds.includes(l.id) ? { ...l, ...updated } : l
+      ),
+    });
+  };
+
+  const handleDeleteSelectedLayer = (layerId: string) => {
+    const remaining = (config.textLayers || []).filter((l) => l.id !== layerId);
+    onChangeConfig({
+      textLayers: remaining,
+      selectedTextId: remaining.length > 0 ? remaining[0].id : null,
+      selectedTextIds: remaining.length > 0 ? [remaining[0].id] : [],
+    });
+  };
 
   return (
     <div className="inspector-panel">
@@ -462,65 +531,407 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
         </div>
       </div>
 
-      {/* Section 6: Store Headline (Only in Full Visual Mode) */}
+      {/* Section 6: Multi-Text Layers & Typography (Only in Full Visual Mode) */}
       {!isDeviceOnly && (
         <div className="inspector-section">
-          <div className="section-label">Mağaza Başlığı Katmanı</div>
-          <div className="control-group" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span className="control-label">Başlık Göster</span>
-            <input
-              type="checkbox"
-              checked={config.showHeadline}
-              onChange={(e) => onChangeConfig({ showHeadline: e.target.checked })}
-              style={{ width: '16px', height: '16px', accentColor: '#D90429' }}
-            />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '8px' }}>
+            <div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', fontSize: '11.5px', margin: 0 }}>
+              <Type size={13} color="#D90429" />
+              <span>Metin Katmanları</span>
+            </div>
+            <button
+              type="button"
+              className="btn-text-action"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '3px',
+                color: '#D90429',
+                backgroundColor: 'rgba(217, 4, 41, 0.08)',
+                border: 'none',
+                borderRadius: '5px',
+                padding: '3px 8px',
+                fontSize: '11px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+              }}
+              onClick={handleAddTextLayer}
+              title="Görsele yeni metin katmanı ekle"
+            >
+              <Plus size={11} />
+              <span>Metin Ekle</span>
+            </button>
           </div>
 
-          {config.showHeadline && (
+          {/* Text Layers Selector Chips */}
+          {(config.textLayers || []).length > 0 ? (
             <>
-              <div className="control-group">
-                <div className="control-label">Ana Başlık</div>
-                <input
-                  type="text"
-                  className="input-text"
-                  value={config.headlineText}
-                  onChange={(e) => onChangeConfig({ headlineText: e.target.value })}
-                  placeholder="Örn: En Hızlı Skor Takipçisi"
-                />
+              <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '6px', marginBottom: '8px' }}>
+                {(config.textLayers || []).map((layer, index) => {
+                  const isSelected = selectedLayerIds.includes(layer.id);
+                  return (
+                    <button
+                      key={layer.id}
+                      type="button"
+                      className={`layer-chip-btn ${isSelected ? 'active' : ''}`}
+                      onClick={(e) => {
+                        if (e.ctrlKey || e.metaKey || e.shiftKey) {
+                          const nextIds = selectedLayerIds.includes(layer.id)
+                            ? selectedLayerIds.filter((id) => id !== layer.id)
+                            : [...selectedLayerIds, layer.id];
+                          onChangeConfig({
+                            selectedTextIds: nextIds,
+                            selectedTextId: nextIds[0] || null,
+                          });
+                        } else {
+                          onChangeConfig({
+                            selectedTextId: layer.id,
+                            selectedTextIds: [layer.id],
+                          });
+                        }
+                      }}
+                    >
+                      <Type size={11} />
+                      <span className="layer-chip-text">{layer.text.trim() ? layer.text : `Metin ${index + 1}`}</span>
+                      {(config.textLayers || []).length > 1 && (
+                        <span
+                          className="layer-chip-delete"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteSelectedLayer(layer.id);
+                          }}
+                          title="Bu metni sil"
+                        >
+                          ×
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
 
-              <div className="control-group">
-                <div className="control-label">Alt Açıklama Metni</div>
-                <input
-                  type="text"
-                  className="input-text"
-                  value={config.subtitleText}
-                  onChange={(e) => onChangeConfig({ subtitleText: e.target.value })}
-                  placeholder="Örn: Anlık istatistikler ve canlı bildirimler"
-                />
-              </div>
+              {selectedLayer ? (
+                <>
+                  {/* Text Input */}
+                  <div className="control-group">
+                    <div className="control-label">Metin İçeriği</div>
+                    <textarea
+                      rows={2}
+                      className="input-text"
+                      style={{ resize: 'vertical', fontFamily: 'inherit' }}
+                      value={selectedLayer.text}
+                      onChange={(e) => handleUpdateSelectedLayer({ text: e.target.value })}
+                      placeholder="Görselde görünecek metni yazın..."
+                    />
+                  </div>
 
-              <div className="control-group">
-                <div className="control-label">Metin Rengi</div>
-                <div className="color-picker-row">
-                  <button
-                    className={`color-swatch-btn ${config.textColor === '#0F172A' ? 'selected' : ''}`}
-                    style={{ backgroundColor: '#0F172A' }}
-                    onClick={() => onChangeConfig({ textColor: '#0F172A' })}
-                  />
-                  <button
-                    className={`color-swatch-btn ${config.textColor === '#FFFFFF' ? 'selected' : ''}`}
-                    style={{ backgroundColor: '#FFFFFF' }}
-                    onClick={() => onChangeConfig({ textColor: '#FFFFFF' })}
-                  />
-                  <button
-                    className={`color-swatch-btn ${config.textColor === '#D90429' ? 'selected' : ''}`}
-                    style={{ backgroundColor: '#D90429' }}
-                    onClick={() => onChangeConfig({ textColor: '#D90429' })}
-                  />
+                  {/* Word Format Ribbon */}
+                  <div className="control-group">
+                    <div className="control-label">Biçimlendirme</div>
+                    <div style={{ display: 'flex', gap: '4px', backgroundColor: '#F1F3F5', padding: '4px', borderRadius: '8px' }}>
+                      <button
+                        type="button"
+                        title="Kalın (Bold)"
+                        className={`format-ribbon-btn ${selectedLayer.isBold ? 'active' : ''}`}
+                        onClick={() => handleUpdateSelectedLayer({ isBold: !selectedLayer.isBold })}
+                      >
+                        <Bold size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        title="İtalik (Italic)"
+                        className={`format-ribbon-btn ${selectedLayer.isItalic ? 'active' : ''}`}
+                        onClick={() => handleUpdateSelectedLayer({ isItalic: !selectedLayer.isItalic })}
+                      >
+                        <Italic size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        title="Altı Çizili (Underline)"
+                        className={`format-ribbon-btn ${selectedLayer.isUnderline ? 'active' : ''}`}
+                        onClick={() => handleUpdateSelectedLayer({ isUnderline: !selectedLayer.isUnderline })}
+                      >
+                        <Underline size={14} />
+                      </button>
+
+                      <div style={{ width: '1px', backgroundColor: '#CBD5E1', margin: '0 2px' }} />
+
+                      <button
+                        type="button"
+                        title="Sola Hizala"
+                        className={`format-ribbon-btn ${selectedLayer.textAlign === 'left' ? 'active' : ''}`}
+                        onClick={() => handleUpdateSelectedLayer({ textAlign: 'left' })}
+                      >
+                        <AlignLeft size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        title="Ortala"
+                        className={`format-ribbon-btn ${(!selectedLayer.textAlign || selectedLayer.textAlign === 'center') ? 'active' : ''}`}
+                        onClick={() => handleUpdateSelectedLayer({ textAlign: 'center' })}
+                      >
+                        <AlignCenter size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        title="Sağa Hizala"
+                        className={`format-ribbon-btn ${selectedLayer.textAlign === 'right' ? 'active' : ''}`}
+                        onClick={() => handleUpdateSelectedLayer({ textAlign: 'right' })}
+                      >
+                        <AlignRight size={14} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Yazı Tipi Ailesi */}
+                  <div className="control-group">
+                    <div className="control-label">Yazı Tipi</div>
+                    <select
+                      className="input-select"
+                      value={selectedLayer.fontFamily || 'inter'}
+                      onChange={(e) => handleUpdateSelectedLayer({ fontFamily: e.target.value })}
+                    >
+                      <option value="inter">Inter</option>
+                      <option value="outfit">Outfit</option>
+                      <option value="poppins">Poppins</option>
+                      <option value="montserrat">Montserrat</option>
+                      <option value="plus-jakarta">Plus Jakarta Sans</option>
+                      <option value="roboto">Roboto</option>
+                      <option value="open-sans">Open Sans</option>
+                      <option value="lato">Lato</option>
+                      <option value="raleway">Raleway</option>
+                      <option value="nunito">Nunito</option>
+                      <option value="rubik">Rubik</option>
+                      <option value="space-grotesk">Space Grotesk</option>
+                      <option value="syne">Syne</option>
+                      <option value="bebas-neue">Bebas Neue</option>
+                      <option value="anton">Anton</option>
+                      <option value="russo-one">Russo One</option>
+                      <option value="orbitron">Orbitron</option>
+                      <option value="quicksand">Quicksand</option>
+                      <option value="comfortaa">Comfortaa</option>
+                      <option value="playfair">Playfair Display</option>
+                      <option value="lora">Lora</option>
+                      <option value="cinzel">Cinzel</option>
+                      <option value="jetbrains-mono">JetBrains Mono</option>
+                      <option value="fira-code">Fira Code</option>
+                      <option value="caveat">Caveat</option>
+                      <option value="dancing-script">Dancing Script</option>
+                      <option value="pacifico">Pacifico</option>
+                      <option value="permanent-marker">Permanent Marker</option>
+                    </select>
+                  </div>
+
+                  {/* Font Size Slider */}
+                  <div className="control-group">
+                    <div className="control-label">
+                      <span>Metin Boyutu</span>
+                      <span className="control-value">{selectedLayer.fontSize}px</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input
+                        type="range"
+                        min="10"
+                        max="64"
+                        value={selectedLayer.fontSize}
+                        onChange={(e) => handleUpdateSelectedLayer({ fontSize: Number(e.target.value) })}
+                        style={{ flex: 1 }}
+                      />
+                      <button
+                        className="stepper-mini-btn"
+                        title="Varsayılana Sıfırla (24px)"
+                        onClick={() => handleUpdateSelectedLayer({ fontSize: 24 })}
+                      >
+                        24
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Color Picker */}
+                  <div className="control-group">
+                    <div className="control-label">
+                      <span>Metin Rengi</span>
+                      <span className="control-value">{selectedLayer.color.toUpperCase()}</span>
+                    </div>
+                    <div className="color-picker-row" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {TEXT_PALETTE_PRESETS.map((color) => (
+                        <button
+                          key={color}
+                          title={color}
+                          className={`color-swatch-btn ${selectedLayer.color.toLowerCase() === color.toLowerCase() ? 'selected' : ''}`}
+                          style={{ backgroundColor: color }}
+                          onClick={() => handleUpdateSelectedLayer({ color })}
+                        />
+                      ))}
+
+                      <input
+                        ref={textColorPickerInputRef}
+                        type="color"
+                        value={selectedLayer.color.startsWith('#') && selectedLayer.color.length === 7 ? selectedLayer.color : '#0F172A'}
+                        style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0 }}
+                        onChange={(e) => handleUpdateSelectedLayer({ color: e.target.value })}
+                      />
+
+                      <button
+                        type="button"
+                        title="Özel Metin Rengini Aç"
+                        className={`color-swatch-btn custom-palette-btn ${
+                          !TEXT_PALETTE_PRESETS.includes(selectedLayer.color.toUpperCase()) ? 'selected' : ''
+                        }`}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: !TEXT_PALETTE_PRESETS.includes(selectedLayer.color.toUpperCase())
+                            ? selectedLayer.color 
+                            : 'conic-gradient(from 180deg at 50% 50%, #FF0000 0deg, #FFFF00 60deg, #00FF00 120deg, #00FFFF 180deg, #0000FF 240deg, #FF00FF 300deg, #FF0000 360deg)',
+                          color: !TEXT_PALETTE_PRESETS.includes(selectedLayer.color.toUpperCase()) ? '#FFFFFF' : '#334155',
+                        }}
+                        onClick={() => textColorPickerInputRef.current?.click()}
+                      >
+                        <Pipette size={14} style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.6))', color: '#FFFFFF' }} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Position X & Y Sliders */}
+                  <div className="control-group">
+                    <div className="control-label">
+                      <span>Yatay Konum (X)</span>
+                      <span className="control-value">{selectedLayer.x > 0 ? `+${selectedLayer.x}` : selectedLayer.x}px</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input
+                        type="range"
+                        min="-250"
+                        max="250"
+                        value={selectedLayer.x}
+                        onChange={(e) => handleUpdateSelectedLayer({ x: Number(e.target.value) })}
+                        style={{ flex: 1 }}
+                      />
+                      <button
+                        className="stepper-mini-btn"
+                        title="X Sıfırla (0px)"
+                        onClick={() => handleUpdateSelectedLayer({ x: 0 })}
+                      >
+                        0
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="control-group">
+                    <div className="control-label">
+                      <span>Dikey Konum (Y)</span>
+                      <span className="control-value">{selectedLayer.y > 0 ? `+${selectedLayer.y}` : selectedLayer.y}px</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input
+                        type="range"
+                        min="-350"
+                        max="350"
+                        value={selectedLayer.y}
+                        onChange={(e) => handleUpdateSelectedLayer({ y: Number(e.target.value) })}
+                        style={{ flex: 1 }}
+                      />
+                      <button
+                        className="stepper-mini-btn"
+                        title="Y Sıfırla (0px)"
+                        onClick={() => handleUpdateSelectedLayer({ y: 0 })}
+                      >
+                        0
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Rotation Slider */}
+                  <div className="control-group">
+                    <div className="control-label">
+                      <span>Döndürme Açısı</span>
+                      <span className="control-value">{selectedLayer.rotation || 0}°</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input
+                        type="range"
+                        min="-180"
+                        max="180"
+                        value={selectedLayer.rotation || 0}
+                        onChange={(e) => handleUpdateSelectedLayer({ rotation: Number(e.target.value) })}
+                        style={{ flex: 1 }}
+                      />
+                      <button
+                        className="stepper-mini-btn"
+                        title="Döndürmeyi Sıfırla (0°)"
+                        onClick={() => handleUpdateSelectedLayer({ rotation: 0 })}
+                      >
+                        0°
+                      </button>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '6px', marginTop: '6px' }}>
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      style={{ flex: 1, fontSize: '11px', padding: '6px 8px', justifyContent: 'center' }}
+                      onClick={() => handleUpdateSelectedLayer({ x: 0, y: 0, rotation: 0, width: undefined })}
+                    >
+                      <Crosshair size={12} color="#D90429" />
+                      <span>Merkeze Ortala (0, 0)</span>
+                    </button>
+
+                    {(config.textLayers || []).length > 1 && (
+                      <button
+                        type="button"
+                        className="btn-secondary"
+                        style={{ fontSize: '11px', padding: '6px 10px', justifyContent: 'center', color: '#EF4444' }}
+                        onClick={() => handleDeleteSelectedLayer(selectedLayer.id)}
+                        title="Bu metni sil"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '24px 16px',
+                  backgroundColor: '#F8FAFC',
+                  border: '1px dashed #CBD5E1',
+                  borderRadius: '8px',
+                  color: '#64748B',
+                  textAlign: 'center',
+                  gap: '8px',
+                  marginTop: '4px',
+                }}>
+                  <Type size={20} color="#94A3B8" />
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}>
+                    Seçili Metin Yok
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#94A3B8', maxWidth: '200px', lineHeight: '1.4' }}>
+                    Düzenlemek için görseldeki bir metne veya yukarıdaki metin çiplerine tıklayın.
+                  </div>
                 </div>
-              </div>
+              )}
             </>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '16px', fontSize: '12px', color: '#64748B' }}>
+              Henüz metin eklenmemiş.
+              <button
+                type="button"
+                className="btn-chili"
+                style={{ width: '100%', marginTop: '8px', justifyContent: 'center', fontSize: '12px' }}
+                onClick={handleAddTextLayer}
+              >
+                <Plus size={13} />
+                <span>İlk Metni Ekle</span>
+              </button>
+            </div>
           )}
         </div>
       )}
