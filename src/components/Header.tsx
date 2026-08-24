@@ -3,6 +3,8 @@ import { Download, Upload, Smartphone, Undo2, Redo2 } from 'lucide-react';
 
 interface HeaderProps {
   onExport: () => void;
+  onExportAll?: () => void;
+  screenCount?: number;
   onUploadClick: () => void;
   onUndo?: () => void;
   onRedo?: () => void;
@@ -13,6 +15,8 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ 
   onExport, 
+  onExportAll,
+  screenCount = 1,
   onUploadClick, 
   onUndo,
   onRedo,
@@ -55,14 +59,23 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         )}
 
-        <button className="btn-secondary" onClick={onUploadClick}>
-          <Upload size={14} />
-          <span>Ekran Görüntüsü Yükle</span>
-        </button>
+        {screenCount <= 1 && (
+          <button className="btn-secondary" onClick={onUploadClick}>
+            <Upload size={14} />
+            <span>Ekran Görüntüsü Yükle</span>
+          </button>
+        )}
+
+        {screenCount > 1 && onExportAll && (
+          <button className="btn-secondary" onClick={onExportAll} disabled={isExporting} title="Tüm ekranları tek bir dosya olarak indir">
+            <Download size={14} />
+            <span>Tüm Ekranları İndir</span>
+          </button>
+        )}
 
         <button className="btn-chili" onClick={onExport} disabled={isExporting}>
           <Download size={14} />
-          <span>{isExporting ? 'Dışa Aktarılıyor...' : 'PNG Olarak İndir'}</span>
+          <span>{isExporting ? 'Dışa Aktarılıyor...' : screenCount > 1 ? 'Seçili Ekranı İndir' : 'PNG Olarak İndir'}</span>
         </button>
       </div>
     </header>

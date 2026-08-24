@@ -48,6 +48,10 @@ export interface TextLayer {
 }
 
 export interface MockupConfig {
+  // Screen Unique Identifier
+  id?: string;
+  screenTitle?: string;
+
   // Output Mode: Full visual or only standalone device (transparent PNG)
   exportMode: 'full-canvas' | 'device-only';
 

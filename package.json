@@ -12,12 +12,14 @@
   "dependencies": {
     "clsx": "^2.1.1",
     "html-to-image": "^1.11.13",
+    "jszip": "^3.10.1",
     "lucide-react": "^1.31.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-image-crop": "^11.1.2"
   },
   "devDependencies": {
+    "@types/jszip": "^3.4.0",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",

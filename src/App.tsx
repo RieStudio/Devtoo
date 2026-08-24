@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { toPng } from 'html-to-image';
+import JSZip from 'jszip';
+import { AlertCircle, X } from 'lucide-react';
 import type { MockupConfig } from './types/mockup';
 import { DEVICE_MODELS } from './constants/devices';
 import { Sidebar } from './components/Sidebar';
@@ -9,6 +11,8 @@ import { InspectorPanel } from './components/MockupEditor/InspectorPanel';
 import { ImageCropModal } from './components/MockupEditor/ImageCropModal';
 
 const INITIAL_CONFIG: MockupConfig = {
+  id: 'screen-1',
+  screenTitle: 'Ekran 1',
   exportMode: 'full-canvas',
   preset: 'appstore-6.7',
   width: 1290,
@@ -66,20 +70,37 @@ const INITIAL_CONFIG: MockupConfig = {
 
 export function App() {
   const [activeTool, setActiveTool] = useState<string>('mockup-editor');
-  const [config, setConfig] = useState<MockupConfig>(INITIAL_CONFIG);
+  const [screens, setScreens] = useState<MockupConfig[]>([INITIAL_CONFIG]);
+  const [activeScreenId, setActiveScreenId] = useState<string>(INITIAL_CONFIG.id || 'screen-1');
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [isCropModalOpen, setIsCropModalOpen] = useState<boolean>(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const toastTimeoutRef = useRef<any>(null);
+  const showToast = (msg: string) => {
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    setToastMessage(msg);
+    toastTimeoutRef.current = setTimeout(() => {
+      setToastMessage(null);
+    }, 3200);
+  };
+
   const exportRef = useRef<HTMLDivElement>(null);
   const deviceFrameRef = useRef<HTMLDivElement>(null);
+  const screenRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
 
-  // Undo / Redo History Stacks
-  const historyRef = useRef<MockupConfig[]>([JSON.parse(JSON.stringify(INITIAL_CONFIG))]);
+  // Currently active screen config object
+  const activeScreenConfig = screens.find((s) => s.id === activeScreenId) || screens[0] || INITIAL_CONFIG;
+
+  // Undo / Redo History Stacks for entire screen set
+  const historyRef = useRef<MockupConfig[][]>([[JSON.parse(JSON.stringify(INITIAL_CONFIG))]]);
   const historyIndexRef = useRef<number>(0);
   const clipboardRef = useRef<{ type: 'layers'; data: typeof INITIAL_CONFIG.textLayers } | null>(null);
 
-  // Helper to extract content-relevant state (excluding pure active selection pointers)
-  const getContentSnapshot = (cfg: MockupConfig) => {
-    return JSON.stringify({
+  // Helper to extract content-relevant state
+  const getScreensSnapshot = (screensList: MockupConfig[]) => {
+    return JSON.stringify(screensList.map((cfg) => ({
+      id: cfg.id,
       exportMode: cfg.exportMode,
       preset: cfg.preset,
       width: cfg.width,
@@ -102,34 +123,130 @@ export function App() {
       frameRotation: cfg.frameRotation,
       showHeadline: cfg.showHeadline,
       textLayers: cfg.textLayers,
-    });
+    })));
   };
 
   const handleUpdateConfig = (updated: Partial<MockupConfig>, recordHistory = true) => {
-    setConfig((prev) => {
-      const next = { ...prev, ...updated };
-      if (recordHistory) {
-        const prevSnap = getContentSnapshot(historyRef.current[historyIndexRef.current] || prev);
-        const nextSnap = getContentSnapshot(next);
+    setScreens((prevScreens) => {
+      const nextScreens = prevScreens.map((s) => {
+        if (s.id === activeScreenId || (!s.id && prevScreens.indexOf(s) === 0)) {
+          return { ...s, ...updated };
+        }
+        return s;
+      });
 
-        // Only record history entry if meaningful visual/content properties changed
+      if (recordHistory) {
+        const prevSnap = getScreensSnapshot(historyRef.current[historyIndexRef.current] || prevScreens);
+        const nextSnap = getScreensSnapshot(nextScreens);
+
         if (prevSnap !== nextSnap) {
           const newHist = historyRef.current.slice(0, historyIndexRef.current + 1);
-          newHist.push(JSON.parse(JSON.stringify(next)));
+          newHist.push(JSON.parse(JSON.stringify(nextScreens)));
           if (newHist.length > 60) newHist.shift();
           historyRef.current = newHist;
           historyIndexRef.current = newHist.length - 1;
         }
       }
-      return next;
+      return nextScreens;
     });
+  };
+
+  const handleUpdateScreenTitle = (screenId: string, newTitle: string) => {
+    setScreens((prevScreens) => {
+      const nextScreens = prevScreens.map((s) => {
+        if (s.id === screenId) {
+          return { ...s, screenTitle: newTitle };
+        }
+        return s;
+      });
+      return nextScreens;
+    });
+  };
+
+  const handleAddScreen = () => {
+    if (screens.length >= 10) {
+      showToast('En fazla 10 ekran ekleyebilirsiniz.');
+      return;
+    }
+
+    const newScreenId = `screen-${Date.now()}`;
+    const newScreenIndex = screens.length + 1;
+    const newScreen: MockupConfig = {
+      ...JSON.parse(JSON.stringify(INITIAL_CONFIG)),
+      id: newScreenId,
+      screenTitle: `Ekran ${newScreenIndex}`,
+      selectedTextId: null,
+      selectedTextIds: [],
+    };
+
+    setScreens((prev) => {
+      const updated = [...prev, newScreen];
+      const newHist = historyRef.current.slice(0, historyIndexRef.current + 1);
+      newHist.push(JSON.parse(JSON.stringify(updated)));
+      if (newHist.length > 60) newHist.shift();
+      historyRef.current = newHist;
+      historyIndexRef.current = newHist.length - 1;
+      return updated;
+    });
+  };
+
+  const handleDuplicateScreen = (screenId: string) => {
+    if (screens.length >= 10) {
+      showToast('En fazla 10 ekran ekleyebilirsiniz.');
+      return;
+    }
+
+    const targetScreen = screens.find((s) => s.id === screenId);
+    if (!targetScreen) return;
+
+    const newScreenId = `screen-${Date.now()}`;
+    const newScreenIndex = screens.length + 1;
+    const duplicated: MockupConfig = {
+      ...JSON.parse(JSON.stringify(targetScreen)),
+      id: newScreenId,
+      screenTitle: `Ekran ${newScreenIndex} (Kopya)`,
+      selectedTextId: null,
+      selectedTextIds: [],
+    };
+
+    // Append duplicated screen to the very end of screens array
+    const updatedScreens = [...screens, duplicated];
+
+    setScreens(updatedScreens);
+    setActiveScreenId(newScreenId);
+
+    const newHist = historyRef.current.slice(0, historyIndexRef.current + 1);
+    newHist.push(JSON.parse(JSON.stringify(updatedScreens)));
+    if (newHist.length > 60) newHist.shift();
+    historyRef.current = newHist;
+    historyIndexRef.current = newHist.length - 1;
+  };
+
+  const handleDeleteScreen = (screenId: string) => {
+    if (screens.length <= 1) return;
+
+    const remaining = screens.filter((s) => s.id !== screenId);
+    setScreens(remaining);
+
+    if (activeScreenId === screenId) {
+      setActiveScreenId(remaining[0]?.id || 'screen-1');
+    }
+
+    const newHist = historyRef.current.slice(0, historyIndexRef.current + 1);
+    newHist.push(JSON.parse(JSON.stringify(remaining)));
+    if (newHist.length > 60) newHist.shift();
+    historyRef.current = newHist;
+    historyIndexRef.current = newHist.length - 1;
   };
 
   const handleUndo = () => {
     if (historyIndexRef.current > 0) {
       historyIndexRef.current -= 1;
       const targetState = JSON.parse(JSON.stringify(historyRef.current[historyIndexRef.current]));
-      setConfig(targetState);
+      setScreens(targetState);
+      if (!targetState.some((s: MockupConfig) => s.id === activeScreenId)) {
+        setActiveScreenId(targetState[0]?.id || 'screen-1');
+      }
     }
   };
 
@@ -137,14 +254,16 @@ export function App() {
     if (historyIndexRef.current < historyRef.current.length - 1) {
       historyIndexRef.current += 1;
       const targetState = JSON.parse(JSON.stringify(historyRef.current[historyIndexRef.current]));
-      setConfig(targetState);
+      setScreens(targetState);
+      if (!targetState.some((s: MockupConfig) => s.id === activeScreenId)) {
+        setActiveScreenId(targetState[0]?.id || 'screen-1');
+      }
     }
   };
 
   // Global Keyboard Shortcuts (Undo, Redo, Copy, Cut, Paste, Delete, Select All)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // If user is actively typing in an input, textarea, or contentEditable element, let default native behavior handle it
       const activeEl = document.activeElement;
       const isTyping = activeEl && (
         activeEl.tagName === 'INPUT' ||
@@ -154,47 +273,44 @@ export function App() {
 
       const isCtrl = e.ctrlKey || e.metaKey;
 
-      // Undo: Ctrl + Z
       if (isCtrl && e.key.toLowerCase() === 'z' && !e.shiftKey) {
         if (!isTyping) {
           e.preventDefault();
           handleUndo();
         }
-        return;
-      }
-
-      // Redo: Ctrl + Y or Ctrl + Shift + Z
-      if ((isCtrl && e.key.toLowerCase() === 'y') || (isCtrl && e.shiftKey && e.key.toLowerCase() === 'z')) {
+      } else if (
+        (isCtrl && e.key.toLowerCase() === 'y') ||
+        (isCtrl && e.shiftKey && e.key.toLowerCase() === 'z')
+      ) {
         if (!isTyping) {
           e.preventDefault();
           handleRedo();
         }
-        return;
       }
 
-      // Select All text layers: Ctrl + A (when not typing)
+      // Ctrl + A: Select All text layers
       if (isCtrl && e.key.toLowerCase() === 'a' && !isTyping) {
         e.preventDefault();
-        const allIds = (config.textLayers || []).map((l) => l.id);
+        const allIds = (activeScreenConfig.textLayers || []).map((l) => l.id);
         if (allIds.length > 0) {
           handleUpdateConfig({
             selectedTextIds: allIds,
             selectedTextId: allIds[0],
           });
         }
-        return;
       }
 
       // Copy: Ctrl + C
       if (isCtrl && e.key.toLowerCase() === 'c' && !isTyping) {
-        const activeIds = config.selectedTextIds && config.selectedTextIds.length > 0
-          ? config.selectedTextIds
-          : config.selectedTextId
-          ? [config.selectedTextId]
+        const activeIds = activeScreenConfig.selectedTextIds && activeScreenConfig.selectedTextIds.length > 0
+          ? activeScreenConfig.selectedTextIds
+          : activeScreenConfig.selectedTextId
+          ? [activeScreenConfig.selectedTextId]
           : [];
 
         if (activeIds.length > 0) {
-          const selectedLayers = (config.textLayers || []).filter((l) => activeIds.includes(l.id));
+          e.preventDefault();
+          const selectedLayers = (activeScreenConfig.textLayers || []).filter((l) => activeIds.includes(l.id));
           if (selectedLayers.length > 0) {
             clipboardRef.current = {
               type: 'layers',
@@ -202,96 +318,79 @@ export function App() {
             };
           }
         }
-        return;
       }
 
       // Cut: Ctrl + X
       if (isCtrl && e.key.toLowerCase() === 'x' && !isTyping) {
-        const activeIds = config.selectedTextIds && config.selectedTextIds.length > 0
-          ? config.selectedTextIds
-          : config.selectedTextId
-          ? [config.selectedTextId]
+        const activeIds = activeScreenConfig.selectedTextIds && activeScreenConfig.selectedTextIds.length > 0
+          ? activeScreenConfig.selectedTextIds
+          : activeScreenConfig.selectedTextId
+          ? [activeScreenConfig.selectedTextId]
           : [];
 
         if (activeIds.length > 0) {
           e.preventDefault();
-          const selectedLayers = (config.textLayers || []).filter((l) => activeIds.includes(l.id));
-          clipboardRef.current = {
-            type: 'layers',
-            data: JSON.parse(JSON.stringify(selectedLayers)),
-          };
-          const remaining = (config.textLayers || []).filter((l) => !activeIds.includes(l.id));
-          handleUpdateConfig({
-            textLayers: remaining,
-            selectedTextId: remaining[0]?.id || null,
-            selectedTextIds: remaining[0] ? [remaining[0].id] : [],
-          });
+          const selectedLayers = (activeScreenConfig.textLayers || []).filter((l) => activeIds.includes(l.id));
+          if (selectedLayers.length > 0) {
+            clipboardRef.current = {
+              type: 'layers',
+              data: JSON.parse(JSON.stringify(selectedLayers)),
+            };
+            const remaining = (activeScreenConfig.textLayers || []).filter((l) => !activeIds.includes(l.id));
+            handleUpdateConfig({
+              textLayers: remaining,
+              selectedTextId: remaining[0]?.id || null,
+              selectedTextIds: remaining[0] ? [remaining[0].id] : [],
+            });
+          }
         }
-        return;
       }
 
-      // Paste: Ctrl + V (Paste copied text layer directly below the source text)
+      // Paste: Ctrl + V
       if (isCtrl && e.key.toLowerCase() === 'v' && !isTyping) {
         if (clipboardRef.current && clipboardRef.current.type === 'layers') {
           e.preventDefault();
-          const now = Date.now();
-          const clonedLayers = clipboardRef.current.data.map((layer, idx) => {
-            // Place right below the copied text (vertical offset by its fontSize + line gap)
-            const verticalOffset = Math.max(30, (layer.fontSize || 24) + 16);
-            return {
-              ...layer,
-              id: `layer-paste-${now}-${idx}`,
-              x: layer.x, // keep horizontal alignment intact
-              y: layer.y + verticalOffset, // place directly below
-            };
-          });
+          const clonedLayers = clipboardRef.current.data.map((l) => ({
+            ...l,
+            id: `layer-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+            x: l.x + 20,
+            y: l.y + 20,
+          }));
 
-          const nextTextLayers = [...(config.textLayers || []), ...clonedLayers];
+          const updatedLayers = [...(activeScreenConfig.textLayers || []), ...clonedLayers];
           const newSelectedIds = clonedLayers.map((l) => l.id);
 
           handleUpdateConfig({
-            textLayers: nextTextLayers,
+            textLayers: updatedLayers,
             selectedTextIds: newSelectedIds,
             selectedTextId: newSelectedIds[0],
           });
         }
-        return;
       }
 
-      // Delete / Backspace: Remove selected text layers or screenshot if device is selected
+      // Delete / Backspace
       if ((e.key === 'Delete' || e.key === 'Backspace') && !isTyping) {
-        const activeIds = config.selectedTextIds && config.selectedTextIds.length > 0
-          ? config.selectedTextIds
-          : config.selectedTextId
-          ? [config.selectedTextId]
+        const activeIds = activeScreenConfig.selectedTextIds && activeScreenConfig.selectedTextIds.length > 0
+          ? activeScreenConfig.selectedTextIds
+          : activeScreenConfig.selectedTextId
+          ? [activeScreenConfig.selectedTextId]
           : [];
 
         if (activeIds.length > 0) {
           e.preventDefault();
-          const remaining = (config.textLayers || []).filter((l) => !activeIds.includes(l.id));
+          const remaining = (activeScreenConfig.textLayers || []).filter((l) => !activeIds.includes(l.id));
           handleUpdateConfig({
             textLayers: remaining,
             selectedTextId: remaining[0]?.id || null,
             selectedTextIds: remaining[0] ? [remaining[0].id] : [],
           });
-        } else if (config.screenshotUrl) {
-          // If no text is selected but screenshot is active, remove screenshot on Delete
-          e.preventDefault();
-          handleUpdateConfig({
-            screenshotUrl: null,
-            cropData: null,
-            screenshotScale: 1,
-            screenshotOffsetX: 0,
-            screenshotOffsetY: 0,
-          });
         }
-        return;
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [config]);
+  }, [screens, activeScreenId, activeScreenConfig]);
 
   const handleFileSelect = (file: File) => {
     const reader = new FileReader();
@@ -323,15 +422,16 @@ export function App() {
     input.click();
   };
 
+  // Export Active Screen
   const handleExportPng = async (overrideMode?: 'full-canvas' | 'device-only') => {
-    const targetMode = overrideMode || config.exportMode;
+    const targetMode = overrideMode || activeScreenConfig.exportMode;
     const targetElement = targetMode === 'device-only' ? deviceFrameRef.current : exportRef.current;
 
     if (!targetElement) return;
 
     try {
       setIsExporting(true);
-      const pixelRatio = config.exportScale || 2;
+      const pixelRatio = activeScreenConfig.exportScale || 2;
       const dataUrl = await toPng(targetElement, {
         cacheBust: true,
         pixelRatio: pixelRatio,
@@ -345,8 +445,8 @@ export function App() {
 
       const link = document.createElement('a');
       const filename = targetMode === 'device-only'
-        ? `devtoo-${config.deviceType}-transparent-${Date.now()}.png`
-        : `devtoo-mockup-${config.preset}-${Date.now()}.png`;
+        ? `devtoo-${activeScreenConfig.deviceType}-transparent-${Date.now()}.png`
+        : `devtoo-mockup-${activeScreenConfig.preset}-${Date.now()}.png`;
       link.download = filename;
       link.href = dataUrl;
       link.click();
@@ -358,8 +458,46 @@ export function App() {
     }
   };
 
-  // Get current device target aspect ratio for cropper
-  const currentModel = DEVICE_MODELS.find(m => m.id === config.deviceType) || DEVICE_MODELS[0];
+  // Export All Screens in a single ZIP archive
+  const handleExportAllPng = async () => {
+    try {
+      setIsExporting(true);
+      const zip = new JSZip();
+
+      for (let i = 0; i < screens.length; i++) {
+        const s = screens[i];
+        const targetElement = s.id ? screenRefs.current.get(s.id) : null;
+        if (targetElement) {
+          const pixelRatio = s.exportScale || 2;
+          const dataUrl = await toPng(targetElement, {
+            cacheBust: true,
+            pixelRatio: pixelRatio,
+          });
+
+          // Convert Data URL base64 to binary buffer for JSZip
+          const base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
+          const screenFileName = `ekran-${i + 1}-${s.preset || 'mockup'}.png`;
+          zip.file(screenFileName, base64Data, { base64: true });
+        }
+      }
+
+      // Generate ZIP blob and trigger single download
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      const downloadUrl = URL.createObjectURL(zipBlob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `devtoo-mockups-${Date.now()}.zip`;
+      link.click();
+      URL.revokeObjectURL(downloadUrl);
+    } catch (err) {
+      console.error('Toplu dışa aktarma hatası:', err);
+      showToast('Görseller ZIP olarak indirilirken bir hata oluştu.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const currentModel = DEVICE_MODELS.find(m => m.id === activeScreenConfig.deviceType) || DEVICE_MODELS[0];
   const targetAspect = currentModel.defaultRatio;
 
   return (
@@ -372,6 +510,8 @@ export function App() {
         {/* Üst Navigasyon Barı */}
         <Header
           onExport={handleExportPng}
+          onExportAll={handleExportAllPng}
+          screenCount={screens.length}
           onUploadClick={handleTriggerUpload}
           onUndo={handleUndo}
           onRedo={handleRedo}
@@ -383,16 +523,24 @@ export function App() {
         {/* Editör & Sağ Inspector Alanı */}
         <div className="editor-container">
           <MockupCanvas
-            config={config}
+            screens={screens}
+            activeScreenId={activeScreenId}
+            onSelectScreen={setActiveScreenId}
+            onAddScreen={handleAddScreen}
+            onDuplicateScreen={handleDuplicateScreen}
+            onDeleteScreen={handleDeleteScreen}
+            onUpdateScreenTitle={handleUpdateScreenTitle}
+            config={activeScreenConfig}
             onChangeConfig={handleUpdateConfig}
             onUploadImageClick={handleTriggerUpload}
             exportRef={exportRef}
+            screenRefs={screenRefs}
             deviceFrameRef={deviceFrameRef}
             isExporting={isExporting}
           />
 
           <InspectorPanel
-            config={config}
+            config={activeScreenConfig}
             onChangeConfig={handleUpdateConfig}
             onFileSelect={handleFileSelect}
             onOpenCropModal={() => setIsCropModalOpen(true)}
@@ -401,11 +549,11 @@ export function App() {
       </div>
 
       {/* Interactive Crop Modal */}
-      {isCropModalOpen && (config.originalScreenshotUrl || config.screenshotUrl) && (
+      {isCropModalOpen && (activeScreenConfig.originalScreenshotUrl || activeScreenConfig.screenshotUrl) && (
         <ImageCropModal
-          imageSrc={config.originalScreenshotUrl || config.screenshotUrl!}
+          imageSrc={activeScreenConfig.originalScreenshotUrl || activeScreenConfig.screenshotUrl!}
           aspectRatio={targetAspect}
-          initialCrop={config.cropData as any}
+          initialCrop={activeScreenConfig.cropData as any}
           onCropComplete={(croppedDataUrl, cropDetails) => {
             handleUpdateConfig({
               screenshotUrl: croppedDataUrl,
@@ -418,7 +566,7 @@ export function App() {
           }}
           onResetToOriginal={() => {
             handleUpdateConfig({
-              screenshotUrl: config.originalScreenshotUrl || config.screenshotUrl,
+              screenshotUrl: activeScreenConfig.originalScreenshotUrl || activeScreenConfig.screenshotUrl,
               cropData: null,
               screenshotScale: 1,
               screenshotOffsetX: 0,
@@ -428,6 +576,26 @@ export function App() {
           }}
           onCancel={() => setIsCropModalOpen(false)}
         />
+      )}
+
+      {/* Elegant Toast Alert Notification */}
+      {toastMessage && (
+        <div className="app-toast-container">
+          <div className="app-toast-box">
+            <div className="toast-icon-wrap">
+              <AlertCircle size={18} />
+            </div>
+            <span className="toast-message">{toastMessage}</span>
+            <button
+              type="button"
+              className="toast-close-btn"
+              onClick={() => setToastMessage(null)}
+              title="Kapat"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -1,14 +1,32 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { MockupConfig } from '../../types/mockup';
 import { DeviceFrame } from './DeviceFrame';
-import { Move, Maximize2, Crosshair, RotateCw } from 'lucide-react';
+import { 
+  Move, 
+  Maximize2, 
+  RotateCw, 
+  ZoomIn, 
+  ZoomOut, 
+  Copy, 
+  Trash2, 
+  Plus, 
+  Smartphone 
+} from 'lucide-react';
 
 interface MockupCanvasProps {
+  screens: MockupConfig[];
+  activeScreenId: string;
+  onSelectScreen: (id: string) => void;
+  onAddScreen: () => void;
+  onDuplicateScreen: (id: string) => void;
+  onDeleteScreen: (id: string) => void;
+  onUpdateScreenTitle?: (id: string, title: string) => void;
   config: MockupConfig;
   onChangeConfig: (updated: Partial<MockupConfig>, recordHistory?: boolean) => void;
   onCommitHistory?: () => void;
   onUploadImageClick: () => void;
   exportRef: React.RefObject<HTMLDivElement | null>;
+  screenRefs?: React.MutableRefObject<Map<string, HTMLDivElement | null>>;
   deviceFrameRef?: React.RefObject<HTMLDivElement | null>;
   isExporting?: boolean;
 }
@@ -185,13 +203,66 @@ const EditableCanvasText: React.FC<EditableCanvasTextProps> = ({
 };
 
 export const MockupCanvas: React.FC<MockupCanvasProps> = ({
+  screens,
+  activeScreenId,
+  onSelectScreen,
+  onAddScreen,
+  onDuplicateScreen,
+  onDeleteScreen,
+  onUpdateScreenTitle,
   config,
   onChangeConfig,
   onUploadImageClick,
   exportRef,
+  screenRefs,
   deviceFrameRef,
   isExporting = false,
 }) => {
+  const [zoomLevel, setZoomLevel] = useState<number>(1);
+  const [panOffset, setPanOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const [isReady, setIsReady] = useState(false);
+
+  const zoomRef = useRef<number>(1);
+  const panRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    zoomRef.current = zoomLevel;
+  }, [zoomLevel]);
+
+  useEffect(() => {
+    panRef.current = panOffset;
+  }, [panOffset]);
+
+  // Center the content on first mount using absolute positioning
+  useEffect(() => {
+    const viewportEl = viewportRef.current;
+    const containerEl = containerRef.current;
+    if (!viewportEl || !containerEl) return;
+
+    const vpW = viewportEl.clientWidth;
+    const vpH = viewportEl.clientHeight;
+    const contentW = containerEl.scrollWidth;
+    const contentH = containerEl.scrollHeight;
+
+    const initialX = Math.round((vpW - contentW) / 2);
+    const initialY = Math.round((vpH - contentH) / 2);
+
+    panRef.current = { x: initialX, y: initialY };
+    setPanOffset({ x: initialX, y: initialY });
+    setIsReady(true);
+  }, []);
+
+  const [editingScreenId, setEditingScreenId] = useState<string | null>(null);
+  const [editingScreenTitle, setEditingScreenTitle] = useState<string>('');
+  const panStartRef = useRef<{ startX: number; startY: number; initialPanX: number; initialPanY: number }>({
+    startX: 0,
+    startY: 0,
+    initialPanX: 0,
+    initialPanY: 0,
+  });
+
   const [dragMode, setDragMode] = useState<DragMode>(null);
   const [draggingTextId, setDraggingTextId] = useState<string | null>(null);
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
@@ -257,9 +328,9 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
   });
 
   // Determine outer container dimensions for responsive fit
-  const getCanvasDimensions = () => {
-    const isLandscape = config.width > config.height;
-    const isSquare = config.width === config.height;
+  const getCanvasDimensions = (cfg: MockupConfig = config) => {
+    const isLandscape = cfg.width > cfg.height;
+    const isSquare = cfg.width === cfg.height;
 
     if (isLandscape) {
       return { width: '660px', minHeight: '380px' };
@@ -270,7 +341,44 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
     return { width: '400px', minHeight: '640px' };
   };
 
-  const dims = getCanvasDimensions();
+  const currentScreens = (screens && screens.length > 0) ? screens : [config];
+  const effectiveZoom = zoomLevel;
+
+  const handleZoomIn = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newZoom = Math.min(2.5, Number((zoomLevel + 0.15).toFixed(2)));
+    setZoomLevel(newZoom);
+  };
+
+  const handleZoomOut = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newZoom = Math.max(0.25, Number((zoomLevel - 0.15).toFixed(2)));
+    setZoomLevel(newZoom);
+  };
+
+  const handleZoomReset100 = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const viewportEl = viewportRef.current;
+    const containerEl = containerRef.current;
+    if (viewportEl && containerEl) {
+      const vpW = viewportEl.clientWidth;
+      const vpH = viewportEl.clientHeight;
+      // Content dimensions at zoom=1: use natural size divided by current zoom to get base size
+      const currentZ = zoomRef.current;
+      const contentW = containerEl.getBoundingClientRect().width / currentZ;
+      const contentH = containerEl.getBoundingClientRect().height / currentZ;
+      const initialX = Math.round((vpW - contentW) / 2);
+      const initialY = Math.round((vpH - contentH) / 2);
+      zoomRef.current = 1;
+      panRef.current = { x: initialX, y: initialY };
+      setZoomLevel(1);
+      setPanOffset({ x: initialX, y: initialY });
+    } else {
+      setZoomLevel(1);
+      setPanOffset({ x: 0, y: 0 });
+    }
+  };
+
   const currentScale = config.deviceScale ?? 1;
   const currentOffsetX = config.deviceOffsetX ?? 0;
   const currentOffsetY = config.deviceOffsetY ?? 0;
@@ -291,7 +399,6 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
     setDragMode(mode);
     setDragMoved(false);
     setIsDeviceSelected(true);
-    // When device is individually selected/dragged, clear text selection
     if (config.selectedTextId || (config.selectedTextIds && config.selectedTextIds.length > 0)) {
       onChangeConfig({
         selectedTextId: null,
@@ -320,7 +427,6 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
     const isMultiSelected = (currentSelectedIds.length > 1 && currentSelectedIds.includes(layerId)) || (currentSelectedIds.includes(layerId) && isDeviceSelected);
 
     if (isMultiSelected) {
-      // Initiate group move for all selected layers and device
       handleGroupMovePointerDown(e);
       return;
     }
@@ -339,7 +445,7 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
     };
   };
 
-  // Handle pointer down on text layer ROTATE handle (drag to rotate)
+  // Handle pointer down on text layer ROTATE handle
   const handleTextRotatePointerDown = (e: React.PointerEvent, layerId: string, layerEl: HTMLElement | null) => {
     e.stopPropagation();
     e.preventDefault();
@@ -371,7 +477,7 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
     onChangeConfig({ selectedTextId: layerId });
   };
 
-  // Group Move Handler: Move all selected text layers and/or device together
+  // Group Move Handler
   const handleGroupMovePointerDown = (e: React.PointerEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -396,7 +502,7 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
     setDragMoved(false);
   };
 
-  // Group Rotate Handler: Rotate all selected text layers together around group center
+  // Group Rotate Handler
   const handleGroupRotatePointerDown = (e: React.PointerEvent, groupEl: HTMLElement | null) => {
     e.stopPropagation();
     e.preventDefault();
@@ -537,43 +643,56 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
     onChangeConfig({ selectedTextId: layerId });
   };
 
-  // Canvas marquee pointer down to start rubberband selection box
+  // Canvas pointer down on background (Pan canvas only when clicking outside of any mockup screen)
   const handleCanvasPointerDown = (e: React.PointerEvent) => {
-    // Only trigger if clicking directly on canvas-viewport or mockup-render-box background
     const target = e.target as HTMLElement;
     if (
+      target.closest('.mockup-render-box') ||
       target.closest('.free-text-layer') ||
       target.closest('.layer-drag-bar') ||
       target.closest('.device-interactive-container') ||
       target.closest('.canvas-quick-toolbar') ||
-      target.closest('.preset-selector-bar')
+      target.closest('.preset-selector-bar') ||
+      target.closest('.canvas-bottom-zoom-toolbar') ||
+      target.closest('.mockup-screen-header') ||
+      target.closest('.screen-action-btn') ||
+      target.closest('.add-screen-placeholder-card')
     ) {
       return;
     }
 
-    const rect = exportRef.current?.getBoundingClientRect();
-    if (!rect) return;
-
-    // Check if within render box or viewport
-    const startX = e.clientX - rect.left;
-    const startY = e.clientY - rect.top;
-
-    setSelectionBox({
-      startX,
-      startY,
-      currentX: startX,
-      currentY: startY,
-    });
+    // Only initiate canvas panning when clicking on the empty background area outside images
+    panStartRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      initialPanX: panOffset.x,
+      initialPanY: panOffset.y,
+    };
+    setIsPanning(true);
     setDragMoved(false);
   };
 
   const handlePointerMove = useCallback(
     (e: PointerEvent) => {
-      // Update selection box if dragging marquee on canvas
+      // Handle Canvas background panning to shift focus across screens
+      if (isPanning) {
+        const deltaX = e.clientX - panStartRef.current.startX;
+        const deltaY = e.clientY - panStartRef.current.startY;
+        if (Math.hypot(deltaX, deltaY) > 3) {
+          setDragMoved(true);
+          setPanOffset({
+            x: Math.round(panStartRef.current.initialPanX + deltaX),
+            y: Math.round(panStartRef.current.initialPanY + deltaY),
+          });
+        }
+        return;
+      }
+
       if (selectionBox && exportRef.current) {
         const rect = exportRef.current.getBoundingClientRect();
-        const curX = e.clientX - rect.left;
-        const curY = e.clientY - rect.top;
+        // Adjust for canvas scale (effectiveZoom) so cursor matches internal coordinates exactly
+        const curX = (e.clientX - rect.left) / effectiveZoom;
+        const curY = (e.clientY - rect.top) / effectiveZoom;
 
         setSelectionBox((prev) => (prev ? { ...prev, currentX: curX, currentY: curY } : null));
 
@@ -582,10 +701,9 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
         const boxTop = Math.min(selectionBox.startY, curY);
         const boxBottom = Math.max(selectionBox.startY, curY);
 
-        if (Math.hypot(curX - selectionBox.startX, curY - selectionBox.startY) > 6) {
+        if (Math.hypot(curX - selectionBox.startX, curY - selectionBox.startY) > 4) {
           setDragMoved(true);
 
-          // Test collision with Text Layers
           const textEls = exportRef.current.querySelectorAll('.free-text-layer');
           const hitTextIds: string[] = [];
           textEls.forEach((el) => {
@@ -604,7 +722,6 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
             }
           });
 
-          // Test collision with Device Container
           let hitDevice = false;
           const deviceEl = exportRef.current.querySelector('.device-interactive-container');
           if (deviceEl) {
@@ -646,7 +763,6 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
         let dX = e.clientX - startX;
         let dY = e.clientY - startY;
 
-        // Calculate true geometric bounding box center of all selected components
         const xPositions: number[] = [];
         const yPositions: number[] = [];
 
@@ -676,12 +792,8 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
         const snapX = Math.abs(groupCenterX) <= 4;
         const snapY = Math.abs(groupCenterY) <= 4;
 
-        if (snapX) {
-          dX = dX - groupCenterX;
-        }
-        if (snapY) {
-          dY = dY - groupCenterY;
-        }
+        if (snapX) dX = dX - groupCenterX;
+        if (snapY) dY = dY - groupCenterY;
 
         setAlignmentGuides({
           showVertical: snapX,
@@ -748,7 +860,6 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
         let newX = Math.round(startPosRef.current.initialOffsetX + deltaX);
         let newY = Math.round(startPosRef.current.initialOffsetY + deltaY);
 
-        // Smart snap to horizontal center (X: 0) and vertical center (Y: 0) with a 4px magnetic threshold
         const snapX = Math.abs(newX) <= 4;
         const snapY = Math.abs(newY) <= 4;
 
@@ -773,7 +884,6 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
         if (newRot < -180) newRot += 360;
         if (newRot > 180) newRot -= 360;
 
-        // Smart snap to 0°, 90°, -90°, 180° within 3 degrees
         if (Math.abs(newRot) < 3) newRot = 0;
         if (Math.abs(newRot - 90) < 3) newRot = 90;
         if (Math.abs(newRot + 90) < 3) newRot = -90;
@@ -787,13 +897,11 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
         const dX = e.clientX - textResizeRef.current.startX;
         const dY = e.clientY - textResizeRef.current.startY;
         const rad = (textResizeRef.current.rotation || 0) * (Math.PI / 180);
-        // Project screen movement onto the rotated text's local X axis
         const projectedDelta = dX * Math.cos(rad) + dY * Math.sin(rad);
 
         const currentLayer = (config.textLayers || []).find((l) => l.id === draggingTextId);
         const currentLayerX = currentLayer?.x || 0;
         const canvasBoundWidth = exportRef.current?.offsetWidth || 600;
-        // Maximum allowed width without overflowing canvas borders from current X position
         const maxWidthAllowed = Math.max(60, (canvasBoundWidth / 2 - Math.abs(currentLayerX)) * 2);
 
         const multiplier = dragMode === 'text-resize-right' ? 2 : -2;
@@ -809,12 +917,10 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
         const dX = e.clientX - startX;
         const dY = e.clientY - startY;
 
-        // Project mouse displacement into local element coordinate axes
         const rad = (rotation || 0) * (Math.PI / 180);
         const localDX = dX * Math.cos(rad) + dY * Math.sin(rad);
         const localDY = -dX * Math.sin(rad) + dY * Math.cos(rad);
 
-        // Direction multiplier for the specific corner
         const signX = corner === 'se' || corner === 'ne' ? 1 : -1;
         const signY = corner === 'se' || corner === 'sw' ? 1 : -1;
 
@@ -823,18 +929,15 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
         const canvasBoundWidth = exportRef.current?.offsetWidth || 600;
         const maxWidthAllowed = Math.max(60, (canvasBoundWidth / 2 - Math.abs(currentLayerX)) * 2);
 
-        // Scale factor derived smoothly from displacement
         const diagonalDelta = (localDX * signX + localDY * signY) / 2;
         const initialHypot = Math.max(40, Math.hypot(initialWidth, initialHeight));
         const unboundedScaleFactor = Math.max(0.15, (initialHypot + diagonalDelta * 2) / initialHypot);
 
-        // Limit scaleFactor so that newWidth doesn't exceed canvas boundaries
         const maxScaleFactorFromWidth = maxWidthAllowed / Math.max(40, initialWidth);
         const scaleFactor = Math.min(unboundedScaleFactor, Math.max(0.15, maxScaleFactorFromWidth));
 
         const updatedConfig: Partial<MockupConfig> = {};
 
-        // Scale all selected text layers proportionally
         if (initialLayers && initialLayers.length > 0) {
           const idMap = new Map(initialLayers.map((il) => [il.id, il]));
           updatedConfig.textLayers = (config.textLayers || []).map((l) => {
@@ -858,9 +961,8 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
 
         onChangeConfig(updatedConfig, false);
       } else if (dragMode.startsWith('resize-')) {
-        // Calculate scaling delta based on handle direction
         let scaleDelta = 0;
-        const sensitivity = 0.005; // smooth scaling factor
+        const sensitivity = 0.005;
 
         if (dragMode === 'resize-se') {
           scaleDelta = (deltaX + deltaY) * sensitivity;
@@ -882,26 +984,28 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
         }, false);
       }
     },
-    [dragMode, draggingTextId, config.textLayers, config.selectedTextId, selectionBox, onChangeConfig]
+    [dragMode, draggingTextId, config.textLayers, config.selectedTextId, isDeviceSelected, selectionBox, isPanning, effectiveZoom, onChangeConfig, exportRef]
   );
 
   const handlePointerUp = useCallback(() => {
     setAlignmentGuides({ showVertical: false, showHorizontal: false });
+    if (isPanning) {
+      setIsPanning(false);
+    }
     if (selectionBox) {
       setSelectionBox(null);
     }
     if (dragMode) {
       setDragMode(null);
       setDraggingTextId(null);
-      // Record final position / transform to history when drag finishes
       if (dragMoved) {
         onChangeConfig({}, true);
       }
     }
-  }, [dragMode, dragMoved, selectionBox, onChangeConfig]);
+  }, [dragMode, dragMoved, isPanning, selectionBox, onChangeConfig]);
 
   useEffect(() => {
-    if (dragMode || selectionBox) {
+    if (dragMode || selectionBox || isPanning) {
       window.addEventListener('pointermove', handlePointerMove);
       window.addEventListener('pointerup', handlePointerUp);
       return () => {
@@ -909,10 +1013,9 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
         window.removeEventListener('pointerup', handlePointerUp);
       };
     }
-  }, [dragMode, selectionBox, handlePointerMove, handlePointerUp]);
+  }, [dragMode, selectionBox, isPanning, handlePointerMove, handlePointerUp]);
 
   const handleCanvasClick = () => {
-    // Only deselect if clicked outside interactive elements and not a drag
     if (!dragMoved) {
       setEditingTextId(null);
       onChangeConfig({
@@ -933,451 +1036,699 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
         selectedTextIds: [],
       });
     }
-    // If not dragged and there's no screenshot, allow upload click
     if (!dragMoved && !config.screenshotUrl) {
       onUploadImageClick();
     }
   };
 
-  const handleResetPosition = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onChangeConfig({
-      deviceOffsetX: 0,
-      deviceOffsetY: 0,
-    });
-  };
+  const viewportRef = useRef<HTMLDivElement>(null);
+
+  // Native Trackpad Pinch, 2-Finger Pan & Mouse Wheel Handler with Cursor-Anchored Zoom
+  useEffect(() => {
+    const viewportEl = viewportRef.current;
+    if (!viewportEl) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const currentZoom = zoomRef.current;
+      const currentPan = panRef.current;
+      const rect = viewportEl.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      const applyZoom = (newZoom: number) => {
+        newZoom = Math.min(2.5, Math.max(0.15, newZoom));
+        if (Math.abs(newZoom - currentZoom) < 0.001) return;
+        const worldX = (mouseX - currentPan.x) / currentZoom;
+        const worldY = (mouseY - currentPan.y) / currentZoom;
+        const newPanX = Math.round(mouseX - worldX * newZoom);
+        const newPanY = Math.round(mouseY - worldY * newZoom);
+        zoomRef.current = newZoom;
+        panRef.current = { x: newPanX, y: newPanY };
+        setZoomLevel(newZoom);
+        setPanOffset({ x: newPanX, y: newPanY });
+      };
+
+      // deltaMode 0 = pixel (trackpad), 1 = line (mouse wheel), 2 = page
+      const isMouseWheel = e.deltaMode === 1 || e.deltaMode === 2 || (e.deltaMode === 0 && Math.abs(e.deltaY) >= 100 && Math.abs(e.deltaX) === 0 && Number.isInteger(e.deltaY));
+      const isPinch = e.ctrlKey || e.metaKey;
+
+      if (isPinch) {
+        // Trackpad pinch-to-zoom (smooth, exponential — same formula as Figma)
+        const factor = Math.exp(-e.deltaY * 0.006);
+        applyZoom(Number((currentZoom * factor).toFixed(3)));
+      } else if (isMouseWheel) {
+        // Standard mouse wheel → cursor-anchored zoom (Figma/Sketch/AdobeXD standard)
+        // 1.12x per notch when zooming in, 0.89x when zooming out
+        const factor = e.deltaY < 0 ? 1.12 : 0.89;
+        applyZoom(Number((currentZoom * factor).toFixed(3)));
+      } else {
+        // Trackpad 2-finger pan (pixel-precise natural scroll)
+        const newPanX = Math.round(currentPan.x - e.deltaX);
+        const newPanY = Math.round(currentPan.y - e.deltaY);
+        panRef.current = { x: newPanX, y: newPanY };
+        setPanOffset({ x: newPanX, y: newPanY });
+      }
+    };
+
+    viewportEl.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      viewportEl.removeEventListener('wheel', handleWheel);
+    };
+  }, []);
 
   return (
-    <div className="canvas-viewport" onPointerDown={handleCanvasPointerDown} onClick={handleCanvasClick}>
-      {/* Top Floating Quick Controls for Canvas (Only in Full Canvas Mode) */}
-      {!isDeviceOnly && (
-        <div className="canvas-quick-toolbar" onClick={(e) => e.stopPropagation()}>
+    <div 
+      ref={viewportRef}
+      className="canvas-viewport" 
+      onPointerDown={handleCanvasPointerDown} 
+      onClick={handleCanvasClick}
+    >
+      {/* Floating Bottom Zoom Toolbar */}
+      {!isExporting && (
+        <div className="canvas-bottom-zoom-toolbar" onClick={(e) => e.stopPropagation()}>
           <button
-            className="canvas-quick-btn"
-            title="Cihazı Merkeze Hizala (X:0, Y:0)"
-            onClick={handleResetPosition}
+            type="button"
+            className="zoom-btn"
+            title="Uzaklaştır"
+            onClick={handleZoomOut}
           >
-            <Crosshair size={13} />
-            <span>Ortala</span>
+            <ZoomOut size={14} />
           </button>
-          {(currentOffsetX !== 0 || currentOffsetY !== 0 || currentScale !== 1) && (
-            <span className="canvas-coords-badge">
-              X: {currentOffsetX > 0 ? `+${currentOffsetX}` : currentOffsetX}px, Y:{' '}
-              {currentOffsetY > 0 ? `+${currentOffsetY}` : currentOffsetY}px (%{Math.round(currentScale * 100)})
-            </span>
-          )}
+
+          <button
+            type="button"
+            className="zoom-btn zoom-percentage-text"
+            title="Varsayılan Boyuta Dön (%100)"
+            onClick={handleZoomReset100}
+          >
+            %{Math.round(effectiveZoom * 100)}
+          </button>
+
+          <button
+            type="button"
+            className="zoom-btn"
+            title="Yakınlaştır"
+            onClick={handleZoomIn}
+          >
+            <ZoomIn size={14} />
+          </button>
         </div>
       )}
 
-      {/* Render Box for HTML-to-Image Export */}
+      {/* Multi-Screen Scaled Container with Pan & Zoom — absolutely positioned for accurate cursor-anchored zoom */}
       <div
-        ref={exportRef}
-        onClick={handleCanvasClick}
-        className={`mockup-render-box ${
-          isDeviceOnly 
-            ? 'mode-device-only-clean' 
-            : config.bgType !== 'solid' ? `bg-${config.bgType}` : ''
-        }`}
+        ref={containerRef}
+        className={`canvas-zoom-container ${isPanning ? 'is-panning' : ''}`}
         style={{
-          width: isDeviceOnly ? 'auto' : dims.width,
-          minHeight: isDeviceOnly ? 'auto' : dims.minHeight,
-          backgroundColor: isDeviceOnly ? 'transparent' : config.bgColor,
-          boxShadow: isDeviceOnly ? 'none' : undefined,
-          border: isDeviceOnly ? 'none' : undefined,
-          padding: isDeviceOnly ? '0px' : `${config.padding}px`,
-          transform: isDeviceOnly ? 'none' : `rotate(${config.frameRotation}deg)`,
-          overflow: isDeviceOnly ? 'visible' : 'hidden',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${effectiveZoom})`,
+          transformOrigin: '0 0',
+          transition: isPanning || !isReady ? 'none' : 'transform 0.12s cubic-bezier(0.16, 1, 0.3, 1)',
+          opacity: isReady ? 1 : 0,
         }}
       >
-        {/* Visual Marquee Selection Box */}
-        {selectionBox && (
-          <div
-            className="canvas-selection-box"
-            style={{
-              left: `${Math.min(selectionBox.startX, selectionBox.currentX)}px`,
-              top: `${Math.min(selectionBox.startY, selectionBox.currentY)}px`,
-              width: `${Math.abs(selectionBox.currentX - selectionBox.startX)}px`,
-              height: `${Math.abs(selectionBox.currentY - selectionBox.startY)}px`,
-            }}
-          />
-        )}
-
-        {/* Center Alignment Guide Lines (Canva Style Magnet Guides) */}
-        {!isExporting && alignmentGuides.showVertical && (
-          <div className="alignment-guide-line alignment-guide-line-v" title="Dikey Merkez Doğrultusu" />
-        )}
-        {!isExporting && alignmentGuides.showHorizontal && (
-          <div className="alignment-guide-line alignment-guide-line-h" title="Yatay Merkez Doğrultusu" />
-        )}
-
-        {/* Unified Move & Rotate toolbar when multiple items are selected */}
-        {!isExporting && !isDeviceOnly && (
-          ((config.selectedTextIds && config.selectedTextIds.length > 1) || (config.selectedTextId && isDeviceSelected))
-        ) && (() => {
-          const selIds = config.selectedTextIds || (config.selectedTextId ? [config.selectedTextId] : []);
-          const activeLayers = (config.textLayers || []).filter((l) => selIds.includes(l.id));
-
-          let minRelY = 0;
-          let avgRelX = 0;
-          if (activeLayers.length > 0) {
-            minRelY = Math.min(...activeLayers.map((l) => l.y));
-            avgRelX = activeLayers.reduce((sum, l) => sum + l.x, 0) / activeLayers.length;
-          } else if (isDeviceSelected) {
-            minRelY = (config.deviceOffsetY ?? 0) - 180;
-            avgRelX = config.deviceOffsetX ?? 0;
-          }
-
-          const canvasHalfH = (exportRef.current?.offsetHeight || 600) / 2;
-          // Calculate desired top offset from center. If it would overflow top edge (< 14px), pin near top border (14px)
-          const rawTopPx = canvasHalfH + minRelY - 42;
-          const clampedTopPx = Math.max(12, rawTopPx);
+        {currentScreens.map((screenCfg, screenIndex) => {
+          const isThisActiveScreen = screenCfg.id === activeScreenId || (!screenCfg.id && screenIndex === 0);
+          const screenDims = getCanvasDimensions(screenCfg);
+          const sScale = isThisActiveScreen ? currentScale : (screenCfg.deviceScale ?? 1);
+          const sOffsetX = isThisActiveScreen ? currentOffsetX : (screenCfg.deviceOffsetX ?? 0);
+          const sOffsetY = isThisActiveScreen ? currentOffsetY : (screenCfg.deviceOffsetY ?? 0);
 
           return (
             <div
-              className="unified-group-toolbar"
-              style={{
-                top: `${clampedTopPx}px`,
-                left: `calc(50% + ${avgRelX}px)`,
-                transform: 'translateX(-50%)',
-                transition: dragMode === 'group-move' ? 'none' : 'top 0.1s ease-out, left 0.1s ease-out',
-              }}
-              title="Seçili tüm öğeleri taşımak veya döndürmek için sürükleyin"
-            >
-              <div
-                className="layer-move-handle"
-                onPointerDown={handleGroupMovePointerDown}
-                title="Seçili tüm öğeleri birlikte taşımak için sürükleyin"
-              >
-                <Move size={13} color="#D90429" />
-              </div>
-
-              <div className="layer-drag-bar-divider" />
-
-              <div
-                className={`layer-rotate-btn ${(activeLayers[0]?.rotation || 0) !== 0 || dragMode === 'group-rotate' ? 'active' : ''}`}
-                title="Seçili tüm metinleri birlikte döndürmek için sürükleyin"
-                onPointerDown={(e) => handleGroupRotatePointerDown(e, exportRef.current)}
-                onClick={(e) => {
-                  if (!dragMoved) {
-                    e.stopPropagation();
-                    const selIds = config.selectedTextIds || (config.selectedTextId ? [config.selectedTextId] : []);
-                    onChangeConfig({
-                      textLayers: (config.textLayers || []).map((l) =>
-                        selIds.includes(l.id) ? { ...l, rotation: ((l.rotation || 0) + 15) % 360 } : l
-                      ),
-                    });
-                  }
-                }}
-              >
-                <RotateCw size={10} />
-                <span>{activeLayers[0]?.rotation || 0}°</span>
-              </div>
-            </div>
-          );
-        })()}
-
-        {/* Free Floating Draggable Multi-Text Layers */}
-        {!isDeviceOnly && config.showHeadline && (config.textLayers || []).map((layer) => {
-          const isSelected = config.selectedTextId === layer.id || (config.selectedTextIds || []).includes(layer.id);
-          const isMultiSelected = (config.selectedTextIds && config.selectedTextIds.length > 1) || ((config.selectedTextIds || []).length >= 1 && isDeviceSelected);
-          const isDraggingThis = dragMode === 'text-move' && draggingTextId === layer.id;
-
-          const canvasH = config.width > config.height ? 380 : config.width === config.height ? 440 : 640;
-          const isTouchingTopBorder = layer.y <= -(canvasH / 2 - 45);
-
-          return (
-            <div
-              key={layer.id}
-              data-layer-id={layer.id}
-              className={`free-text-layer ${isSelected ? 'is-selected' : ''} ${isDraggingThis ? 'is-dragging' : ''}`}
-              style={{
-                position: 'absolute',
-                left: '50%',
-                top: '50%',
-                transform: `translate(calc(-50% + ${layer.x}px), calc(-50% + ${layer.y}px))`,
-                transition: isDraggingThis || dragMode === 'group-move' ? 'none' : 'transform 0.1s ease-out',
-                zIndex: isSelected ? 20 : 15,
-                fontFamily: getFontFamilyCss(layer.fontFamily),
-              }}
-              onPointerDown={(e) => {
-                // If currently editing text, let native text selection/cursor work
-                if (editingTextId === layer.id) {
-                  return;
-                }
-                // If user clicks on resize handles or rotate button, don't trigger layer move
-                const target = e.target as HTMLElement;
-                if (target.closest('.text-corner-handle') || target.closest('.text-border-handle') || target.closest('.layer-rotate-btn')) {
-                  return;
-                }
-                handleTextPointerDown(e, layer.id);
-              }}
+              key={screenCfg.id || `screen-${screenIndex}`}
+              className={`mockup-screen-wrapper ${isThisActiveScreen ? 'is-active-screen' : ''}`}
               onClick={(e) => {
                 e.stopPropagation();
-                setIsDeviceSelected(false);
-
-                // If user was dragging/moving the layer, don't trigger edit mode on release
-                if (dragMoved) {
-                  return;
+                if (screenCfg.id && screenCfg.id !== activeScreenId) {
+                  onSelectScreen?.(screenCfg.id);
                 }
-
-                // If this text box is ALREADY SELECTED, clicking it again enters text editing mode!
-                if (config.selectedTextId === layer.id && (!config.selectedTextIds || config.selectedTextIds.length <= 1) && editingTextId !== layer.id) {
-                  setEditingTextId(layer.id);
-                } else if (config.selectedTextId !== layer.id) {
-                  // 1st click on unselected text box: ONLY select the box (no cursor, no text editing)
-                  setEditingTextId(null);
-                  window.getSelection()?.removeAllRanges();
-                  onChangeConfig({ selectedTextId: layer.id, selectedTextIds: [layer.id] });
-                }
-              }}
-              onDoubleClick={(e) => {
-                // Double Click also immediately enters text editing mode
-                e.stopPropagation();
-                setIsDeviceSelected(false);
-                setEditingTextId(layer.id);
-                onChangeConfig({ selectedTextId: layer.id, selectedTextIds: [layer.id] });
               }}
             >
-              {/* Individual Drag & Rotate Handle Bar - ONLY show when single item is selected */}
-              {!isExporting && isSelected && !isMultiSelected && (
-                <div
-                  className={`layer-drag-bar ${isTouchingTopBorder ? 'bar-at-bottom' : 'bar-at-top'} ${
-                    dragMode === 'text-rotate' && draggingTextId === layer.id ? 'is-rotating' : ''
-                  }`}
-                  title="Taşımak veya döndürmek için sürükleyin"
-                >
-                  <div
-                    className="layer-move-handle"
-                    onPointerDown={(e) => handleTextPointerDown(e, layer.id)}
-                    title="Metni taşımak için basılı tutup sürükleyin"
-                  >
-                    <Move size={12} />
+              {/* Screen Top Header Card with Index & Actions */}
+              {!isExporting && (
+                <div className="mockup-screen-header">
+                  <div className="mockup-screen-title">
+                    <Smartphone size={13} color="#64748B" />
+                    {editingScreenId === (screenCfg.id || `screen-${screenIndex}`) ? (
+                      <input
+                        type="text"
+                        className="screen-title-inline-input"
+                        autoFocus
+                        value={editingScreenTitle}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => setEditingScreenTitle(e.target.value)}
+                        onBlur={() => {
+                          const newName = editingScreenTitle.trim() || `Ekran ${screenIndex + 1}`;
+                          if (screenCfg.id) {
+                            onUpdateScreenTitle?.(screenCfg.id, newName);
+                          }
+                          setEditingScreenId(null);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            const newName = editingScreenTitle.trim() || `Ekran ${screenIndex + 1}`;
+                            if (screenCfg.id) {
+                              onUpdateScreenTitle?.(screenCfg.id, newName);
+                            }
+                            setEditingScreenId(null);
+                          } else if (e.key === 'Escape') {
+                            setEditingScreenId(null);
+                          }
+                        }}
+                      />
+                    ) : (
+                      <span
+                        className="screen-title-clickable"
+                        title="İsmi değiştirmek için tıklayın"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (screenCfg.id && screenCfg.id !== activeScreenId) {
+                            onSelectScreen?.(screenCfg.id);
+                          }
+                          setEditingScreenId(screenCfg.id || `screen-${screenIndex}`);
+                          setEditingScreenTitle(screenCfg.screenTitle || `Ekran ${screenIndex + 1}`);
+                        }}
+                      >
+                        {screenCfg.screenTitle || `Ekran ${screenIndex + 1}`}
+                      </span>
+                    )}
+
+                    {isThisActiveScreen && (
+                      <span style={{ fontSize: '10px', backgroundColor: '#0F172A', color: '#FFF', padding: '1px 5px', borderRadius: '4px', fontWeight: 600 }}>
+                        Seçili
+                      </span>
+                    )}
                   </div>
 
-                  <div className="layer-drag-bar-divider" />
-
-                  {/* Rotate Handle: Hold & Drag around to rotate in real time */}
-                  <div
-                    className={`layer-rotate-btn ${(layer.rotation || 0) !== 0 ? 'active' : ''}`}
-                    title="Döndürmek için basılı tutup sürükleyin (veya tıklayın)"
-                    onPointerDown={(e) => handleTextRotatePointerDown(e, layer.id, e.currentTarget.closest('.free-text-layer'))}
-                    onClick={(e) => {
-                      if (!dragMoved) {
+                  <div className="mockup-screen-actions">
+                    <button
+                      type="button"
+                      className="screen-action-btn"
+                      title="Yeni Ekran Ekle"
+                      onClick={(e) => {
                         e.stopPropagation();
-                        const nextRot = ((layer.rotation || 0) + 15) % 360;
-                        onChangeConfig({
-                          textLayers: (config.textLayers || []).map((l) =>
-                            l.id === layer.id ? { ...l, rotation: nextRot } : l
-                          ),
-                          selectedTextId: layer.id,
-                        });
-                      }
-                    }}
-                  >
-                    <RotateCw size={10} />
-                    <span>{(layer.rotation || 0)}°</span>
+                        onAddScreen?.();
+                      }}
+                    >
+                      <Plus size={14} />
+                    </button>
+
+                    <button
+                      type="button"
+                      className="screen-action-btn"
+                      title="Bu Ekranı Çoğalt"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (screenCfg.id) onDuplicateScreen?.(screenCfg.id);
+                      }}
+                    >
+                      <Copy size={13} />
+                    </button>
+
+                    {currentScreens.length > 1 && (
+                      <button
+                        type="button"
+                        className="screen-action-btn delete"
+                        title="Bu Ekranı Sil"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (screenCfg.id) onDeleteScreen?.(screenCfg.id);
+                        }}
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
 
-              {/* Rotated text wrapper: Only the text rotates */}
+              {/* Render Box for HTML-to-Image Export */}
               <div
-                className={`free-text-rotated-wrap ${
-                  (dragMode === 'text-resize-left' || dragMode === 'text-resize-right') && draggingTextId === layer.id
-                    ? 'is-resizing-width'
-                    : ''
+                ref={(el) => {
+                  if (isThisActiveScreen && exportRef) {
+                    (exportRef as any).current = el;
+                  }
+                  if (screenRefs && screenCfg.id) {
+                    screenRefs.current.set(screenCfg.id, el);
+                  }
+                }}
+                className={`mockup-render-box ${
+                  isDeviceOnly 
+                    ? 'mode-device-only-clean' 
+                    : screenCfg.bgType !== 'solid' ? `bg-${screenCfg.bgType}` : ''
                 }`}
                 style={{
-                  width: layer.width ? `${layer.width}px` : 'max-content',
-                  maxWidth: '100%',
-                  transform: `rotate(${layer.rotation || 0}deg)`,
-                  transformOrigin: 'center center',
-                  position: 'relative',
+                  width: isDeviceOnly ? 'auto' : screenDims.width,
+                  minHeight: isDeviceOnly ? 'auto' : screenDims.minHeight,
+                  backgroundColor: isDeviceOnly ? 'transparent' : screenCfg.bgColor,
+                  boxShadow: isDeviceOnly ? 'none' : undefined,
+                  border: isDeviceOnly ? 'none' : undefined,
+                  padding: isDeviceOnly ? '0px' : `${screenCfg.padding}px`,
+                  transform: isDeviceOnly ? 'none' : `rotate(${screenCfg.frameRotation}deg)`,
+                  overflow: isDeviceOnly ? 'visible' : 'hidden',
+                }}
+                onPointerDown={(e) => {
+                  const target = e.target as HTMLElement;
+                  // If clicking on text, drag handles, or buttons, let them handle it
+                  if (
+                    target.closest('.free-text-layer') ||
+                    target.closest('.layer-drag-bar') ||
+                    target.closest('.resize-handle') ||
+                    target.closest('.group-selection-border') ||
+                    target.closest('.selection-floating-bar')
+                  ) {
+                    return;
+                  }
+
+                  if (!isThisActiveScreen && screenCfg.id) {
+                    onSelectScreen?.(screenCfg.id);
+                  }
+
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const startX = (e.clientX - rect.left) / effectiveZoom;
+                  const startY = (e.clientY - rect.top) / effectiveZoom;
+
+                  setSelectionBox({
+                    startX,
+                    startY,
+                    currentX: startX,
+                    currentY: startY,
+                  });
+                  setDragMoved(false);
                 }}
               >
-                {/* Boundary & Corner Resize Handles (Subtle & visible on hover/drag) */}
-                {isSelected && !isExporting && (
-                  <>
-                    {/* 4 Corner Resize Handles */}
-                    <div
-                      className="text-corner-handle handle-nw"
-                      title="Köşeden ölçeklendir"
-                      onPointerDown={(e) => {
-                        const wrapEl = e.currentTarget.closest('.free-text-rotated-wrap') as HTMLElement;
-                        handleTextCornerResizeStart(e, layer.id, 'nw', layer.fontSize, layer.width, wrapEl, layer.rotation || 0);
-                      }}
-                    />
-                    <div
-                      className="text-corner-handle handle-ne"
-                      title="Köşeden ölçeklendir"
-                      onPointerDown={(e) => {
-                        const wrapEl = e.currentTarget.closest('.free-text-rotated-wrap') as HTMLElement;
-                        handleTextCornerResizeStart(e, layer.id, 'ne', layer.fontSize, layer.width, wrapEl, layer.rotation || 0);
-                      }}
-                    />
-                    <div
-                      className="text-corner-handle handle-sw"
-                      title="Köşeden ölçeklendir"
-                      onPointerDown={(e) => {
-                        const wrapEl = e.currentTarget.closest('.free-text-rotated-wrap') as HTMLElement;
-                        handleTextCornerResizeStart(e, layer.id, 'sw', layer.fontSize, layer.width, wrapEl, layer.rotation || 0);
-                      }}
-                    />
-                    <div
-                      className="text-corner-handle handle-se"
-                      title="Köşeden ölçeklendir"
-                      onPointerDown={(e) => {
-                        const wrapEl = e.currentTarget.closest('.free-text-rotated-wrap') as HTMLElement;
-                        handleTextCornerResizeStart(e, layer.id, 'se', layer.fontSize, layer.width, wrapEl, layer.rotation || 0);
-                      }}
-                    />
-
-                    {/* Left & Right Side Width Resize Handles */}
-                    <div
-                      className="text-border-handle handle-left"
-                      title="Genişliği ayarla"
-                      onPointerDown={(e) => {
-                        const wrapEl = e.currentTarget.closest('.free-text-rotated-wrap') as HTMLElement;
-                        const curW = layer.width || wrapEl?.offsetWidth || 300;
-                        handleTextWidthResizeStart(e, layer.id, 'left', curW, layer.rotation || 0);
-                      }}
-                    />
-                    <div
-                      className="text-border-handle handle-right"
-                      title="Genişliği ayarla"
-                      onPointerDown={(e) => {
-                        const wrapEl = e.currentTarget.closest('.free-text-rotated-wrap') as HTMLElement;
-                        const curW = layer.width || wrapEl?.offsetWidth || 300;
-                        handleTextWidthResizeStart(e, layer.id, 'right', curW, layer.rotation || 0);
-                      }}
-                    />
-                  </>
+                {/* Visual Marquee Selection Box (Only for active screen) */}
+                {isThisActiveScreen && selectionBox && (
+                  <div
+                    className="canvas-selection-box"
+                    style={{
+                      left: `${Math.min(selectionBox.startX, selectionBox.currentX)}px`,
+                      top: `${Math.min(selectionBox.startY, selectionBox.currentY)}px`,
+                      width: `${Math.abs(selectionBox.currentX - selectionBox.startX)}px`,
+                      height: `${Math.abs(selectionBox.currentY - selectionBox.startY)}px`,
+                    }}
+                  />
                 )}
 
-                <EditableCanvasText
-                  value={layer.text}
-                  isEditing={editingTextId === layer.id}
-                  onStartEditing={() => setEditingTextId(layer.id)}
-                  onStopEditing={() => setEditingTextId(null)}
-                  onChange={(val) => {
-                    onChangeConfig({
-                      textLayers: (config.textLayers || []).map((l) =>
-                        l.id === layer.id ? { ...l, text: val } : l
-                      ),
-                      selectedTextId: layer.id,
-                    });
-                  }}
-                  className="free-text-input"
-                  placeholder="Metin yazın..."
-                  isExporting={isExporting}
+                {/* Center Alignment Guide Lines (Canva Style Magnet Guides) */}
+                {!isExporting && isThisActiveScreen && alignmentGuides.showVertical && (
+                  <div className="alignment-guide-line alignment-guide-line-v" title="Dikey Merkez Doğrultusu" />
+                )}
+                {!isExporting && isThisActiveScreen && alignmentGuides.showHorizontal && (
+                  <div className="alignment-guide-line alignment-guide-line-h" title="Yatay Merkez Doğrultusu" />
+                )}
+
+                {/* Unified Move & Rotate toolbar when multiple items are selected */}
+                {!isExporting && !isDeviceOnly && isThisActiveScreen && (
+                  ((screenCfg.selectedTextIds && screenCfg.selectedTextIds.length > 1) || (screenCfg.selectedTextId && isDeviceSelected))
+                ) && (() => {
+                  const selIds = screenCfg.selectedTextIds || (screenCfg.selectedTextId ? [screenCfg.selectedTextId] : []);
+                  const activeLayers = (screenCfg.textLayers || []).filter((l) => selIds.includes(l.id));
+
+                  let minRelY = 0;
+                  let avgRelX = 0;
+                  if (activeLayers.length > 0) {
+                    minRelY = Math.min(...activeLayers.map((l) => l.y));
+                    avgRelX = activeLayers.reduce((sum, l) => sum + l.x, 0) / activeLayers.length;
+                  } else if (isDeviceSelected) {
+                    minRelY = (screenCfg.deviceOffsetY ?? 0) - 180;
+                    avgRelX = screenCfg.deviceOffsetX ?? 0;
+                  }
+
+                  const canvasHalfH = (exportRef.current?.offsetHeight || 600) / 2;
+                  const rawTopPx = canvasHalfH + minRelY - 42;
+                  const clampedTopPx = Math.max(12, rawTopPx);
+
+                  return (
+                    <div
+                      className="unified-group-toolbar"
+                      style={{
+                        top: `${clampedTopPx}px`,
+                        left: `calc(50% + ${avgRelX}px)`,
+                        transform: 'translateX(-50%)',
+                        transition: dragMode === 'group-move' ? 'none' : 'top 0.1s ease-out, left 0.1s ease-out',
+                      }}
+                      title="Seçili tüm öğeleri taşımak veya döndürmek için sürükleyin"
+                    >
+                      <div
+                        className="layer-move-handle"
+                        onPointerDown={handleGroupMovePointerDown}
+                        title="Seçili tüm öğeleri birlikte taşımak için sürükleyin"
+                      >
+                        <Move size={13} color="#D90429" />
+                      </div>
+
+                      <div className="layer-drag-bar-divider" />
+
+                      <div
+                        className={`layer-rotate-btn ${(activeLayers[0]?.rotation || 0) !== 0 || dragMode === 'group-rotate' ? 'active' : ''}`}
+                        title="Seçili tüm metinleri birlikte döndürmek için sürükleyin"
+                        onPointerDown={(e) => handleGroupRotatePointerDown(e, exportRef.current)}
+                        onClick={(e) => {
+                          if (!dragMoved) {
+                            e.stopPropagation();
+                            const selIds = screenCfg.selectedTextIds || (screenCfg.selectedTextId ? [screenCfg.selectedTextId] : []);
+                            onChangeConfig({
+                              textLayers: (screenCfg.textLayers || []).map((l) =>
+                                selIds.includes(l.id) ? { ...l, rotation: ((l.rotation || 0) + 15) % 360 } : l
+                              ),
+                            });
+                          }
+                        }}
+                      >
+                        <RotateCw size={10} />
+                        <span>{activeLayers[0]?.rotation || 0}°</span>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Free Floating Draggable Multi-Text Layers */}
+                {!isDeviceOnly && screenCfg.showHeadline && (screenCfg.textLayers || []).map((layer) => {
+                  const isSelected = isThisActiveScreen && (screenCfg.selectedTextId === layer.id || (screenCfg.selectedTextIds || []).includes(layer.id));
+                  const isMultiSelected = (screenCfg.selectedTextIds && screenCfg.selectedTextIds.length > 1) || ((screenCfg.selectedTextIds || []).length >= 1 && isDeviceSelected);
+                  const isDraggingThis = isThisActiveScreen && dragMode === 'text-move' && draggingTextId === layer.id;
+
+                  const canvasH = screenCfg.width > screenCfg.height ? 380 : screenCfg.width === screenCfg.height ? 440 : 640;
+                  const isTouchingTopBorder = layer.y <= -(canvasH / 2 - 45);
+
+                  return (
+                    <div
+                      key={layer.id}
+                      data-layer-id={layer.id}
+                      className={`free-text-layer ${isSelected ? 'is-selected' : ''} ${isDraggingThis ? 'is-dragging' : ''}`}
+                      style={{
+                        position: 'absolute',
+                        left: '50%',
+                        top: '50%',
+                        transform: `translate(calc(-50% + ${layer.x}px), calc(-50% + ${layer.y}px))`,
+                        transition: isDraggingThis || dragMode === 'group-move' ? 'none' : 'transform 0.1s ease-out',
+                        zIndex: isSelected ? 20 : 15,
+                        fontFamily: getFontFamilyCss(layer.fontFamily),
+                      }}
+                      onPointerDown={(e) => {
+                        if (!isThisActiveScreen) {
+                          if (screenCfg.id) onSelectScreen?.(screenCfg.id);
+                          return;
+                        }
+                        if (editingTextId === layer.id) return;
+                        const target = e.target as HTMLElement;
+                        if (target.closest('.text-corner-handle') || target.closest('.text-border-handle') || target.closest('.layer-rotate-btn')) {
+                          return;
+                        }
+                        handleTextPointerDown(e, layer.id);
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!isThisActiveScreen && screenCfg.id) {
+                          onSelectScreen?.(screenCfg.id);
+                        }
+                        setIsDeviceSelected(false);
+
+                        if (dragMoved) return;
+
+                        if (screenCfg.selectedTextId === layer.id && (!screenCfg.selectedTextIds || screenCfg.selectedTextIds.length <= 1) && editingTextId !== layer.id) {
+                          setEditingTextId(layer.id);
+                        } else if (screenCfg.selectedTextId !== layer.id) {
+                          setEditingTextId(null);
+                          window.getSelection()?.removeAllRanges();
+                          onChangeConfig({ selectedTextId: layer.id, selectedTextIds: [layer.id] });
+                        }
+                      }}
+                      onDoubleClick={(e) => {
+                        e.stopPropagation();
+                        if (!isThisActiveScreen && screenCfg.id) {
+                          onSelectScreen?.(screenCfg.id);
+                        }
+                        setIsDeviceSelected(false);
+                        setEditingTextId(layer.id);
+                        onChangeConfig({ selectedTextId: layer.id, selectedTextIds: [layer.id] });
+                      }}
+                    >
+                      {/* Individual Drag & Rotate Handle Bar */}
+                      {!isExporting && isSelected && !isMultiSelected && (
+                        <div
+                          className={`layer-drag-bar ${isTouchingTopBorder ? 'bar-at-bottom' : 'bar-at-top'} ${
+                            dragMode === 'text-rotate' && draggingTextId === layer.id ? 'is-rotating' : ''
+                          }`}
+                          title="Taşımak veya döndürmek için sürükleyin"
+                        >
+                          <div
+                            className="layer-move-handle"
+                            onPointerDown={(e) => handleTextPointerDown(e, layer.id)}
+                            title="Metni taşımak için basılı tutup sürükleyin"
+                          >
+                            <Move size={12} />
+                          </div>
+
+                          <div className="layer-drag-bar-divider" />
+
+                          <div
+                            className={`layer-rotate-btn ${(layer.rotation || 0) !== 0 ? 'active' : ''}`}
+                            title="Döndürmek için basılı tutup sürükleyin (veya tıklayın)"
+                            onPointerDown={(e) => handleTextRotatePointerDown(e, layer.id, e.currentTarget.closest('.free-text-layer'))}
+                            onClick={(e) => {
+                              if (!dragMoved) {
+                                e.stopPropagation();
+                                const nextRot = ((layer.rotation || 0) + 15) % 360;
+                                onChangeConfig({
+                                  textLayers: (screenCfg.textLayers || []).map((l) =>
+                                    l.id === layer.id ? { ...l, rotation: nextRot } : l
+                                  ),
+                                  selectedTextId: layer.id,
+                                });
+                              }
+                            }}
+                          >
+                            <RotateCw size={10} />
+                            <span>{(layer.rotation || 0)}°</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Rotated text wrapper */}
+                      <div
+                        className={`free-text-rotated-wrap ${
+                          (dragMode === 'text-resize-left' || dragMode === 'text-resize-right') && draggingTextId === layer.id
+                            ? 'is-resizing-width'
+                            : ''
+                        }`}
+                        style={{
+                          width: layer.width ? `${layer.width}px` : 'max-content',
+                          maxWidth: '100%',
+                          transform: `rotate(${layer.rotation || 0}deg)`,
+                          transformOrigin: 'center center',
+                          position: 'relative',
+                        }}
+                      >
+                        {isSelected && !isExporting && (
+                          <>
+                            <div
+                              className="text-corner-handle handle-nw"
+                              title="Köşeden ölçeklendir"
+                              onPointerDown={(e) => {
+                                const wrapEl = e.currentTarget.closest('.free-text-rotated-wrap') as HTMLElement;
+                                handleTextCornerResizeStart(e, layer.id, 'nw', layer.fontSize, layer.width, wrapEl, layer.rotation || 0);
+                              }}
+                            />
+                            <div
+                              className="text-corner-handle handle-ne"
+                              title="Köşeden ölçeklendir"
+                              onPointerDown={(e) => {
+                                const wrapEl = e.currentTarget.closest('.free-text-rotated-wrap') as HTMLElement;
+                                handleTextCornerResizeStart(e, layer.id, 'ne', layer.fontSize, layer.width, wrapEl, layer.rotation || 0);
+                              }}
+                            />
+                            <div
+                              className="text-corner-handle handle-sw"
+                              title="Köşeden ölçeklendir"
+                              onPointerDown={(e) => {
+                                const wrapEl = e.currentTarget.closest('.free-text-rotated-wrap') as HTMLElement;
+                                handleTextCornerResizeStart(e, layer.id, 'sw', layer.fontSize, layer.width, wrapEl, layer.rotation || 0);
+                              }}
+                            />
+                            <div
+                              className="text-corner-handle handle-se"
+                              title="Köşeden ölçeklendir"
+                              onPointerDown={(e) => {
+                                const wrapEl = e.currentTarget.closest('.free-text-rotated-wrap') as HTMLElement;
+                                handleTextCornerResizeStart(e, layer.id, 'se', layer.fontSize, layer.width, wrapEl, layer.rotation || 0);
+                              }}
+                            />
+
+                            <div
+                              className="text-border-handle handle-left"
+                              title="Genişliği ayarla"
+                              onPointerDown={(e) => {
+                                const wrapEl = e.currentTarget.closest('.free-text-rotated-wrap') as HTMLElement;
+                                const curW = layer.width || wrapEl?.offsetWidth || 300;
+                                handleTextWidthResizeStart(e, layer.id, 'left', curW, layer.rotation || 0);
+                              }}
+                            />
+                            <div
+                              className="text-border-handle handle-right"
+                              title="Genişliği ayarla"
+                              onPointerDown={(e) => {
+                                const wrapEl = e.currentTarget.closest('.free-text-rotated-wrap') as HTMLElement;
+                                const curW = layer.width || wrapEl?.offsetWidth || 300;
+                                handleTextWidthResizeStart(e, layer.id, 'right', curW, layer.rotation || 0);
+                              }}
+                            />
+                          </>
+                        )}
+
+                        <EditableCanvasText
+                          value={layer.text}
+                          isEditing={isThisActiveScreen && editingTextId === layer.id}
+                          onStartEditing={() => {
+                            if (!isThisActiveScreen && screenCfg.id) onSelectScreen?.(screenCfg.id);
+                            setEditingTextId(layer.id);
+                          }}
+                          onStopEditing={() => setEditingTextId(null)}
+                          onChange={(val) => {
+                            onChangeConfig({
+                              textLayers: (screenCfg.textLayers || []).map((l) =>
+                                l.id === layer.id ? { ...l, text: val } : l
+                              ),
+                              selectedTextId: layer.id,
+                            });
+                          }}
+                          className="free-text-input"
+                          placeholder="Metin yazın..."
+                          isExporting={isExporting}
+                          style={{
+                            fontSize: `${layer.fontSize}px`,
+                            color: layer.color,
+                            fontWeight: layer.isBold ? 800 : 400,
+                            fontStyle: layer.isItalic ? 'italic' : 'normal',
+                            textDecoration: layer.isUnderline ? 'underline' : 'none',
+                            textAlign: layer.textAlign || 'center',
+                            letterSpacing: `${layer.letterSpacing ?? 0}px`,
+                            width: '100%',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Interactive Device Wrapper */}
+                <div
+                  className={`device-interactive-container ${
+                    !isDeviceOnly && isThisActiveScreen && isDeviceSelected ? 'is-device-selected' : ''
+                  } ${!isDeviceOnly && isThisActiveScreen && (dragMode === 'move' || dragMode?.startsWith('resize-')) ? 'is-dragging' : ''}`}
                   style={{
-                    fontSize: `${layer.fontSize}px`,
-                    color: layer.color,
-                    fontWeight: layer.isBold ? 800 : 400,
-                    fontStyle: layer.isItalic ? 'italic' : 'normal',
-                    textDecoration: layer.isUnderline ? 'underline' : 'none',
-                    textAlign: layer.textAlign || 'center',
-                    letterSpacing: `${layer.letterSpacing ?? 0}px`,
-                    width: '100%',
+                    transform: isDeviceOnly ? 'none' : `translate(${sOffsetX}px, ${sOffsetY}px) scale(${sScale})`,
+                    transformOrigin: 'center center',
+                    cursor: dragMode === 'move' ? 'grabbing' : 'default',
+                    transition: dragMode ? 'none' : 'transform 0.15s ease-out',
+                    touchAction: isDeviceOnly ? 'auto' : 'none',
                   }}
-                />
+                  onPointerDown={isDeviceOnly ? undefined : (e) => {
+                    if (!isThisActiveScreen && screenCfg.id) {
+                      onSelectScreen?.(screenCfg.id);
+                    }
+                    handlePointerDown(e, 'move');
+                  }}
+                  onClick={(e) => {
+                    if (!isThisActiveScreen && screenCfg.id) {
+                      onSelectScreen?.(screenCfg.id);
+                    }
+                    handleDeviceClick(e);
+                  }}
+                >
+                  <div
+                    ref={isThisActiveScreen ? deviceFrameRef : undefined}
+                    className="device-frame-capture-target"
+                  >
+                    <DeviceFrame
+                      deviceType={screenCfg.deviceType}
+                      deviceColor={screenCfg.deviceColor}
+                      screenshotUrl={screenCfg.screenshotUrl}
+                      screenshotScale={screenCfg.screenshotScale}
+                      screenshotOffsetX={screenCfg.screenshotOffsetX}
+                      screenshotOffsetY={screenCfg.screenshotOffsetY}
+                      borderRadius={screenCfg.borderRadius}
+                      shadowDepth={screenCfg.shadowDepth}
+                      onUploadClick={() => {
+                        if (!isThisActiveScreen && screenCfg.id) {
+                          onSelectScreen?.(screenCfg.id);
+                        }
+                        onUploadImageClick();
+                      }}
+                      presetWidth={screenCfg.width}
+                      presetHeight={screenCfg.height}
+                      isDeviceOnly={isDeviceOnly}
+                    />
+                  </div>
+
+                  {/* Transform Gizmo only on active screen */}
+                  {!isExporting && !isDeviceOnly && isThisActiveScreen && isDeviceSelected && (
+                    <div
+                      className="device-transform-gizmo"
+                      style={{
+                        opacity: 1,
+                        pointerEvents: 'auto',
+                      }}
+                    >
+                      <div
+                        className="resize-handle handle-nw"
+                        title="Boyutlandır"
+                        onPointerDown={(e) => handlePointerDown(e, 'resize-nw')}
+                      />
+                      <div
+                        className="resize-handle handle-ne"
+                        title="Boyutlandır"
+                        onPointerDown={(e) => handlePointerDown(e, 'resize-ne')}
+                      />
+                      <div
+                        className="resize-handle handle-sw"
+                        title="Boyutlandır"
+                        onPointerDown={(e) => handlePointerDown(e, 'resize-sw')}
+                      />
+                      <div
+                        className="resize-handle handle-se"
+                        title="Boyutlandır"
+                        onPointerDown={(e) => handlePointerDown(e, 'resize-se')}
+                      />
+
+                      {dragMode && (
+                        <div className="transform-floating-pill">
+                          {dragMode === 'move' ? (
+                            <>
+                              <Move size={12} />
+                              <span>
+                                X: {currentOffsetX}px | Y: {currentOffsetY}px
+                              </span>
+                            </>
+                          ) : dragMode === 'text-move' ? (
+                            <>
+                              <Move size={12} />
+                              <span>Metin Taşınıyor</span>
+                            </>
+                          ) : (
+                            <>
+                              <Maximize2 size={12} />
+                              <span>%{Math.round(currentScale * 100)}</span>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           );
         })}
 
-        {/* Interactive Device Wrapper */}
-        <div
-          className={`device-interactive-container ${
-            !isDeviceOnly && isDeviceSelected ? 'is-device-selected' : ''
-          } ${!isDeviceOnly && (dragMode === 'move' || dragMode?.startsWith('resize-')) ? 'is-dragging' : ''}`}
-          style={{
-            transform: isDeviceOnly ? 'none' : `translate(${currentOffsetX}px, ${currentOffsetY}px) scale(${currentScale})`,
-            transformOrigin: 'center center',
-            cursor: isDeviceOnly ? 'default' : (dragMode === 'move' ? 'grabbing' : 'grab'),
-            transition: dragMode ? 'none' : 'transform 0.15s ease-out',
-            touchAction: isDeviceOnly ? 'auto' : 'none',
-          }}
-          onPointerDown={isDeviceOnly ? undefined : (e) => handlePointerDown(e, 'move')}
-          onClick={handleDeviceClick}
-        >
-          {/* Target for standalone device export */}
-          <div ref={deviceFrameRef} className="device-frame-capture-target">
-            <DeviceFrame
-              deviceType={config.deviceType}
-              deviceColor={config.deviceColor}
-              screenshotUrl={config.screenshotUrl}
-              screenshotScale={config.screenshotScale}
-              screenshotOffsetX={config.screenshotOffsetX}
-              screenshotOffsetY={config.screenshotOffsetY}
-              borderRadius={config.borderRadius}
-              shadowDepth={config.shadowDepth}
-              onUploadClick={onUploadImageClick}
-              presetWidth={config.width}
-              presetHeight={config.height}
-              isDeviceOnly={isDeviceOnly}
-            />
-          </div>
-
-          {/* Transform & Resize Bounding Box Gizmo (Only in full visual mode when device is selected) */}
-          {!isExporting && !isDeviceOnly && isDeviceSelected && (
-            <div
-              className="device-transform-gizmo"
-              style={{
-                opacity: 1,
-                pointerEvents: 'auto',
-              }}
-            >
-              {/* Corner Resize Handles */}
-              <div
-                className="resize-handle handle-nw"
-                title="Boyutlandır"
-                onPointerDown={(e) => handlePointerDown(e, 'resize-nw')}
-              />
-              <div
-                className="resize-handle handle-ne"
-                title="Boyutlandır"
-                onPointerDown={(e) => handlePointerDown(e, 'resize-ne')}
-              />
-              <div
-                className="resize-handle handle-sw"
-                title="Boyutlandır"
-                onPointerDown={(e) => handlePointerDown(e, 'resize-sw')}
-              />
-              <div
-                className="resize-handle handle-se"
-                title="Boyutlandır"
-                onPointerDown={(e) => handlePointerDown(e, 'resize-se')}
-              />
-
-              {/* Active Transform Floating Info Pill */}
-              {dragMode && (
-                <div className="transform-floating-pill">
-                  {dragMode === 'move' ? (
-                    <>
-                      <Move size={12} />
-                      <span>
-                        X: {currentOffsetX}px | Y: {currentOffsetY}px
-                      </span>
-                    </>
-                  ) : dragMode === 'text-move' ? (
-                    <>
-                      <Move size={12} />
-                      <span>
-                        Metin Taşınıyor
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <Maximize2 size={12} />
-                      <span>%{Math.round(currentScale * 100)}</span>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+        {/* End of screens */}
       </div>
     </div>
   );
