@@ -792,9 +792,6 @@ body {
 }
 
 .device-interactive-container.is-device-selected {
-  outline: 2px dashed var(--chili-primary);
-  outline-offset: 4px;
-  border-radius: 24px;
 }
 
 /* Layer Chips in Inspector */

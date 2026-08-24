@@ -856,12 +856,6 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
           );
         }
 
-        // If device is also selected in multi-selection, scale device proportionally as well
-        if (isDeviceSelected) {
-          const newDevScale = Math.min(Math.max(Number((currentScale * scaleFactor).toFixed(2)), 0.35), 2.2);
-          updatedConfig.deviceScale = newDevScale;
-        }
-
         onChangeConfig(updatedConfig, false);
       } else if (dragMode.startsWith('resize-')) {
         // Calculate scaling delta based on handle direction
