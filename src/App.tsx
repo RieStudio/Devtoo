@@ -34,7 +34,7 @@ const INITIAL_CONFIG: MockupConfig = {
   textLayers: [
     {
       id: 'layer-1',
-      text: 'Mobil Uygulamanızın Adı',
+      text: 'Uygulamanızın Adı',
       x: 0,
       y: -230,
       fontSize: 26,

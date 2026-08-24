@@ -32,7 +32,8 @@ interface InspectorPanelProps {
 }
 
 const PALETTE_PRESETS = [
-  '#0F172A', // Siyah / Koyu Lacivert
+  '#0F172A', // Siyah
+  '#FFFFFF', // Beyaz
   '#D90429', // Şili Kırmızısı
   '#3B82F6', // Mavi
   '#10B981', // Yeşil
@@ -90,8 +91,6 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
       deviceColor: defaultColor,
     });
   };
-
-  const isCustomColor = !PALETTE_PRESETS.includes(config.bgColor.toUpperCase()) && !PALETTE_PRESETS.includes(config.bgColor.toLowerCase());
 
   const selectedLayer = (config.textLayers || []).find((l) => l.id === config.selectedTextId) || null;
 
@@ -340,14 +339,18 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               {/* Renk Paleti Açma Butonu */}
               <button
                 type="button"
-                title="Özel Renk Paletini Aç"
-                className={`color-swatch-btn custom-palette-btn ${isCustomColor ? 'selected' : ''}`}
+                title="Özel Arka Plan Rengini Aç"
+                className={`color-swatch-btn custom-palette-btn ${
+                  !PALETTE_PRESETS.includes(config.bgColor.toUpperCase()) ? 'selected' : ''
+                }`}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  background: isCustomColor ? config.bgColor : 'conic-gradient(from 180deg at 50% 50%, #FF0000 0deg, #FFFF00 60deg, #00FF00 120deg, #00FFFF 180deg, #0000FF 240deg, #FF00FF 300deg, #FF0000 360deg)',
-                  color: isCustomColor ? '#FFFFFF' : '#334155',
+                  background: !PALETTE_PRESETS.includes(config.bgColor.toUpperCase())
+                    ? config.bgColor 
+                    : 'conic-gradient(from 180deg at 50% 50%, #FF0000 0deg, #FFFF00 60deg, #00FF00 120deg, #00FFFF 180deg, #0000FF 240deg, #FF00FF 300deg, #FF0000 360deg)',
+                  color: !PALETTE_PRESETS.includes(config.bgColor.toUpperCase()) ? '#FFFFFF' : '#334155',
                 }}
                 onClick={() => colorPickerInputRef.current?.click()}
               >
@@ -481,55 +484,26 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
         </div>
       )}
 
-      {/* Section 5: Layout, Padding & Shadow */}
-      <div className="inspector-section">
-        <div className="section-label">Düzen ve Efektler</div>
+      {/* Section 5: Shadow & Effects (Only in Full Canvas Mode) */}
+      {!isDeviceOnly && (
+        <div className="inspector-section">
+          <div className="section-label">Gölge Efekti</div>
 
-        {!isDeviceOnly && (
           <div className="control-group">
-            <div className="control-label">
-              <span>İç Boşluk (Padding)</span>
-              <span className="control-value">{config.padding}px</span>
-            </div>
-            <input
-              type="range"
-              min="10"
-              max="80"
-              value={config.padding}
-              onChange={(e) => onChangeConfig({ padding: Number(e.target.value) })}
-            />
+            <select
+              className="input-select"
+              value={config.shadowDepth}
+              onChange={(e) => onChangeConfig({ shadowDepth: e.target.value as any })}
+            >
+              <option value="none">Gölge Yok</option>
+              <option value="soft">Yumuşak Gölge</option>
+              <option value="medium">Standart Gölge</option>
+              <option value="dramatic">Derin Mağaza Gölgesi</option>
+              <option value="chili-glow">Vurgulu Gölge</option>
+            </select>
           </div>
-        )}
-
-        <div className="control-group">
-          <div className="control-label">
-            <span>Köşe Yuvarlatma</span>
-            <span className="control-value">{config.borderRadius}px</span>
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="40"
-            value={config.borderRadius}
-            onChange={(e) => onChangeConfig({ borderRadius: Number(e.target.value) })}
-          />
         </div>
-
-        <div className="control-group">
-          <div className="control-label">Gölge Efekti</div>
-          <select
-            className="input-select"
-            value={config.shadowDepth}
-            onChange={(e) => onChangeConfig({ shadowDepth: e.target.value as any })}
-          >
-            <option value="none">Gölge Yok</option>
-            <option value="soft">Yumuşak Gölge</option>
-            <option value="medium">Standart Gölge</option>
-            <option value="dramatic">Derin Mağaza Gölgesi</option>
-            <option value="chili-glow">Şili Biberi Vurgulu Gölge</option>
-          </select>
-        </div>
-      </div>
+      )}
 
       {/* Section 6: Multi-Text Layers & Typography (Only in Full Visual Mode) */}
       {!isDeviceOnly && (
