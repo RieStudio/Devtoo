@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import type { MockupConfig, DeviceType, BackgroundType, DeviceBrand, TextLayer } from '../../types/mockup';
+import type { MockupConfig, DeviceType, BackgroundType, DeviceBrand, TextLayer, CanvasDeviceItem } from '../../types/mockup';
+import { getMockupDevices } from '../../types/mockup';
 import { DEVICE_MODELS } from '../../constants/devices';
 import { 
   Upload, 
@@ -64,8 +65,101 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
 
   const isDeviceOnly = config.exportMode === 'device-only';
 
+  // Multi-Device Management
+  const devices = getMockupDevices(config);
+  const activeDeviceId = config.selectedDeviceId || devices[0]?.id || 'device-primary';
+  const activeDevice = devices.find((d) => d.id === activeDeviceId) || devices[0] || {
+    id: 'device-primary',
+    deviceType: config.deviceType,
+    deviceColor: config.deviceColor || 'default',
+    screenshotUrl: config.screenshotUrl,
+    screenshotScale: config.screenshotScale ?? 1,
+    screenshotOffsetX: config.screenshotOffsetX ?? 0,
+    screenshotOffsetY: config.screenshotOffsetY ?? 0,
+    deviceScale: config.deviceScale ?? 1,
+    deviceOffsetX: config.deviceOffsetX ?? 0,
+    deviceOffsetY: config.deviceOffsetY ?? 0,
+    deviceRotation: config.deviceRotation ?? 0,
+    shadowDepth: config.shadowDepth ?? 'medium',
+  };
+
+  // Helper to update specific active device and sync top-level if needed
+  const handleUpdateActiveDevice = (updated: Partial<CanvasDeviceItem>) => {
+    const updatedDevices = devices.map((d) => (d.id === activeDevice.id ? { ...d, ...updated } : d));
+    const firstDev = updatedDevices[0];
+    onChangeConfig({
+      devices: updatedDevices,
+      selectedDeviceId: activeDevice.id,
+      // Sync legacy properties with primary/active device
+      ...(activeDevice.id === firstDev.id ? updated : {}),
+    });
+  };
+
+  // Add a new device to the current screen (maximum 6 devices)
+  const handleAddDevice = () => {
+    if (devices.length >= 6) {
+      alert('Bir ekrana en fazla 6 cihaz ekleyebilirsiniz.');
+      return;
+    }
+
+    const newId = `device-${Date.now()}`;
+    const lastDevice = devices[devices.length - 1];
+
+    const baseOffsetX = lastDevice ? (lastDevice.deviceOffsetX ?? 0) + 36 : 0;
+    const baseOffsetY = lastDevice ? (lastDevice.deviceOffsetY ?? 60) + 36 : 60;
+    const baseScale = lastDevice ? (lastDevice.deviceScale ?? 1) : 1;
+
+    const newDevice: CanvasDeviceItem = {
+      id: newId,
+      deviceType: lastDevice ? lastDevice.deviceType : 'iphone-17-pro-max',
+      deviceColor: 'default',
+      screenshotUrl: null,
+      screenshotScale: 1,
+      screenshotOffsetX: 0,
+      screenshotOffsetY: 0,
+      deviceScale: baseScale,
+      deviceOffsetX: baseOffsetX,
+      deviceOffsetY: baseOffsetY,
+      deviceRotation: 0,
+      shadowDepth: 'medium',
+      borderRadius: 24,
+    };
+
+    const nextDevices = [...devices, newDevice];
+    onChangeConfig({
+      devices: nextDevices,
+      selectedDeviceId: newId,
+    });
+  };
+
+  // Remove a device from current screen (can remove all devices)
+  const handleDeleteDevice = (deviceId: string) => {
+    const remaining = devices.filter((d) => d.id !== deviceId);
+    const nextSelectedId = remaining[0]?.id || null;
+    onChangeConfig({
+      devices: remaining,
+      selectedDeviceId: nextSelectedId,
+      ...(remaining[0] ? {
+        deviceType: remaining[0].deviceType,
+        deviceColor: remaining[0].deviceColor,
+        screenshotUrl: remaining[0].screenshotUrl,
+        screenshotScale: remaining[0].screenshotScale,
+        screenshotOffsetX: remaining[0].screenshotOffsetX,
+        screenshotOffsetY: remaining[0].screenshotOffsetY,
+        deviceScale: remaining[0].deviceScale,
+        deviceOffsetX: remaining[0].deviceOffsetX,
+        deviceOffsetY: remaining[0].deviceOffsetY,
+        deviceRotation: remaining[0].deviceRotation,
+      } : {
+        screenshotUrl: null,
+        originalScreenshotUrl: null,
+        cropData: null,
+      }),
+    });
+  };
+
   // Active Brand tab state ('apple', 'samsung', 'google', 'other')
-  const currentDeviceModel = DEVICE_MODELS.find((m) => m.id === config.deviceType) || DEVICE_MODELS[0];
+  const currentDeviceModel = DEVICE_MODELS.find((m) => m.id === activeDevice.deviceType) || DEVICE_MODELS[0];
   const [selectedBrand, setSelectedBrand] = useState<DeviceBrand>(currentDeviceModel.brand);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,8 +180,8 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
 
   const handleSelectModel = (modelId: DeviceType) => {
     const modelDef = DEVICE_MODELS.find((m) => m.id === modelId);
-    const defaultColor = modelDef?.colors[0].id || 'dark';
-    onChangeConfig({
+    const defaultColor = modelDef?.colors[0].id || 'default';
+    handleUpdateActiveDevice({
       deviceType: modelId,
       deviceColor: defaultColor,
     });
@@ -179,119 +273,277 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
         </div>
       </div>
 
-      {/* Section 1: Screenshot Upload */}
-      <div className="inspector-section">
-        <div className="section-label">Ekran Görüntüsü</div>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          style={{ display: 'none' }}
-          onChange={handleFileChange}
-        />
-        
-        <div
-          className="dropzone-box"
-          onClick={() => fileInputRef.current?.click()}
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={handleDrop}
-        >
-          <Upload size={20} className="dropzone-icon" />
-          <div className="dropzone-text">Görsel Yükle veya Sürükle</div>
-          <div className="dropzone-sub">PNG, JPG, WebP desteklenir</div>
-        </div>
-
-        {config.screenshotUrl && (
-          <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+      {/* Section 0.5: Multi-Device Management (Add / Switch Devices) */}
+      {!isDeviceOnly && (
+        <div className="inspector-section">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '8px' }}>
+            <div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '5px', margin: 0 }}>
+              <Smartphone size={13} color="#D90429" />
+              <span>Cihazlar ({devices.length})</span>
+            </div>
             <button
-              className="btn-secondary"
-              style={{ flex: 1, justifyContent: 'center' }}
-              onClick={onOpenCropModal}
+              type="button"
+              className="btn-text-action"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                color: devices.length >= 6 ? '#94A3B8' : '#D90429',
+                backgroundColor: devices.length >= 6 ? '#F1F5F9' : 'rgba(217, 4, 41, 0.08)',
+                border: 'none',
+                borderRadius: '6px',
+                padding: '4px 9px',
+                fontSize: '11px',
+                fontWeight: 700,
+                cursor: devices.length >= 6 ? 'not-allowed' : 'pointer',
+                whiteSpace: 'nowrap',
+                transition: 'all 0.15s ease',
+              }}
+              onClick={handleAddDevice}
+              disabled={devices.length >= 6}
+              title={devices.length >= 6 ? 'Maksimum 6 cihaza ulaşıldı' : 'Bu ekrana yeni bir cihaz ekleyin'}
             >
-              <Crop size={14} color="#D90429" />
-              <span>Görseli Kırp</span>
-            </button>
-
-            <button
-              className="btn-secondary"
-              style={{ flex: 1, justifyContent: 'center', color: '#D90429' }}
-              onClick={() => onChangeConfig({ screenshotUrl: null, screenshotScale: 1, screenshotOffsetX: 0, screenshotOffsetY: 0 })}
-            >
-              <Trash2 size={14} />
-              <span>Görseli Kaldır</span>
+              <Plus size={12} />
+              <span>Cihaz Ekle {devices.length >= 6 ? '(Maks. 6)' : ''}</span>
             </button>
           </div>
-        )}
-      </div>
 
-      {/* Section 2: Categorized Device Selector (Apple, Samsung, Google, Other) */}
-      <div className="inspector-section">
-        <div className="section-label">Cihaz Seçimi</div>
+          {/* Device Tabs / Chips List */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {devices.map((dev, idx) => {
+              const isSelected = dev.id === activeDevice.id;
+              const devModel = DEVICE_MODELS.find((m) => m.id === dev.deviceType) || DEVICE_MODELS[0];
+              return (
+                <div
+                  key={dev.id}
+                  onClick={() => onChangeConfig({ selectedDeviceId: dev.id })}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '8px 10px',
+                    borderRadius: '8px',
+                    border: isSelected ? '1.5px solid #D90429' : '1px solid #E2E8F0',
+                    backgroundColor: isSelected ? '#FFF0F3' : '#F8FAFC',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Smartphone size={15} color={isSelected ? '#D90429' : '#64748B'} />
+                    <div>
+                      <div style={{ fontSize: '12px', fontWeight: isSelected ? 700 : 600, color: isSelected ? '#D90429' : '#1E293B' }}>
+                        Cihaz {idx + 1}: {devModel.name}
+                      </div>
+                      <div style={{ fontSize: '10.5px', color: '#64748B' }}>
+                        {dev.screenshotUrl ? 'Görsel yüklendi' : 'Görsel yok'} • {dev.deviceRotation ?? 0}°
+                      </div>
+                    </div>
+                  </div>
 
-        {/* Brand Tabs */}
-        <div style={{ display: 'flex', gap: '4px', backgroundColor: '#F1F3F5', padding: '3px', borderRadius: '8px' }}>
-          {[
-            { id: 'apple', label: 'Apple' },
-            { id: 'samsung', label: 'Samsung' },
-            { id: 'google', label: 'Google' },
-            { id: 'other', label: 'Diğer' },
-          ].map((tab) => {
-            const isTabActive = selectedBrand === tab.id;
-            return (
-              <button
-                key={tab.id}
-                style={{
-                  flex: 1,
-                  padding: '6px 2px',
-                  fontSize: '11px',
-                  fontWeight: isTabActive ? 700 : 500,
-                  borderRadius: '6px',
-                  border: isTabActive ? '1px solid #FFCCD5' : '1px solid transparent',
-                  backgroundColor: isTabActive ? '#FFFFFF' : 'transparent',
-                  color: isTabActive ? '#D90429' : '#475569',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                }}
-                onClick={() => setSelectedBrand(tab.id as DeviceBrand)}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Model Cards List for Active Brand */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px' }}>
-          {brandModels.map((model) => {
-            const isSelected = config.deviceType === model.id;
-            return (
-              <div
-                key={model.id}
-                onClick={() => handleSelectModel(model.id)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '9px 12px',
-                  borderRadius: '8px',
-                  border: isSelected ? '1px solid #D90429' : '1px solid #E2E8F0',
-                  backgroundColor: isSelected ? '#FFF0F3' : '#FFFFFF',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <Smartphone size={16} color={isSelected ? '#D90429' : '#64748B'} />
-                  <div style={{ fontSize: '13px', fontWeight: isSelected ? 700 : 600, color: isSelected ? '#D90429' : '#0F172A' }}>
-                    {model.name}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {isSelected && (
+                      <span style={{ fontSize: '10px', fontWeight: 700, color: '#D90429', backgroundColor: '#FFE3E8', padding: '2px 6px', borderRadius: '4px' }}>
+                        Seçili
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#94A3B8',
+                        cursor: 'pointer',
+                        padding: '4px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: '4px',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = '#D90429')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = '#94A3B8')}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteDevice(dev.id);
+                      }}
+                      title="Bu cihazı kaldır"
+                    >
+                      <Trash2 size={13} />
+                    </button>
                   </div>
                 </div>
-                {isSelected && <Check size={16} color="#D90429" />}
+              );
+            })}
+
+            {devices.length === 0 && (
+              <div
+                style={{
+                  padding: '14px',
+                  borderRadius: '8px',
+                  border: '1.5px dashed #CBD5E1',
+                  textAlign: 'center',
+                  backgroundColor: '#F8FAFC',
+                }}
+              >
+                <div style={{ fontSize: '12px', color: '#64748B', marginBottom: '8px' }}>
+                  Bu ekranda henüz cihaz yok.
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAddDevice}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    padding: '6px 12px',
+                    backgroundColor: '#D90429',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <Plus size={13} />
+                  <span>Cihaz Ekle</span>
+                </button>
               </div>
-            );
-          })}
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Section 1: Screenshot Upload (Applies to active device) */}
+      {devices.length > 0 && (
+        <div className="inspector-section">
+          <div className="section-label">
+            <span>Ekran Görüntüsü</span>
+            {devices.length > 1 && (
+              <span style={{ fontSize: '10.5px', fontWeight: 500, color: '#64748B', marginLeft: '6px' }}>
+                ({DEVICE_MODELS.find((m) => m.id === activeDevice.deviceType)?.name})
+              </span>
+            )}
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={handleFileChange}
+          />
+          
+          <div
+            className="dropzone-box"
+            onClick={() => fileInputRef.current?.click()}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleDrop}
+          >
+            <Upload size={20} className="dropzone-icon" />
+            <div className="dropzone-text">Görsel Yükle veya Sürükle</div>
+            <div className="dropzone-sub">PNG, JPG, WebP desteklenir</div>
+          </div>
+
+          {activeDevice.screenshotUrl && (
+            <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+              <button
+                className="btn-secondary"
+                style={{ flex: 1, justifyContent: 'center' }}
+                onClick={onOpenCropModal}
+              >
+                <Crop size={14} color="#D90429" />
+                <span>Görseli Kırp</span>
+              </button>
+
+              <button
+                className="btn-secondary"
+                style={{ flex: 1, justifyContent: 'center', color: '#D90429' }}
+                onClick={() => handleUpdateActiveDevice({ screenshotUrl: null, screenshotScale: 1, screenshotOffsetX: 0, screenshotOffsetY: 0 })}
+              >
+                <Trash2 size={14} />
+                <span>Görseli Kaldır</span>
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Section 2: Categorized Device Selector (Apple, Samsung, Google, Other) */}
+      {devices.length > 0 && (
+        <div className="inspector-section">
+          <div className="section-label">
+            <span>Cihaz Modeli</span>
+            {devices.length > 1 && (
+              <span style={{ fontSize: '10.5px', fontWeight: 500, color: '#64748B', marginLeft: '6px' }}>
+                (Seçili Cihaz)
+              </span>
+            )}
+          </div>
+
+          {/* Brand Tabs */}
+          <div style={{ display: 'flex', gap: '4px', backgroundColor: '#F1F3F5', padding: '3px', borderRadius: '8px' }}>
+            {[
+              { id: 'apple', label: 'Apple' },
+              { id: 'samsung', label: 'Samsung' },
+              { id: 'google', label: 'Google' },
+            ].map((tab) => {
+              const isTabActive = selectedBrand === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  style={{
+                    flex: 1,
+                    padding: '6px 2px',
+                    fontSize: '11px',
+                    fontWeight: isTabActive ? 700 : 500,
+                    borderRadius: '6px',
+                    border: isTabActive ? '1px solid #FFCCD5' : '1px solid transparent',
+                    backgroundColor: isTabActive ? '#FFFFFF' : 'transparent',
+                    color: isTabActive ? '#D90429' : '#475569',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                  onClick={() => setSelectedBrand(tab.id as DeviceBrand)}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Model Cards List for Active Brand */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px' }}>
+            {brandModels.map((model) => {
+              const isSelected = activeDevice.deviceType === model.id;
+              return (
+                <div
+                  key={model.id}
+                  onClick={() => handleSelectModel(model.id)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '9px 12px',
+                    borderRadius: '8px',
+                    border: isSelected ? '1px solid #D90429' : '1px solid #E2E8F0',
+                    backgroundColor: isSelected ? '#FFF0F3' : '#FFFFFF',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Smartphone size={16} color={isSelected ? '#D90429' : '#64748B'} />
+                    <div style={{ fontSize: '13px', fontWeight: isSelected ? 700 : 600, color: isSelected ? '#D90429' : '#0F172A' }}>
+                      {model.name}
+                    </div>
+                  </div>
+                  {isSelected && <Check size={16} color="#D90429" />}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Section 3: Canvas Background (Only in Full Visual Mode) */}
       {!isDeviceOnly && (
@@ -363,18 +615,18 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
       )}
 
       {/* Section 4: Device Transform (Position & Scale) - Only in Full Canvas Mode */}
-      {!isDeviceOnly && (
+      {!isDeviceOnly && devices.length > 0 && (
         <div className="inspector-section">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Move size={13} color="#D90429" />
               <span>Cihaz Konumu ve Boyutu</span>
             </div>
-            {(config.deviceOffsetX !== 0 || config.deviceOffsetY !== 0 || (config.deviceScale && config.deviceScale !== 1)) && (
+            {((activeDevice.deviceOffsetX ?? 0) !== 0 || (activeDevice.deviceOffsetY ?? 0) !== 0 || ((activeDevice.deviceScale ?? 1) !== 1) || ((activeDevice.deviceRotation ?? 0) !== 0)) && (
               <button
                 className="btn-text-action"
                 title="Konum ve Boyutu Sıfırla"
-                onClick={() => onChangeConfig({ deviceOffsetX: 0, deviceOffsetY: 0, deviceScale: 1 })}
+                onClick={() => handleUpdateActiveDevice({ deviceOffsetX: 0, deviceOffsetY: 0, deviceScale: 1, deviceRotation: 0 })}
               >
                 Sıfırla
               </button>
@@ -388,15 +640,15 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 <Maximize2 size={13} color="#64748B" />
                 <span>Cihaz Boyutu</span>
               </span>
-              <span className="control-value">%{Math.round((config.deviceScale ?? 1) * 100)}</span>
+              <span className="control-value">%{Math.round((activeDevice.deviceScale ?? 1) * 100)}</span>
             </div>
             <input
               type="range"
-              min="0.4"
-              max="2.0"
+              min="0.35"
+              max="2.2"
               step="0.01"
-              value={config.deviceScale ?? 1}
-              onChange={(e) => onChangeConfig({ deviceScale: Number(e.target.value) })}
+              value={activeDevice.deviceScale ?? 1}
+              onChange={(e) => handleUpdateActiveDevice({ deviceScale: Number(e.target.value) })}
             />
             {/* Quick scale buttons */}
             <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
@@ -408,8 +660,8 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               ].map((btn) => (
                 <button
                   key={btn.label}
-                  className={`scale-pill-btn ${(config.deviceScale ?? 1) === btn.val ? 'active' : ''}`}
-                  onClick={() => onChangeConfig({ deviceScale: btn.val })}
+                  className={`scale-pill-btn ${(activeDevice.deviceScale ?? 1) === btn.val ? 'active' : ''}`}
+                  onClick={() => handleUpdateActiveDevice({ deviceScale: btn.val })}
                 >
                   {btn.label}
                 </button>
@@ -422,22 +674,22 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             <div className="control-label">
               <span>Yatay Konum (X)</span>
               <span className="control-value">
-                {(config.deviceOffsetX ?? 0) > 0 ? `+${config.deviceOffsetX}` : (config.deviceOffsetX ?? 0)}px
+                {(activeDevice.deviceOffsetX ?? 0) > 0 ? `+${activeDevice.deviceOffsetX}` : (activeDevice.deviceOffsetX ?? 0)}px
               </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <input
                 type="range"
-                min="-250"
-                max="250"
-                value={config.deviceOffsetX ?? 0}
-                onChange={(e) => onChangeConfig({ deviceOffsetX: Number(e.target.value) })}
+                min="-350"
+                max="350"
+                value={activeDevice.deviceOffsetX ?? 0}
+                onChange={(e) => handleUpdateActiveDevice({ deviceOffsetX: Number(e.target.value) })}
                 style={{ flex: 1 }}
               />
               <button
                 className="stepper-mini-btn"
                 title="X Sıfırla (0px)"
-                onClick={() => onChangeConfig({ deviceOffsetX: 0 })}
+                onClick={() => handleUpdateActiveDevice({ deviceOffsetX: 0 })}
               >
                 0
               </button>
@@ -449,22 +701,22 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             <div className="control-label">
               <span>Dikey Konum (Y)</span>
               <span className="control-value">
-                {(config.deviceOffsetY ?? 0) > 0 ? `+${config.deviceOffsetY}` : (config.deviceOffsetY ?? 0)}px
+                {(activeDevice.deviceOffsetY ?? 0) > 0 ? `+${activeDevice.deviceOffsetY}` : (activeDevice.deviceOffsetY ?? 0)}px
               </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <input
                 type="range"
-                min="-350"
-                max="350"
-                value={config.deviceOffsetY ?? 0}
-                onChange={(e) => onChangeConfig({ deviceOffsetY: Number(e.target.value) })}
+                min="-450"
+                max="450"
+                value={activeDevice.deviceOffsetY ?? 0}
+                onChange={(e) => handleUpdateActiveDevice({ deviceOffsetY: Number(e.target.value) })}
                 style={{ flex: 1 }}
               />
               <button
                 className="stepper-mini-btn"
                 title="Y Sıfırla (0px)"
-                onClick={() => onChangeConfig({ deviceOffsetY: 0 })}
+                onClick={() => handleUpdateActiveDevice({ deviceOffsetY: 0 })}
               >
                 0
               </button>
@@ -478,21 +730,21 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 <RotateCw size={13} color="#64748B" />
                 <span>Cihaz Döndürme</span>
               </span>
-              <span className="control-value">{config.deviceRotation ?? 0}°</span>
+              <span className="control-value">{activeDevice.deviceRotation ?? 0}°</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <input
                 type="range"
                 min="-180"
                 max="180"
-                value={config.deviceRotation ?? 0}
-                onChange={(e) => onChangeConfig({ deviceRotation: Number(e.target.value) })}
+                value={activeDevice.deviceRotation ?? 0}
+                onChange={(e) => handleUpdateActiveDevice({ deviceRotation: Number(e.target.value) })}
                 style={{ flex: 1 }}
               />
               <button
                 className="stepper-mini-btn"
                 title="Döndürmeyi Sıfırla (0°)"
-                onClick={() => onChangeConfig({ deviceRotation: 0 })}
+                onClick={() => handleUpdateActiveDevice({ deviceRotation: 0 })}
               >
                 0°
               </button>
@@ -500,16 +752,16 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             {/* Quick rotation buttons */}
             <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
               {[
-                { label: '-15°', val: ((config.deviceRotation ?? 0) - 15 + 360) % 360 > 180 ? ((config.deviceRotation ?? 0) - 15) : ((config.deviceRotation ?? 0) - 15) },
+                { label: '-15°', val: ((activeDevice.deviceRotation ?? 0) - 15 + 360) % 360 > 180 ? ((activeDevice.deviceRotation ?? 0) - 15) : ((activeDevice.deviceRotation ?? 0) - 15) },
                 { label: '0°', val: 0 },
-                { label: '+15°', val: ((config.deviceRotation ?? 0) + 15) },
+                { label: '+15°', val: ((activeDevice.deviceRotation ?? 0) + 15) },
                 { label: '45°', val: 45 },
                 { label: '-45°', val: -45 },
               ].map((btn) => (
                 <button
                   key={btn.label}
-                  className={`scale-pill-btn ${(config.deviceRotation ?? 0) === btn.val ? 'active' : ''}`}
-                  onClick={() => onChangeConfig({ deviceRotation: btn.val })}
+                  className={`scale-pill-btn ${(activeDevice.deviceRotation ?? 0) === btn.val ? 'active' : ''}`}
+                  onClick={() => handleUpdateActiveDevice({ deviceRotation: btn.val })}
                 >
                   {btn.label}
                 </button>
@@ -522,7 +774,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             <button
               className="btn-secondary"
               style={{ width: '100%', fontSize: '11px', padding: '6px 8px', justifyContent: 'center' }}
-              onClick={() => onChangeConfig({ deviceOffsetX: 0, deviceOffsetY: 0, deviceRotation: 0 })}
+              onClick={() => handleUpdateActiveDevice({ deviceOffsetX: 0, deviceOffsetY: 0, deviceRotation: 0 })}
             >
               <Crosshair size={12} color="#D90429" />
               <span>Merkeze ve Düz Konuma Getir</span>
@@ -539,8 +791,8 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
           <div className="control-group">
             <select
               className="input-select"
-              value={config.shadowDepth}
-              onChange={(e) => onChangeConfig({ shadowDepth: e.target.value as any })}
+              value={activeDevice.shadowDepth || config.shadowDepth || 'medium'}
+              onChange={(e) => handleUpdateActiveDevice({ shadowDepth: e.target.value as any })}
             >
               <option value="none">Gölge Yok</option>
               <option value="soft">Yumuşak Gölge</option>

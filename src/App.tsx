@@ -3,6 +3,7 @@ import { toPng } from 'html-to-image';
 import JSZip from 'jszip';
 import { AlertCircle, X } from 'lucide-react';
 import type { MockupConfig } from './types/mockup';
+import { getMockupDevices } from './types/mockup';
 import { DEVICE_MODELS } from './constants/devices';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
@@ -30,6 +31,24 @@ const INITIAL_CONFIG: MockupConfig = {
   deviceOffsetX: 0,
   deviceOffsetY: 60,
   deviceRotation: 0,
+  devices: [
+    {
+      id: 'device-1',
+      deviceType: 'iphone-17-pro-max',
+      deviceColor: 'default',
+      screenshotUrl: null,
+      screenshotScale: 1,
+      screenshotOffsetX: 0,
+      screenshotOffsetY: 0,
+      deviceScale: 1,
+      deviceOffsetX: 0,
+      deviceOffsetY: 60,
+      deviceRotation: 0,
+      shadowDepth: 'medium',
+      borderRadius: 24,
+    },
+  ],
+  selectedDeviceId: 'device-1',
   padding: 32,
   borderRadius: 24,
   shadowDepth: 'medium',
@@ -123,6 +142,8 @@ export function App() {
       deviceOffsetX: cfg.deviceOffsetX,
       deviceOffsetY: cfg.deviceOffsetY,
       deviceRotation: cfg.deviceRotation,
+      devices: cfg.devices,
+      selectedDeviceId: cfg.selectedDeviceId,
       padding: cfg.padding,
       borderRadius: cfg.borderRadius,
       shadowDepth: cfg.shadowDepth,
@@ -251,68 +272,92 @@ export function App() {
     newOffsetX: number,
     newOffsetY: number,
     newScale: number,
-    newRotation: number
+    newRotation: number,
+    deviceId?: string
   ) => {
     setScreens((prevScreens) => {
       const source = prevScreens.find((s) => s.id === sourceScreenId);
       const target = prevScreens.find((s) => s.id === targetScreenId);
       if (!source || !target) return prevScreens;
 
-      const sourceDeviceScale = source.deviceScale ?? newScale ?? 1;
-      const targetDeviceScale = target.deviceScale ?? 1;
+      const sourceDevs = getMockupDevices(source);
+      const targetDevId = deviceId || source.selectedDeviceId || sourceDevs[0]?.id || 'device-primary';
+      const movingDev = sourceDevs.find((d) => d.id === targetDevId) || sourceDevs[0];
+      if (!movingDev) return prevScreens;
+
+      // Transfer moving device data with new transformed properties
+      const transferredDev: typeof movingDev = {
+        ...movingDev,
+        id: `device-${Date.now()}`,
+        deviceOffsetX: newOffsetX,
+        deviceOffsetY: newOffsetY,
+        deviceScale: newScale,
+        deviceRotation: newRotation,
+      };
+
+      // Remaining devices in source screen
+      const remainingSourceDevs = sourceDevs.filter((d) => d.id !== movingDev.id);
+
+      // Devices in target screen + transferred device
+      const targetDevs = getMockupDevices(target);
+      if (targetDevs.length >= 6) {
+        showToast('Hedef ekranda en fazla 6 cihaz bulunabilir.');
+        return prevScreens;
+      }
+      const nextTargetDevs = [...targetDevs, transferredDev];
 
       const nextScreens = prevScreens.map((s) => {
         if (s.id === targetScreenId) {
           return {
             ...s,
-            deviceType: source.deviceType,
-            deviceColor: source.deviceColor,
-            screenshotUrl: source.screenshotUrl,
-            originalScreenshotUrl: source.originalScreenshotUrl,
-            cropData: source.cropData,
-            screenshotScale: source.screenshotScale,
-            screenshotOffsetX: source.screenshotOffsetX,
-            screenshotOffsetY: source.screenshotOffsetY,
-            deviceScale: sourceDeviceScale,
-            deviceOffsetX: newOffsetX,
-            deviceOffsetY: newOffsetY,
-            deviceRotation: newRotation,
-            borderRadius: source.borderRadius,
-            shadowDepth: source.shadowDepth,
+            devices: nextTargetDevs,
+            selectedDeviceId: transferredDev.id,
+            // Sync primary attributes if target was empty/single
+            deviceType: transferredDev.deviceType,
+            deviceColor: transferredDev.deviceColor,
+            screenshotUrl: transferredDev.screenshotUrl,
+            originalScreenshotUrl: transferredDev.originalScreenshotUrl,
+            cropData: transferredDev.cropData,
+            screenshotScale: transferredDev.screenshotScale,
+            screenshotOffsetX: transferredDev.screenshotOffsetX,
+            screenshotOffsetY: transferredDev.screenshotOffsetY,
+            deviceScale: transferredDev.deviceScale,
+            deviceOffsetX: transferredDev.deviceOffsetX,
+            deviceOffsetY: transferredDev.deviceOffsetY,
+            deviceRotation: transferredDev.deviceRotation,
           };
         }
         if (s.id === sourceScreenId) {
-          // If target had a screenshot/device, swap it to source while strictly preserving target's own scale
-          if (target.screenshotUrl || target.originalScreenshotUrl) {
+          if (remainingSourceDevs.length > 0) {
+            const nextPrimary = remainingSourceDevs[0];
             return {
               ...s,
-              deviceType: target.deviceType,
-              deviceColor: target.deviceColor,
-              screenshotUrl: target.screenshotUrl,
-              originalScreenshotUrl: target.originalScreenshotUrl,
-              cropData: target.cropData,
-              screenshotScale: target.screenshotScale,
-              screenshotOffsetX: target.screenshotOffsetX,
-              screenshotOffsetY: target.screenshotOffsetY,
-              deviceScale: targetDeviceScale,
-              deviceOffsetX: 0,
-              deviceOffsetY: target.deviceOffsetY ?? 0,
-              deviceRotation: target.deviceRotation ?? 0,
-              borderRadius: target.borderRadius,
-              shadowDepth: target.shadowDepth,
+              devices: remainingSourceDevs,
+              selectedDeviceId: nextPrimary.id,
+              deviceType: nextPrimary.deviceType,
+              deviceColor: nextPrimary.deviceColor,
+              screenshotUrl: nextPrimary.screenshotUrl,
+              originalScreenshotUrl: nextPrimary.originalScreenshotUrl,
+              cropData: nextPrimary.cropData,
+              screenshotScale: nextPrimary.screenshotScale,
+              screenshotOffsetX: nextPrimary.screenshotOffsetX,
+              screenshotOffsetY: nextPrimary.screenshotOffsetY,
+              deviceScale: nextPrimary.deviceScale,
+              deviceOffsetX: nextPrimary.deviceOffsetX,
+              deviceOffsetY: nextPrimary.deviceOffsetY,
+              deviceRotation: nextPrimary.deviceRotation,
+            };
+          } else {
+            // Source screen now has 0 devices (device moved to target screen)
+            return {
+              ...s,
+              devices: [],
+              selectedDeviceId: null,
+              screenshotUrl: null,
+              originalScreenshotUrl: null,
+              cropData: null,
             };
           }
-
-          return {
-            ...s,
-            screenshotUrl: null,
-            originalScreenshotUrl: null,
-            cropData: null,
-            deviceOffsetX: 0,
-            deviceOffsetY: 0,
-            deviceRotation: 0,
-            deviceScale: 1,
-          };
         }
         return s;
       });
@@ -489,13 +534,30 @@ export function App() {
     reader.onload = (e) => {
       if (e.target?.result) {
         const rawUrl = e.target.result as string;
-        handleUpdateConfig({ 
+        const currentDevs = getMockupDevices(activeScreenConfig);
+        const targetDevId = activeScreenConfig.selectedDeviceId || currentDevs[0]?.id || 'device-primary';
+        const updatedDevs = currentDevs.map((d) =>
+          d.id === targetDevId
+            ? {
+                ...d,
+                screenshotUrl: rawUrl,
+                originalScreenshotUrl: rawUrl,
+                cropData: null,
+                screenshotScale: 1,
+                screenshotOffsetX: 0,
+                screenshotOffsetY: 0,
+              }
+            : d
+        );
+
+        handleUpdateConfig({
+          devices: updatedDevs,
           screenshotUrl: rawUrl,
           originalScreenshotUrl: rawUrl,
           cropData: null,
           screenshotScale: 1,
           screenshotOffsetX: 0,
-          screenshotOffsetY: 0
+          screenshotOffsetY: 0,
         });
       }
     };
@@ -589,7 +651,11 @@ export function App() {
     }
   };
 
-  const currentModel = DEVICE_MODELS.find(m => m.id === activeScreenConfig.deviceType) || DEVICE_MODELS[0];
+  const currentScreenDevices = getMockupDevices(activeScreenConfig);
+  const activeSelectedDevId = activeScreenConfig.selectedDeviceId || currentScreenDevices[0]?.id || 'device-primary';
+  const activeSelectedDev = currentScreenDevices.find((d) => d.id === activeSelectedDevId) || currentScreenDevices[0];
+
+  const currentModel = DEVICE_MODELS.find(m => m.id === (activeSelectedDev?.deviceType || activeScreenConfig.deviceType)) || DEVICE_MODELS[0];
   const targetAspect = currentModel.defaultRatio;
 
   return (
@@ -642,28 +708,55 @@ export function App() {
       </div>
 
       {/* Interactive Crop Modal */}
-      {isCropModalOpen && (activeScreenConfig.originalScreenshotUrl || activeScreenConfig.screenshotUrl) && (
+      {isCropModalOpen && (activeSelectedDev?.originalScreenshotUrl || activeSelectedDev?.screenshotUrl || activeScreenConfig.originalScreenshotUrl || activeScreenConfig.screenshotUrl) && (
         <ImageCropModal
-          imageSrc={activeScreenConfig.originalScreenshotUrl || activeScreenConfig.screenshotUrl!}
+          imageSrc={activeSelectedDev?.originalScreenshotUrl || activeSelectedDev?.screenshotUrl || activeScreenConfig.originalScreenshotUrl || activeScreenConfig.screenshotUrl!}
           aspectRatio={targetAspect}
-          initialCrop={activeScreenConfig.cropData as any}
+          initialCrop={(activeSelectedDev?.cropData || activeScreenConfig.cropData) as any}
           onCropComplete={(croppedDataUrl, cropDetails) => {
+            const updatedDevs = currentScreenDevices.map((d) =>
+              d.id === activeSelectedDev.id
+                ? {
+                    ...d,
+                    screenshotUrl: croppedDataUrl,
+                    cropData: cropDetails,
+                    screenshotScale: 1,
+                    screenshotOffsetX: 0,
+                    screenshotOffsetY: 0,
+                  }
+                : d
+            );
             handleUpdateConfig({
+              devices: updatedDevs,
               screenshotUrl: croppedDataUrl,
               cropData: cropDetails,
               screenshotScale: 1,
               screenshotOffsetX: 0,
-              screenshotOffsetY: 0
+              screenshotOffsetY: 0,
             });
             setIsCropModalOpen(false);
           }}
           onResetToOriginal={() => {
+            const origUrl = activeSelectedDev?.originalScreenshotUrl || activeSelectedDev?.screenshotUrl || activeScreenConfig.originalScreenshotUrl || activeScreenConfig.screenshotUrl;
+            const updatedDevs = currentScreenDevices.map((d) =>
+              d.id === activeSelectedDev.id
+                ? {
+                    ...d,
+                    screenshotUrl: origUrl,
+                    cropData: null,
+                    screenshotScale: 1,
+                    screenshotOffsetX: 0,
+                    screenshotOffsetY: 0,
+                  }
+                : d
+            );
             handleUpdateConfig({
-              screenshotUrl: activeScreenConfig.originalScreenshotUrl || activeScreenConfig.screenshotUrl,
+              devices: updatedDevs,
+              screenshotUrl: origUrl,
               cropData: null,
               screenshotScale: 1,
               screenshotOffsetX: 0,
-              screenshotOffsetY: 0
+              screenshotOffsetY: 0,
             });
             setIsCropModalOpen(false);
           }}

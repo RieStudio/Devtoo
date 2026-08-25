@@ -47,6 +47,24 @@ export interface TextLayer {
   width?: number;
 }
 
+export interface CanvasDeviceItem {
+  id: string;
+  deviceType: DeviceType;
+  deviceColor: string;
+  screenshotUrl: string | null;
+  originalScreenshotUrl?: string | null;
+  cropData?: { unit: string; x: number; y: number; width: number; height: number } | null;
+  screenshotScale: number;
+  screenshotOffsetX: number;
+  screenshotOffsetY: number;
+  deviceScale: number;
+  deviceOffsetX: number;
+  deviceOffsetY: number;
+  deviceRotation?: number;
+  borderRadius?: number;
+  shadowDepth?: 'none' | 'soft' | 'medium' | 'dramatic' | 'chili-glow';
+}
+
 export interface MockupConfig {
   // Screen Unique Identifier
   id?: string;
@@ -65,7 +83,7 @@ export interface MockupConfig {
   bgColor: string;
   patternOpacity: number;
   
-  // Frame & Image settings
+  // Frame & Image settings (Primary / default device for single-device fallback)
   deviceType: DeviceType;
   deviceColor: string;
   screenshotUrl: string | null;
@@ -81,6 +99,10 @@ export interface MockupConfig {
   deviceOffsetY: number;
   deviceRotation?: number;
 
+  // Multi-Device support
+  devices?: CanvasDeviceItem[];
+  selectedDeviceId?: string | null;
+
   // Layout & Padding
   padding: number;
   borderRadius: number;
@@ -95,6 +117,36 @@ export interface MockupConfig {
   
   // Export scale
   exportScale: 1 | 2 | 3;
+}
+
+/**
+ * Normalizes a MockupConfig to always return an array of CanvasDeviceItem.
+ * If config.devices is explicitly provided (including empty array []), it returns it.
+ * Ensures seamless backward compatibility with legacy single-device configs when config.devices is undefined.
+ */
+export function getMockupDevices(config: MockupConfig): CanvasDeviceItem[] {
+  if (config.devices !== undefined) {
+    return config.devices;
+  }
+  return [
+    {
+      id: 'device-primary',
+      deviceType: config.deviceType,
+      deviceColor: config.deviceColor || 'default',
+      screenshotUrl: config.screenshotUrl,
+      originalScreenshotUrl: config.originalScreenshotUrl,
+      cropData: config.cropData,
+      screenshotScale: config.screenshotScale ?? 1,
+      screenshotOffsetX: config.screenshotOffsetX ?? 0,
+      screenshotOffsetY: config.screenshotOffsetY ?? 0,
+      deviceScale: config.deviceScale ?? 1,
+      deviceOffsetX: config.deviceOffsetX ?? 0,
+      deviceOffsetY: config.deviceOffsetY ?? 0,
+      deviceRotation: config.deviceRotation ?? 0,
+      borderRadius: config.borderRadius ?? 24,
+      shadowDepth: config.shadowDepth ?? 'medium',
+    },
+  ];
 }
 
 export interface ToolItem {

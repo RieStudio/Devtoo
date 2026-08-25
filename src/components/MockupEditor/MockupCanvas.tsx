@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { MockupConfig } from '../../types/mockup';
+import { getMockupDevices } from '../../types/mockup';
 import { DeviceFrame } from './DeviceFrame';
 import { 
   Move, 
@@ -27,7 +28,8 @@ interface MockupCanvasProps {
     newOffsetX: number,
     newOffsetY: number,
     newScale: number,
-    newRotation: number
+    newRotation: number,
+    deviceId?: string
   ) => void;
   config: MockupConfig;
   onChangeConfig: (updated: Partial<MockupConfig>, recordHistory?: boolean) => void;
@@ -405,15 +407,23 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
     }
   };
 
-  const currentScale = config.deviceScale ?? 1;
-  const currentOffsetX = config.deviceOffsetX ?? 0;
-  const currentOffsetY = config.deviceOffsetY ?? 0;
-  const currentDeviceRotation = config.deviceRotation ?? 0;
+  // Multi-Device Setup for active screen
+  const activeDevices = getMockupDevices(config);
+  const activeDevId = config.selectedDeviceId || activeDevices[0]?.id || 'device-primary';
+  const activeSelectedDevice = activeDevices.find((d) => d.id === activeDevId) || activeDevices[0];
+
+  const currentScale = activeSelectedDevice?.deviceScale ?? 1;
+  const currentOffsetX = activeSelectedDevice?.deviceOffsetX ?? 0;
+  const currentOffsetY = activeSelectedDevice?.deviceOffsetY ?? 0;
+  const currentDeviceRotation = activeSelectedDevice?.deviceRotation ?? 0;
 
   // Handle pointer down on device frame or resize handle
-  const handlePointerDown = (e: React.PointerEvent, mode: DragMode) => {
+  const handlePointerDown = (e: React.PointerEvent, mode: DragMode, targetDeviceId?: string) => {
     e.stopPropagation();
     e.preventDefault();
+
+    const devId = targetDeviceId || activeDevId;
+    const targetDev = activeDevices.find((d) => d.id === devId) || activeSelectedDevice;
 
     const currentSelectedIds = config.selectedTextIds || (config.selectedTextId ? [config.selectedTextId] : []);
     const isMultiSelectedWithDevice = isDeviceSelected && currentSelectedIds.length > 0 && mode === 'move';
@@ -427,8 +437,10 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
     setDragMoved(false);
     dragStartedRef.current = false;
     setIsDeviceSelected(true);
-    if (config.selectedTextId || (config.selectedTextIds && config.selectedTextIds.length > 0)) {
+
+    if (config.selectedDeviceId !== devId || config.selectedTextId || (config.selectedTextIds && config.selectedTextIds.length > 0)) {
       onChangeConfig({
+        selectedDeviceId: devId,
         selectedTextId: null,
         selectedTextIds: [],
       });
@@ -437,16 +449,19 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
     startPosRef.current = {
       clientX: e.clientX,
       clientY: e.clientY,
-      initialOffsetX: currentOffsetX,
-      initialOffsetY: currentOffsetY,
-      initialScale: currentScale,
+      initialOffsetX: targetDev.deviceOffsetX ?? 0,
+      initialOffsetY: targetDev.deviceOffsetY ?? 0,
+      initialScale: targetDev.deviceScale ?? 1,
     };
   };
 
   // Handle pointer down on device ROTATE button/handle
-  const handleDeviceRotatePointerDown = (e: React.PointerEvent, deviceEl: HTMLElement | null) => {
+  const handleDeviceRotatePointerDown = (e: React.PointerEvent, deviceEl: HTMLElement | null, targetDeviceId?: string) => {
     e.stopPropagation();
     e.preventDefault();
+
+    const devId = targetDeviceId || activeDevId;
+    const targetDev = activeDevices.find((d) => d.id === devId) || activeSelectedDevice;
 
     let cx = e.clientX;
     let cy = e.clientY + 50;
@@ -462,13 +477,18 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
     rotateCenterRef.current = {
       centerX: cx,
       centerY: cy,
-      startRotation: currentDeviceRotation,
+      startRotation: targetDev.deviceRotation ?? 0,
       startPointerAngle: initialAngle,
     };
 
     setDragMode('device-rotate');
     setDragMoved(false);
     setIsDeviceSelected(true);
+    if (config.selectedDeviceId !== devId) {
+      onChangeConfig({
+        selectedDeviceId: devId,
+      });
+    }
   };
 
   // Handle pointer down on text layer drag handle
@@ -945,7 +965,13 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
           showHorizontal: snapY,
         });
 
+        const targetDevId = config.selectedDeviceId || activeDevices[0]?.id || 'device-primary';
+        const updatedDevices = activeDevices.map((d) =>
+          d.id === targetDevId ? { ...d, deviceOffsetX: newOffsetX, deviceOffsetY: newOffsetY } : d
+        );
+
         onChangeConfig({
+          devices: updatedDevices,
           deviceOffsetX: newOffsetX,
           deviceOffsetY: newOffsetY,
         }, false);
@@ -1001,7 +1027,13 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
         if (Math.abs(newRot + 90) < 3) newRot = -90;
         if (Math.abs(Math.abs(newRot) - 180) < 3) newRot = 180;
 
+        const targetDevId = config.selectedDeviceId || activeDevices[0]?.id || 'device-primary';
+        const updatedDevices = activeDevices.map((d) =>
+          d.id === targetDevId ? { ...d, deviceRotation: newRot } : d
+        );
+
         onChangeConfig({
+          devices: updatedDevices,
           deviceRotation: newRot,
         }, false);
       } else if (dragMode === 'text-rotate' && draggingTextId) {
@@ -1107,7 +1139,13 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
           2.2
         );
 
+        const targetDevId = config.selectedDeviceId || activeDevices[0]?.id || 'device-primary';
+        const updatedDevices = activeDevices.map((d) =>
+          d.id === targetDevId ? { ...d, deviceScale: newScale } : d
+        );
+
         onChangeConfig({
+          devices: updatedDevices,
           deviceScale: newScale,
         }, false);
       }
@@ -1143,7 +1181,15 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
             }
           }
 
-          const deviceGlobalX = screenCenters[activeIdx] + (config.deviceOffsetX ?? 0);
+          const targetDevId = config.selectedDeviceId || activeDevices[0]?.id || 'device-primary';
+          const targetDev = activeDevices.find((d) => d.id === targetDevId) || activeSelectedDevice;
+
+          const devOffsetX = targetDev?.deviceOffsetX ?? config.deviceOffsetX ?? 0;
+          const devOffsetY = targetDev?.deviceOffsetY ?? config.deviceOffsetY ?? 0;
+          const devScale = targetDev?.deviceScale ?? config.deviceScale ?? 1;
+          const devRotation = targetDev?.deviceRotation ?? config.deviceRotation ?? 0;
+
+          const deviceGlobalX = screenCenters[activeIdx] + devOffsetX;
 
           let targetIdx = activeIdx;
           let accLeft = 0;
@@ -1162,9 +1208,10 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
               screens[activeIdx].id || activeScreenId,
               screens[targetIdx].id || screens[targetIdx].screenTitle || `screen-${targetIdx}`,
               newOffsetX,
-              config.deviceOffsetY ?? 0,
-              config.deviceScale ?? 1,
-              config.deviceRotation ?? 0
+              devOffsetY,
+              devScale,
+              devRotation,
+              targetDevId
             );
             setDragMode(null);
             setDraggingTextId(null);
@@ -1332,10 +1379,6 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
         {currentScreens.map((screenCfg, screenIndex) => {
           const isThisActiveScreen = screenCfg.id === activeScreenId || (!screenCfg.id && screenIndex === 0);
           const screenDims = getCanvasDimensions(screenCfg);
-          const sScale = isThisActiveScreen ? currentScale : (screenCfg.deviceScale ?? 1);
-          const sOffsetX = isThisActiveScreen ? currentOffsetX : (screenCfg.deviceOffsetX ?? 0);
-          const sOffsetY = isThisActiveScreen ? currentOffsetY : (screenCfg.deviceOffsetY ?? 0);
-          const sRotation = isThisActiveScreen ? currentDeviceRotation : (screenCfg.deviceRotation ?? 0);
 
           const isGapSnapped = snappedGaps.has(screenIndex);
           const hasNextScreen = screenIndex < currentScreens.length - 1;
@@ -1869,11 +1912,8 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                 {!isDeviceOnly && currentScreens.map((otherScreenCfg, otherIndex) => {
                   if (otherIndex === screenIndex) return null;
 
-                  const otherIsActive = otherScreenCfg.id === activeScreenId || (!otherScreenCfg.id && otherIndex === 0);
-                  const otherScale = otherIsActive ? currentScale : (otherScreenCfg.deviceScale ?? 1);
-                  const otherOffsetX = otherIsActive ? currentOffsetX : (otherScreenCfg.deviceOffsetX ?? 0);
-                  const otherOffsetY = otherIsActive ? currentOffsetY : (otherScreenCfg.deviceOffsetY ?? 0);
-                  const otherRotation = otherIsActive ? currentDeviceRotation : (otherScreenCfg.deviceRotation ?? 0);
+                  const otherDevices = getMockupDevices(otherScreenCfg);
+                  const otherIsActiveScreen = otherScreenCfg.id === activeScreenId || (!otherScreenCfg.id && otherIndex === 0);
 
                   // Calculate cumulative distance between screen centers
                   let distance = 0;
@@ -1889,197 +1929,218 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                     }
                   }
 
-                  const overflowOffsetX = otherIndex < screenIndex 
-                    ? otherOffsetX - distance 
-                    : otherOffsetX + distance;
-
-                  // Only render if within visual range of this screen
                   const currentCanvasWidth = parseInt(screenDims.width, 10) || 400;
-                  if (Math.abs(overflowOffsetX) > currentCanvasWidth * 2.5) {
-                    return null;
-                  }
 
-                  const otherScreenshotUrl = otherIsActive ? config.screenshotUrl : otherScreenCfg.screenshotUrl;
-                  const otherScreenshotScale = otherIsActive ? config.screenshotScale : otherScreenCfg.screenshotScale;
-                  const otherScreenshotOffsetX = otherIsActive ? config.screenshotOffsetX : otherScreenCfg.screenshotOffsetX;
-                  const otherScreenshotOffsetY = otherIsActive ? config.screenshotOffsetY : otherScreenCfg.screenshotOffsetY;
-                  const otherDeviceType = otherIsActive ? config.deviceType : otherScreenCfg.deviceType;
-                  const otherDeviceColor = otherIsActive ? config.deviceColor : otherScreenCfg.deviceColor;
-                  const otherBorderRadius = otherIsActive ? config.borderRadius : otherScreenCfg.borderRadius;
-                  const otherShadowDepth = otherIsActive ? config.shadowDepth : otherScreenCfg.shadowDepth;
+                  return otherDevices.map((otherDev, otherDevIdx) => {
+                    const isSelectedInActive = otherIsActiveScreen && otherDev.id === activeDevId;
+                    const otherScale = isSelectedInActive ? currentScale : (otherDev.deviceScale ?? 1);
+                    const otherOffsetX = isSelectedInActive ? currentOffsetX : (otherDev.deviceOffsetX ?? 0);
+                    const otherOffsetY = isSelectedInActive ? currentOffsetY : (otherDev.deviceOffsetY ?? 0);
+                    const otherRotation = isSelectedInActive ? currentDeviceRotation : (otherDev.deviceRotation ?? 0);
+
+                    const overflowOffsetX = otherIndex < screenIndex 
+                      ? otherOffsetX - distance 
+                      : otherOffsetX + distance;
+
+                    // Only render if within visual range of this screen
+                    if (Math.abs(overflowOffsetX) > currentCanvasWidth * 2.5) {
+                      return null;
+                    }
+
+                    return (
+                      <div
+                        key={`overflow-bleed-${otherScreenCfg.id || otherIndex}-${otherDev.id || otherDevIdx}`}
+                        className="device-interactive-container overflow-bleed-device"
+                        style={{
+                          position: 'absolute',
+                          left: '50%',
+                          top: '50%',
+                          transform: `translate(calc(-50% + ${overflowOffsetX}px), calc(-50% + ${otherOffsetY}px)) scale(${otherScale}) rotate(${otherRotation}deg)`,
+                          transformOrigin: 'center center',
+                          pointerEvents: 'none',
+                          zIndex: 10 + otherDevIdx,
+                          touchAction: 'none',
+                        }}
+                        aria-hidden="true"
+                      >
+                        <div className="device-frame-capture-target">
+                          <DeviceFrame
+                            deviceType={otherDev.deviceType}
+                            deviceColor={otherDev.deviceColor}
+                            screenshotUrl={otherDev.screenshotUrl}
+                            screenshotScale={otherDev.screenshotScale}
+                            screenshotOffsetX={otherDev.screenshotOffsetX}
+                            screenshotOffsetY={otherDev.screenshotOffsetY}
+                            borderRadius={otherDev.borderRadius ?? otherScreenCfg.borderRadius ?? 24}
+                            shadowDepth={otherDev.shadowDepth ?? otherScreenCfg.shadowDepth ?? 'medium'}
+                            onUploadClick={() => {}}
+                            presetWidth={otherScreenCfg.width}
+                            presetHeight={otherScreenCfg.height}
+                            isDeviceOnly={false}
+                          />
+                        </div>
+                      </div>
+                    );
+                  });
+                })}
+
+                {/* Interactive Devices for this screen */}
+                {getMockupDevices(screenCfg).map((screenDev, devIdx) => {
+                  const isThisDeviceActive = isThisActiveScreen && screenDev.id === activeDevId;
+                  const devScale = isThisDeviceActive ? currentScale : (screenDev.deviceScale ?? 1);
+                  const devOffsetX = isThisDeviceActive ? currentOffsetX : (screenDev.deviceOffsetX ?? 0);
+                  const devOffsetY = isThisDeviceActive ? currentOffsetY : (screenDev.deviceOffsetY ?? 0);
+                  const devRotation = isThisDeviceActive ? currentDeviceRotation : (screenDev.deviceRotation ?? 0);
+                  const isDevSelected = !isDeviceOnly && isThisActiveScreen && isDeviceSelected && isThisDeviceActive;
 
                   return (
                     <div
-                      key={`overflow-bleed-${otherScreenCfg.id || otherIndex}`}
-                      className="device-interactive-container overflow-bleed-device"
+                      key={screenDev.id || `screen-dev-${devIdx}`}
+                      className={`device-interactive-container ${
+                        isDevSelected ? 'is-device-selected' : ''
+                      } ${!isDeviceOnly && isThisActiveScreen && isThisDeviceActive && (dragMode === 'move' || dragMode?.startsWith('resize-') || dragMode === 'device-rotate') ? 'is-dragging' : ''}`}
                       style={{
-                        position: 'absolute',
-                        left: '50%',
-                        top: '50%',
-                        transform: `translate(calc(-50% + ${overflowOffsetX}px), calc(-50% + ${otherOffsetY}px)) scale(${otherScale}) rotate(${otherRotation}deg)`,
+                        position: isDeviceOnly ? 'relative' : 'absolute',
+                        left: isDeviceOnly ? undefined : '50%',
+                        top: isDeviceOnly ? undefined : '50%',
+                        transform: isDeviceOnly 
+                          ? 'none' 
+                          : `translate(calc(-50% + ${devOffsetX}px), calc(-50% + ${devOffsetY}px)) scale(${devScale}) rotate(${devRotation}deg)`,
                         transformOrigin: 'center center',
-                        pointerEvents: 'none',
-                        zIndex: 10,
-                        touchAction: 'none',
+                        cursor: dragMode === 'move' && isThisDeviceActive ? 'grabbing' : 'default',
+                        transition: dragMode && isThisDeviceActive ? 'none' : 'transform 0.15s ease-out',
+                        touchAction: isDeviceOnly ? 'auto' : 'none',
+                        zIndex: isThisDeviceActive ? 14 : 12 + devIdx,
                       }}
-                      aria-hidden="true"
-                    >
-                      <div className="device-frame-capture-target">
-                        <DeviceFrame
-                          deviceType={otherDeviceType}
-                          deviceColor={otherDeviceColor}
-                          screenshotUrl={otherScreenshotUrl}
-                          screenshotScale={otherScreenshotScale}
-                          screenshotOffsetX={otherScreenshotOffsetX}
-                          screenshotOffsetY={otherScreenshotOffsetY}
-                          borderRadius={otherBorderRadius}
-                          shadowDepth={otherShadowDepth}
-                          onUploadClick={() => {}}
-                          presetWidth={otherScreenCfg.width}
-                          presetHeight={otherScreenCfg.height}
-                          isDeviceOnly={false}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-
-                {/* Interactive Device Wrapper */}
-                <div
-                  className={`device-interactive-container ${
-                    !isDeviceOnly && isThisActiveScreen && isDeviceSelected ? 'is-device-selected' : ''
-                  } ${!isDeviceOnly && isThisActiveScreen && (dragMode === 'move' || dragMode?.startsWith('resize-') || dragMode === 'device-rotate') ? 'is-dragging' : ''}`}
-                  style={{
-                    position: isDeviceOnly ? 'relative' : 'absolute',
-                    left: isDeviceOnly ? undefined : '50%',
-                    top: isDeviceOnly ? undefined : '50%',
-                    transform: isDeviceOnly 
-                      ? 'none' 
-                      : `translate(calc(-50% + ${sOffsetX}px), calc(-50% + ${sOffsetY}px)) scale(${sScale}) rotate(${sRotation}deg)`,
-                    transformOrigin: 'center center',
-                    cursor: dragMode === 'move' ? 'grabbing' : 'default',
-                    transition: dragMode ? 'none' : 'transform 0.15s ease-out',
-                    touchAction: isDeviceOnly ? 'auto' : 'none',
-                    zIndex: isThisActiveScreen ? 14 : 12,
-                  }}
-                  onPointerDown={isDeviceOnly ? undefined : (e) => {
-                    if (!isThisActiveScreen && screenCfg.id) {
-                      onSelectScreen?.(screenCfg.id);
-                    }
-                    handlePointerDown(e, 'move');
-                  }}
-                  onClick={(e) => {
-                    if (!isThisActiveScreen && screenCfg.id) {
-                      onSelectScreen?.(screenCfg.id);
-                    }
-                    handleDeviceClick(e);
-                  }}
-                >
-                  <div
-                    ref={isThisActiveScreen ? deviceFrameRef : undefined}
-                    className="device-frame-capture-target"
-                  >
-                    <DeviceFrame
-                      deviceType={screenCfg.deviceType}
-                      deviceColor={screenCfg.deviceColor}
-                      screenshotUrl={screenCfg.screenshotUrl}
-                      screenshotScale={screenCfg.screenshotScale}
-                      screenshotOffsetX={screenCfg.screenshotOffsetX}
-                      screenshotOffsetY={screenCfg.screenshotOffsetY}
-                      borderRadius={screenCfg.borderRadius}
-                      shadowDepth={screenCfg.shadowDepth}
-                      onUploadClick={() => {
+                      onPointerDown={isDeviceOnly ? undefined : (e) => {
                         if (!isThisActiveScreen && screenCfg.id) {
                           onSelectScreen?.(screenCfg.id);
                         }
-                        onUploadImageClick();
+                        handlePointerDown(e, 'move', screenDev.id);
                       }}
-                      presetWidth={screenCfg.width}
-                      presetHeight={screenCfg.height}
-                      isDeviceOnly={isDeviceOnly}
-                    />
-                  </div>
-
-                  {/* Transform Gizmo only on active screen */}
-                  {!isExporting && !isDeviceOnly && isThisActiveScreen && isDeviceSelected && (
-                    <div
-                      className="device-transform-gizmo"
-                      style={{
-                        opacity: 1,
-                        pointerEvents: 'auto',
+                      onClick={(e) => {
+                        if (!isThisActiveScreen && screenCfg.id) {
+                          onSelectScreen?.(screenCfg.id);
+                        }
+                        handleDeviceClick(e);
+                        if (config.selectedDeviceId !== screenDev.id) {
+                          onChangeConfig({ selectedDeviceId: screenDev.id });
+                        }
                       }}
                     >
-                      {/* Top Device Rotate Pill */}
                       <div
-                        className="device-rotate-pill"
-                        title="Döndürmek için sürükleyin veya 15° çevirmek için tıklayın"
-                        onPointerDown={(e) => {
-                          const deviceEl = e.currentTarget.closest('.device-interactive-container') as HTMLElement;
-                          handleDeviceRotatePointerDown(e, deviceEl);
-                        }}
-                        onClick={(e) => {
-                          if (!dragMoved) {
-                            e.stopPropagation();
-                            const newRot = ((currentDeviceRotation + 15) % 360);
-                            onChangeConfig({ deviceRotation: newRot });
-                          }
-                        }}
+                        ref={isThisDeviceActive ? deviceFrameRef : undefined}
+                        className="device-frame-capture-target"
                       >
-                        <RotateCw size={11} />
-                        <span>{currentDeviceRotation}°</span>
+                        <DeviceFrame
+                          deviceType={screenDev.deviceType}
+                          deviceColor={screenDev.deviceColor}
+                          screenshotUrl={screenDev.screenshotUrl}
+                          screenshotScale={screenDev.screenshotScale}
+                          screenshotOffsetX={screenDev.screenshotOffsetX}
+                          screenshotOffsetY={screenDev.screenshotOffsetY}
+                          borderRadius={screenDev.borderRadius ?? screenCfg.borderRadius ?? 24}
+                          shadowDepth={screenDev.shadowDepth ?? screenCfg.shadowDepth ?? 'medium'}
+                          onUploadClick={() => {
+                            if (!isThisActiveScreen && screenCfg.id) {
+                              onSelectScreen?.(screenCfg.id);
+                            }
+                            if (config.selectedDeviceId !== screenDev.id) {
+                              onChangeConfig({ selectedDeviceId: screenDev.id });
+                            }
+                            onUploadImageClick();
+                          }}
+                          presetWidth={screenCfg.width}
+                          presetHeight={screenCfg.height}
+                          isDeviceOnly={isDeviceOnly}
+                        />
                       </div>
 
-                      <div
-                        className="resize-handle handle-nw"
-                        title="Boyutlandır"
-                        onPointerDown={(e) => handlePointerDown(e, 'resize-nw')}
-                      />
-                      <div
-                        className="resize-handle handle-ne"
-                        title="Boyutlandır"
-                        onPointerDown={(e) => handlePointerDown(e, 'resize-ne')}
-                      />
-                      <div
-                        className="resize-handle handle-sw"
-                        title="Boyutlandır"
-                        onPointerDown={(e) => handlePointerDown(e, 'resize-sw')}
-                      />
-                      <div
-                        className="resize-handle handle-se"
-                        title="Boyutlandır"
-                        onPointerDown={(e) => handlePointerDown(e, 'resize-se')}
-                      />
+                      {/* Transform Gizmo only on active selected device */}
+                      {!isExporting && !isDeviceOnly && isThisActiveScreen && isDevSelected && (
+                        <div
+                          className="device-transform-gizmo"
+                          style={{
+                            opacity: 1,
+                            pointerEvents: 'auto',
+                          }}
+                        >
+                          {/* Top Device Rotate Pill */}
+                          <div
+                            className="device-rotate-pill"
+                            title="Döndürmek için sürükleyin veya 15° çevirmek için tıklayın"
+                            onPointerDown={(e) => {
+                              const deviceEl = e.currentTarget.closest('.device-interactive-container') as HTMLElement;
+                              handleDeviceRotatePointerDown(e, deviceEl, screenDev.id);
+                            }}
+                            onClick={(e) => {
+                              if (!dragMoved) {
+                                e.stopPropagation();
+                                const newRot = ((devRotation + 15) % 360);
+                                const updatedDevs = activeDevices.map((d) =>
+                                  d.id === screenDev.id ? { ...d, deviceRotation: newRot } : d
+                                );
+                                onChangeConfig({ devices: updatedDevs, deviceRotation: newRot });
+                              }
+                            }}
+                          >
+                            <RotateCw size={11} />
+                            <span>{devRotation}°</span>
+                          </div>
 
-                      {dragMode && (
-                        <div className="transform-floating-pill">
-                          {dragMode === 'move' ? (
-                            <>
-                              <Move size={12} />
-                              <span>
-                                X: {currentOffsetX}px | Y: {currentOffsetY}px
-                              </span>
-                            </>
-                          ) : dragMode === 'device-rotate' ? (
-                            <>
-                              <RotateCw size={12} />
-                              <span>{currentDeviceRotation}°</span>
-                            </>
-                          ) : dragMode === 'text-move' ? (
-                            <>
-                              <Move size={12} />
-                              <span>Metin Taşınıyor</span>
-                            </>
-                          ) : (
-                            <>
-                              <Maximize2 size={12} />
-                              <span>%{Math.round(currentScale * 100)}</span>
-                            </>
+                          <div
+                            className="resize-handle handle-nw"
+                            title="Boyutlandır"
+                            onPointerDown={(e) => handlePointerDown(e, 'resize-nw', screenDev.id)}
+                          />
+                          <div
+                            className="resize-handle handle-ne"
+                            title="Boyutlandır"
+                            onPointerDown={(e) => handlePointerDown(e, 'resize-ne', screenDev.id)}
+                          />
+                          <div
+                            className="resize-handle handle-sw"
+                            title="Boyutlandır"
+                            onPointerDown={(e) => handlePointerDown(e, 'resize-sw', screenDev.id)}
+                          />
+                          <div
+                            className="resize-handle handle-se"
+                            title="Boyutlandır"
+                            onPointerDown={(e) => handlePointerDown(e, 'resize-se', screenDev.id)}
+                          />
+
+                          {dragMode && (
+                            <div className="transform-floating-pill">
+                              {dragMode === 'move' ? (
+                                <>
+                                  <Move size={12} />
+                                  <span>
+                                    X: {devOffsetX}px | Y: {devOffsetY}px
+                                  </span>
+                                </>
+                              ) : dragMode === 'device-rotate' ? (
+                                <>
+                                  <RotateCw size={12} />
+                                  <span>{devRotation}°</span>
+                                </>
+                              ) : dragMode === 'text-move' ? (
+                                <>
+                                  <Move size={12} />
+                                  <span>Metin Taşınıyor</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Maximize2 size={12} />
+                                  <span>%{Math.round(devScale * 100)}</span>
+                                </>
+                              )}
+                            </div>
                           )}
                         </div>
                       )}
                     </div>
-                  )}
-                </div>
+                  );
+                })}
               </div>
             </div>
           );
