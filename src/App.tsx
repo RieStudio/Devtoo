@@ -16,8 +16,8 @@ const INITIAL_CONFIG: MockupConfig = {
   screenTitle: 'Ekran 1',
   exportMode: 'full-canvas',
   preset: 'appstore-6.7',
-  width: 1290,
-  height: 2796,
+  width: 1080,
+  height: 1920,
   bgType: 'solid',
   bgColor: '#FFF0F3',
   patternOpacity: 0.1,
@@ -520,6 +520,33 @@ export function App() {
             textLayers: remaining,
             selectedTextId: remaining[0]?.id || null,
             selectedTextIds: remaining[0] ? [remaining[0].id] : [],
+          });
+        } else if (activeScreenConfig.selectedDeviceId) {
+          // Delete selected device from screen
+          e.preventDefault();
+          const currentDevs = getMockupDevices(activeScreenConfig);
+          const remainingDevs = currentDevs.filter((d) => d.id !== activeScreenConfig.selectedDeviceId);
+          const nextSelectedDevId = remainingDevs[0]?.id || null;
+
+          handleUpdateConfig({
+            devices: remainingDevs,
+            selectedDeviceId: nextSelectedDevId,
+            ...(remainingDevs[0] ? {
+              deviceType: remainingDevs[0].deviceType,
+              deviceColor: remainingDevs[0].deviceColor,
+              screenshotUrl: remainingDevs[0].screenshotUrl,
+              screenshotScale: remainingDevs[0].screenshotScale,
+              screenshotOffsetX: remainingDevs[0].screenshotOffsetX,
+              screenshotOffsetY: remainingDevs[0].screenshotOffsetY,
+              deviceScale: remainingDevs[0].deviceScale,
+              deviceOffsetX: remainingDevs[0].deviceOffsetX,
+              deviceOffsetY: remainingDevs[0].deviceOffsetY,
+              deviceRotation: remainingDevs[0].deviceRotation,
+            } : {
+              screenshotUrl: null,
+              originalScreenshotUrl: null,
+              cropData: null,
+            }),
           });
         }
       }

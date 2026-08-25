@@ -191,11 +191,17 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
 
   const handleAddTextLayer = () => {
     const newId = `layer-${Date.now()}`;
+    const layers = config.textLayers || [];
+    const lastLayer = layers[layers.length - 1];
+
+    const baseOffsetX = lastLayer ? (lastLayer.x || 0) + 20 : 0;
+    const baseOffsetY = lastLayer ? (lastLayer.y || 0) + 32 : 0;
+
     const newLayer: TextLayer = {
       id: newId,
       text: 'Yeni Metin',
-      x: 0,
-      y: 0,
+      x: baseOffsetX,
+      y: baseOffsetY,
       fontSize: 22,
       color: '#0F172A',
       fontFamily: 'sans',
@@ -205,8 +211,9 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
       textAlign: 'center',
     };
     onChangeConfig({
-      textLayers: [...(config.textLayers || []), newLayer],
+      textLayers: [...layers, newLayer],
       selectedTextId: newId,
+      selectedTextIds: [newId],
     });
   };
 

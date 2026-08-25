@@ -355,18 +355,18 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
   // Synchronous ref to track whether the drag threshold has been crossed and startPosRef re-anchored
   const dragStartedRef = useRef<boolean>(false);
 
-  // Determine outer container dimensions for responsive fit
+  // Determine outer container dimensions for responsive fit (9:16 portrait: 378px by 672px)
   const getCanvasDimensions = (cfg: MockupConfig = config) => {
     const isLandscape = cfg.width > cfg.height;
     const isSquare = cfg.width === cfg.height;
 
     if (isLandscape) {
-      return { width: '660px', minHeight: '380px' };
+      return { width: '672px', minHeight: '378px' };
     }
     if (isSquare) {
-      return { width: '440px', minHeight: '440px' };
+      return { width: '450px', minHeight: '450px' };
     }
-    return { width: '400px', minHeight: '640px' };
+    return { width: '378px', minHeight: '672px' };
   };
 
   const currentScreens = (screens && screens.length > 0) ? screens : [config];
@@ -1538,7 +1538,9 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                 }`}
                 style={{
                   width: isDeviceOnly ? 'auto' : screenDims.width,
+                  height: isDeviceOnly ? 'auto' : screenDims.minHeight,
                   minHeight: isDeviceOnly ? 'auto' : screenDims.minHeight,
+                  aspectRatio: isDeviceOnly ? undefined : `${screenCfg.width} / ${screenCfg.height}`,
                   backgroundColor: isDeviceOnly ? 'transparent' : screenCfg.bgColor,
                   boxShadow: isDeviceOnly ? 'none' : undefined,
                   border: isDeviceOnly ? 'none' : undefined,
@@ -2086,6 +2088,39 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                           >
                             <RotateCw size={11} />
                             <span>{devRotation}°</span>
+                          </div>
+
+                          {/* Quick Delete Pill on Canvas */}
+                          <div
+                            className="device-delete-pill"
+                            title="Bu cihazı tuvalden sil (Delete tuşuyla da silebilirsiniz)"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const remainingDevs = activeDevices.filter((d) => d.id !== screenDev.id);
+                              const nextSelectedDevId = remainingDevs[0]?.id || null;
+                              onChangeConfig({
+                                devices: remainingDevs,
+                                selectedDeviceId: nextSelectedDevId,
+                                ...(remainingDevs[0] ? {
+                                  deviceType: remainingDevs[0].deviceType,
+                                  deviceColor: remainingDevs[0].deviceColor,
+                                  screenshotUrl: remainingDevs[0].screenshotUrl,
+                                  screenshotScale: remainingDevs[0].screenshotScale,
+                                  screenshotOffsetX: remainingDevs[0].screenshotOffsetX,
+                                  screenshotOffsetY: remainingDevs[0].screenshotOffsetY,
+                                  deviceScale: remainingDevs[0].deviceScale,
+                                  deviceOffsetX: remainingDevs[0].deviceOffsetX,
+                                  deviceOffsetY: remainingDevs[0].deviceOffsetY,
+                                  deviceRotation: remainingDevs[0].deviceRotation,
+                                } : {
+                                  screenshotUrl: null,
+                                  originalScreenshotUrl: null,
+                                  cropData: null,
+                                }),
+                              });
+                            }}
+                          >
+                            <Trash2 size={11} />
                           </div>
 
                           <div

@@ -1378,6 +1378,35 @@ input[type="range"] {
   cursor: grabbing;
 }
 
+/* Device Quick Delete Pill Button */
+.device-delete-pill {
+  position: absolute;
+  top: -34px;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-default);
+  color: var(--text-muted);
+  border-radius: 50%;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  user-select: none;
+  transition: all 0.15s ease;
+  z-index: 35;
+}
+
+.device-delete-pill:hover {
+  background-color: #FFF0F3;
+  border-color: var(--chili-primary);
+  color: var(--chili-primary);
+  transform: scale(1.1);
+}
+
 .resize-handle {
   position: absolute;
   width: 14px;
