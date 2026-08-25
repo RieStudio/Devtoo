@@ -459,7 +459,7 @@ body {
 .canvas-zoom-container {
   display: flex;
   align-items: center;
-  gap: 48px;
+  gap: 0;
   transform-origin: 0 0;
   padding: 24px;
   width: max-content;
@@ -491,6 +491,51 @@ body {
   box-shadow: var(--shadow-sm);
   transition: all 0.15s ease;
   cursor: default;
+  position: relative;
+}
+
+/* Gap Snap / Panorama Join Button between screen headers */
+.screen-gap-snap-btn {
+  position: absolute;
+  right: -36px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-default);
+  color: #64748B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 40;
+}
+
+.screen-gap-snap-btn:hover {
+  background-color: var(--chili-subtle);
+  border-color: var(--chili-primary);
+  color: var(--chili-primary);
+  transform: translateY(-50%) scale(1.12);
+  box-shadow: 0 3px 10px rgba(217, 4, 41, 0.2);
+}
+
+.screen-gap-snap-btn.is-snapped {
+  right: -15px;
+  background-color: #0F172A;
+  border-color: #0F172A;
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.screen-gap-snap-btn.is-snapped:hover {
+  background-color: var(--chili-primary);
+  border-color: var(--chili-primary);
+  color: #FFFFFF;
+  transform: translateY(-50%) scale(1.15);
 }
 
 .mockup-screen-wrapper.is-active-screen .mockup-screen-header {
@@ -1296,6 +1341,41 @@ input[type="range"] {
   pointer-events: none;
   transition: opacity 0.15s ease;
   z-index: 25;
+}
+
+/* Device Top Rotate Pill Button */
+.device-rotate-pill {
+  position: absolute;
+  top: -34px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+  padding: 3px 8px;
+  border-radius: 14px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: grab;
+  pointer-events: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(217, 4, 41, 0.2);
+  user-select: none;
+  transition: all 0.15s ease;
+  z-index: 35;
+}
+
+.device-rotate-pill:hover {
+  background-color: var(--chili-subtle);
+  border-color: var(--chili-primary);
+  color: var(--chili-primary);
+  transform: translateX(-50%) scale(1.05);
+}
+
+.device-rotate-pill:active {
+  cursor: grabbing;
 }
 
 .resize-handle {

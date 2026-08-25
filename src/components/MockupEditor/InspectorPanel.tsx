@@ -21,7 +21,8 @@ import {
   AlignCenter,
   AlignRight,
   Type,
-  Plus
+  Plus,
+  RotateCw
 } from 'lucide-react';
 
 interface InspectorPanelProps {
@@ -470,15 +471,61 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             </div>
           </div>
 
+          {/* Device Rotation */}
+          <div className="control-group">
+            <div className="control-label">
+              <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <RotateCw size={13} color="#64748B" />
+                <span>Cihaz Döndürme</span>
+              </span>
+              <span className="control-value">{config.deviceRotation ?? 0}°</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <input
+                type="range"
+                min="-180"
+                max="180"
+                value={config.deviceRotation ?? 0}
+                onChange={(e) => onChangeConfig({ deviceRotation: Number(e.target.value) })}
+                style={{ flex: 1 }}
+              />
+              <button
+                className="stepper-mini-btn"
+                title="Döndürmeyi Sıfırla (0°)"
+                onClick={() => onChangeConfig({ deviceRotation: 0 })}
+              >
+                0°
+              </button>
+            </div>
+            {/* Quick rotation buttons */}
+            <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
+              {[
+                { label: '-15°', val: ((config.deviceRotation ?? 0) - 15 + 360) % 360 > 180 ? ((config.deviceRotation ?? 0) - 15) : ((config.deviceRotation ?? 0) - 15) },
+                { label: '0°', val: 0 },
+                { label: '+15°', val: ((config.deviceRotation ?? 0) + 15) },
+                { label: '45°', val: 45 },
+                { label: '-45°', val: -45 },
+              ].map((btn) => (
+                <button
+                  key={btn.label}
+                  className={`scale-pill-btn ${(config.deviceRotation ?? 0) === btn.val ? 'active' : ''}`}
+                  onClick={() => onChangeConfig({ deviceRotation: btn.val })}
+                >
+                  {btn.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Quick alignment button */}
           <div style={{ marginTop: '2px' }}>
             <button
               className="btn-secondary"
               style={{ width: '100%', fontSize: '11px', padding: '6px 8px', justifyContent: 'center' }}
-              onClick={() => onChangeConfig({ deviceOffsetX: 0, deviceOffsetY: 0 })}
+              onClick={() => onChangeConfig({ deviceOffsetX: 0, deviceOffsetY: 0, deviceRotation: 0 })}
             >
               <Crosshair size={12} color="#D90429" />
-              <span>Merkeze Ortala</span>
+              <span>Merkeze ve Düz Konuma Getir</span>
             </button>
           </div>
         </div>

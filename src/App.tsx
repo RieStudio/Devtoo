@@ -29,6 +29,7 @@ const INITIAL_CONFIG: MockupConfig = {
   deviceScale: 1,
   deviceOffsetX: 0,
   deviceOffsetY: 60,
+  deviceRotation: 0,
   padding: 32,
   borderRadius: 24,
   shadowDepth: 'medium',
@@ -43,27 +44,31 @@ const INITIAL_CONFIG: MockupConfig = {
       y: -230,
       fontSize: 26,
       color: '#0F172A',
-      fontFamily: 'sans',
+      fontFamily: 'outfit',
       isBold: true,
       isItalic: false,
       isUnderline: false,
       textAlign: 'center',
       letterSpacing: -0.5,
+      rotation: 0,
+      width: 320,
     },
     {
       id: 'layer-2',
-      text: 'Açıklama',
+      text: 'Etkileyici ve profesyonel mağaza görselleri tasarlayın',
       x: 0,
-      y: -190,
-      fontSize: 15,
-      color: '#64748B',
-      fontFamily: 'sans',
+      y: -185,
+      fontSize: 14,
+      color: '#475569',
+      fontFamily: 'outfit',
       isBold: false,
       isItalic: false,
       isUnderline: false,
       textAlign: 'center',
       letterSpacing: 0,
-    }
+      rotation: 0,
+      width: 320,
+    },
   ],
   exportScale: 2,
 };
@@ -117,6 +122,7 @@ export function App() {
       deviceScale: cfg.deviceScale,
       deviceOffsetX: cfg.deviceOffsetX,
       deviceOffsetY: cfg.deviceOffsetY,
+      deviceRotation: cfg.deviceRotation,
       padding: cfg.padding,
       borderRadius: cfg.borderRadius,
       shadowDepth: cfg.shadowDepth,
@@ -237,6 +243,92 @@ export function App() {
     if (newHist.length > 60) newHist.shift();
     historyRef.current = newHist;
     historyIndexRef.current = newHist.length - 1;
+  };
+
+  const handleTransferDevice = (
+    sourceScreenId: string,
+    targetScreenId: string,
+    newOffsetX: number,
+    newOffsetY: number,
+    newScale: number,
+    newRotation: number
+  ) => {
+    setScreens((prevScreens) => {
+      const source = prevScreens.find((s) => s.id === sourceScreenId);
+      const target = prevScreens.find((s) => s.id === targetScreenId);
+      if (!source || !target) return prevScreens;
+
+      const sourceDeviceScale = source.deviceScale ?? newScale ?? 1;
+      const targetDeviceScale = target.deviceScale ?? 1;
+
+      const nextScreens = prevScreens.map((s) => {
+        if (s.id === targetScreenId) {
+          return {
+            ...s,
+            deviceType: source.deviceType,
+            deviceColor: source.deviceColor,
+            screenshotUrl: source.screenshotUrl,
+            originalScreenshotUrl: source.originalScreenshotUrl,
+            cropData: source.cropData,
+            screenshotScale: source.screenshotScale,
+            screenshotOffsetX: source.screenshotOffsetX,
+            screenshotOffsetY: source.screenshotOffsetY,
+            deviceScale: sourceDeviceScale,
+            deviceOffsetX: newOffsetX,
+            deviceOffsetY: newOffsetY,
+            deviceRotation: newRotation,
+            borderRadius: source.borderRadius,
+            shadowDepth: source.shadowDepth,
+          };
+        }
+        if (s.id === sourceScreenId) {
+          // If target had a screenshot/device, swap it to source while strictly preserving target's own scale
+          if (target.screenshotUrl || target.originalScreenshotUrl) {
+            return {
+              ...s,
+              deviceType: target.deviceType,
+              deviceColor: target.deviceColor,
+              screenshotUrl: target.screenshotUrl,
+              originalScreenshotUrl: target.originalScreenshotUrl,
+              cropData: target.cropData,
+              screenshotScale: target.screenshotScale,
+              screenshotOffsetX: target.screenshotOffsetX,
+              screenshotOffsetY: target.screenshotOffsetY,
+              deviceScale: targetDeviceScale,
+              deviceOffsetX: 0,
+              deviceOffsetY: target.deviceOffsetY ?? 0,
+              deviceRotation: target.deviceRotation ?? 0,
+              borderRadius: target.borderRadius,
+              shadowDepth: target.shadowDepth,
+            };
+          }
+
+          return {
+            ...s,
+            screenshotUrl: null,
+            originalScreenshotUrl: null,
+            cropData: null,
+            deviceOffsetX: 0,
+            deviceOffsetY: 0,
+            deviceRotation: 0,
+            deviceScale: 1,
+          };
+        }
+        return s;
+      });
+
+      const newHist = historyRef.current.slice(0, historyIndexRef.current + 1);
+      newHist.push(JSON.parse(JSON.stringify(nextScreens)));
+      if (newHist.length > 60) newHist.shift();
+      historyRef.current = newHist;
+      historyIndexRef.current = newHist.length - 1;
+
+      return nextScreens;
+    });
+
+    setActiveScreenId(targetScreenId);
+    const targetTitle = screens.find((s) => s.id === targetScreenId)?.screenTitle || 'Yeni ekrana';
+    showToast(`Cihaz ${targetTitle} aktarıldı`);
   };
 
   const handleUndo = () => {
@@ -530,6 +622,7 @@ export function App() {
             onDuplicateScreen={handleDuplicateScreen}
             onDeleteScreen={handleDeleteScreen}
             onUpdateScreenTitle={handleUpdateScreenTitle}
+            onTransferDevice={handleTransferDevice}
             config={activeScreenConfig}
             onChangeConfig={handleUpdateConfig}
             onUploadImageClick={handleTriggerUpload}

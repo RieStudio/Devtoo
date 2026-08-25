@@ -21,6 +21,14 @@ interface MockupCanvasProps {
   onDuplicateScreen: (id: string) => void;
   onDeleteScreen: (id: string) => void;
   onUpdateScreenTitle?: (id: string, title: string) => void;
+  onTransferDevice?: (
+    sourceScreenId: string,
+    targetScreenId: string,
+    newOffsetX: number,
+    newOffsetY: number,
+    newScale: number,
+    newRotation: number
+  ) => void;
   config: MockupConfig;
   onChangeConfig: (updated: Partial<MockupConfig>, recordHistory?: boolean) => void;
   onCommitHistory?: () => void;
@@ -35,6 +43,7 @@ type DragMode =
   | 'move'
   | 'group-move'
   | 'group-rotate'
+  | 'device-rotate'
   | 'resize-nw'
   | 'resize-ne'
   | 'resize-sw'
@@ -210,6 +219,7 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
   onDuplicateScreen,
   onDeleteScreen,
   onUpdateScreenTitle,
+  onTransferDevice,
   config,
   onChangeConfig,
   onUploadImageClick,
@@ -222,6 +232,19 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
   const [panOffset, setPanOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [snappedGaps, setSnappedGaps] = useState<Set<number>>(new Set());
+
+  const toggleGapSnap = (gapIndex: number) => {
+    setSnappedGaps((prev) => {
+      const next = new Set(prev);
+      if (next.has(gapIndex)) {
+        next.delete(gapIndex);
+      } else {
+        next.add(gapIndex);
+      }
+      return next;
+    });
+  };
 
   const zoomRef = useRef<number>(1);
   const panRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -327,6 +350,9 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
     startAngle: 0,
   });
 
+  // Synchronous ref to track whether the drag threshold has been crossed and startPosRef re-anchored
+  const dragStartedRef = useRef<boolean>(false);
+
   // Determine outer container dimensions for responsive fit
   const getCanvasDimensions = (cfg: MockupConfig = config) => {
     const isLandscape = cfg.width > cfg.height;
@@ -382,6 +408,7 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
   const currentScale = config.deviceScale ?? 1;
   const currentOffsetX = config.deviceOffsetX ?? 0;
   const currentOffsetY = config.deviceOffsetY ?? 0;
+  const currentDeviceRotation = config.deviceRotation ?? 0;
 
   // Handle pointer down on device frame or resize handle
   const handlePointerDown = (e: React.PointerEvent, mode: DragMode) => {
@@ -398,6 +425,7 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
 
     setDragMode(mode);
     setDragMoved(false);
+    dragStartedRef.current = false;
     setIsDeviceSelected(true);
     if (config.selectedTextId || (config.selectedTextIds && config.selectedTextIds.length > 0)) {
       onChangeConfig({
@@ -413,6 +441,34 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
       initialOffsetY: currentOffsetY,
       initialScale: currentScale,
     };
+  };
+
+  // Handle pointer down on device ROTATE button/handle
+  const handleDeviceRotatePointerDown = (e: React.PointerEvent, deviceEl: HTMLElement | null) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    let cx = e.clientX;
+    let cy = e.clientY + 50;
+
+    if (deviceEl) {
+      const rect = deviceEl.getBoundingClientRect();
+      cx = rect.left + rect.width / 2;
+      cy = rect.top + rect.height / 2;
+    }
+
+    const initialAngle = Math.atan2(e.clientY - cy, e.clientX - cx) * (180 / Math.PI);
+
+    rotateCenterRef.current = {
+      centerX: cx,
+      centerY: cy,
+      startRotation: currentDeviceRotation,
+      startPointerAngle: initialAngle,
+    };
+
+    setDragMode('device-rotate');
+    setDragMoved(false);
+    setIsDeviceSelected(true);
   };
 
   // Handle pointer down on text layer drag handle
@@ -662,6 +718,13 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
     }
 
     // Only initiate canvas panning when clicking on the empty background area outside images
+    setIsDeviceSelected(false);
+    setEditingTextId(null);
+    onChangeConfig({
+      selectedTextId: null,
+      selectedTextIds: [],
+    });
+
     panStartRef.current = {
       startX: e.clientX,
       startY: e.clientY,
@@ -708,10 +771,11 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
           const hitTextIds: string[] = [];
           textEls.forEach((el) => {
             const elRect = el.getBoundingClientRect();
-            const elL = elRect.left - rect.left;
-            const elR = elRect.right - rect.left;
-            const elT = elRect.top - rect.top;
-            const elB = elRect.bottom - rect.top;
+            // Scaled relative to unzoomed container coordinates
+            const elL = (elRect.left - rect.left) / effectiveZoom;
+            const elR = (elRect.right - rect.left) / effectiveZoom;
+            const elT = (elRect.top - rect.top) / effectiveZoom;
+            const elB = (elRect.bottom - rect.top) / effectiveZoom;
 
             const intersects = !(boxLeft > elR || boxRight < elL || boxTop > elB || boxBottom < elT);
             if (intersects) {
@@ -722,27 +786,15 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
             }
           });
 
-          let hitDevice = false;
-          const deviceEl = exportRef.current.querySelector('.device-interactive-container');
-          if (deviceEl) {
-            const devRect = deviceEl.getBoundingClientRect();
-            const devL = devRect.left - rect.left;
-            const devR = devRect.right - rect.left;
-            const devT = devRect.top - rect.top;
-            const devB = devRect.bottom - rect.top;
-
-            hitDevice = !(boxLeft > devR || boxRight < devL || boxTop > devB || boxBottom < devT);
-            setIsDeviceSelected(hitDevice);
-          }
-
           if (hitTextIds.length > 0) {
             onChangeConfig({
               selectedTextIds: hitTextIds,
               selectedTextId: hitTextIds[0],
             });
-          } else if (!hitDevice) {
+          } else {
             onChangeConfig({
               selectedTextIds: [],
+              selectedTextId: null,
             });
           }
         }
@@ -751,17 +803,46 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
 
       if (!dragMode) return;
 
-      const deltaX = e.clientX - startPosRef.current.clientX;
-      const deltaY = e.clientY - startPosRef.current.clientY;
+      const rawDeltaX = e.clientX - startPosRef.current.clientX;
+      const rawDeltaY = e.clientY - startPosRef.current.clientY;
+      const dist = Math.hypot(rawDeltaX, rawDeltaY);
 
-      if (Math.hypot(deltaX, deltaY) > 3) {
+      if (!dragStartedRef.current) {
+        if (dist < 4) return; // Below threshold — ignore micro-movement
+
+        // Threshold crossed for the first time: re-anchor so delta starts from 0
+        dragStartedRef.current = true;
+        let initialX = currentOffsetX;
+        let initialY = currentOffsetY;
+
+        if (dragMode === 'text-move' && draggingTextId) {
+          const l = (config.textLayers || []).find((t) => t.id === draggingTextId);
+          if (l) {
+            initialX = l.x;
+            initialY = l.y;
+          }
+        }
+
+        startPosRef.current = {
+          ...startPosRef.current,
+          clientX: e.clientX,
+          clientY: e.clientY,
+          initialOffsetX: initialX,
+          initialOffsetY: initialY,
+          initialScale: currentScale,
+        };
         setDragMoved(true);
+        return; // Apply movement on the NEXT frame so delta is 0 initially
       }
+
+      const deltaX = rawDeltaX / effectiveZoom;
+      const deltaY = rawDeltaY / effectiveZoom;
+      setDragMoved(true);
 
       if (dragMode === 'group-move') {
         const { startX, startY, initialLayers, initialDeviceOffsetX, initialDeviceOffsetY } = groupDragRef.current;
-        let dX = e.clientX - startX;
-        let dY = e.clientY - startY;
+        let dX = (e.clientX - startX) / effectiveZoom;
+        let dY = (e.clientY - startY) / effectiveZoom;
 
         const xPositions: number[] = [];
         const yPositions: number[] = [];
@@ -802,11 +883,23 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
 
         const updated: Partial<MockupConfig> = {};
         if (initialLayers.length > 0) {
+          const canvasDim = getCanvasDimensions(config);
+          const canvasW = parseInt(canvasDim.width, 10) || 400;
+          const canvasH = parseInt(canvasDim.minHeight, 10) || 640;
+
           const initMap = new Map(initialLayers.map((l) => [l.id, l]));
           updated.textLayers = (config.textLayers || []).map((l) => {
             const init = initMap.get(l.id);
             if (init) {
-              return { ...l, x: Math.round(init.x + dX), y: Math.round(init.y + dY) };
+              const halfW = Math.round((l.width || 200) / 2);
+              const maxX = Math.max(0, canvasW / 2 - halfW - 8);
+              const minX = -maxX;
+              const maxY = Math.max(0, canvasH / 2 - 20);
+              const minY = -maxY;
+
+              const clampedX = Math.max(minX, Math.min(maxX, Math.round(init.x + dX)));
+              const clampedY = Math.max(minY, Math.min(maxY, Math.round(init.y + dY)));
+              return { ...l, x: clampedX, y: clampedY };
             }
             return l;
           });
@@ -860,6 +953,22 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
         let newX = Math.round(startPosRef.current.initialOffsetX + deltaX);
         let newY = Math.round(startPosRef.current.initialOffsetY + deltaY);
 
+        // Clamp text within canvas dimensions so it cannot be dragged outside
+        const canvasDim = getCanvasDimensions(config);
+        const canvasW = parseInt(canvasDim.width, 10) || 400;
+        const canvasH = parseInt(canvasDim.minHeight, 10) || 640;
+        const targetLayer = (config.textLayers || []).find((l) => l.id === draggingTextId);
+        const layerW = targetLayer?.width || 200;
+        const halfLayerW = Math.round(layerW / 2);
+
+        const maxX = Math.max(0, canvasW / 2 - halfLayerW - 8);
+        const minX = -maxX;
+        const maxY = Math.max(0, canvasH / 2 - 20);
+        const minY = -maxY;
+
+        newX = Math.max(minX, Math.min(maxX, newX));
+        newY = Math.max(minY, Math.min(maxY, newY));
+
         const snapX = Math.abs(newX) <= 4;
         const snapY = Math.abs(newY) <= 4;
 
@@ -875,6 +984,25 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
           textLayers: (config.textLayers || []).map((l) =>
             l.id === draggingTextId ? { ...l, x: newX, y: newY } : l
           ),
+        }, false);
+      } else if (dragMode === 'device-rotate') {
+        const { centerX, centerY, startRotation, startPointerAngle } = rotateCenterRef.current;
+        const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
+        const deltaAngle = currentAngle - startPointerAngle;
+        let newRot = Math.round((startRotation + deltaAngle) % 360);
+        if (newRot < -180) newRot += 360;
+        if (newRot > 180) newRot -= 360;
+
+        // Snap to 0, 45, 90, -45, -90, 180
+        if (Math.abs(newRot) < 3) newRot = 0;
+        if (Math.abs(newRot - 45) < 3) newRot = 45;
+        if (Math.abs(newRot + 45) < 3) newRot = -45;
+        if (Math.abs(newRot - 90) < 3) newRot = 90;
+        if (Math.abs(newRot + 90) < 3) newRot = -90;
+        if (Math.abs(Math.abs(newRot) - 180) < 3) newRot = 180;
+
+        onChangeConfig({
+          deviceRotation: newRot,
         }, false);
       } else if (dragMode === 'text-rotate' && draggingTextId) {
         const { centerX, centerY, startRotation, startPointerAngle } = rotateCenterRef.current;
@@ -996,13 +1124,62 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
       setSelectionBox(null);
     }
     if (dragMode) {
+      const wasDraggingDevice = dragMode === 'move' || dragMode.startsWith('resize-') || dragMode === 'device-rotate';
+
+      // Auto-transfer device to another screen if its center crossed into that screen
+      if (wasDraggingDevice && dragMoved && screens && screens.length > 1 && onTransferDevice) {
+        const activeIdx = screens.findIndex((s) => s.id === activeScreenId);
+        if (activeIdx !== -1) {
+          const screenWidths = screens.map((s) => parseInt(getCanvasDimensions(s).width, 10) || 400);
+          const screenCenters: number[] = [];
+          let currentAcc = 0;
+          for (let i = 0; i < screenWidths.length; i++) {
+            if (i === 0) {
+              screenCenters.push(screenWidths[0] / 2);
+              currentAcc = screenWidths[0];
+            } else {
+              screenCenters.push(currentAcc + screenWidths[i] / 2);
+              currentAcc += screenWidths[i];
+            }
+          }
+
+          const deviceGlobalX = screenCenters[activeIdx] + (config.deviceOffsetX ?? 0);
+
+          let targetIdx = activeIdx;
+          let accLeft = 0;
+          for (let i = 0; i < screenWidths.length; i++) {
+            const accRight = accLeft + screenWidths[i];
+            if (deviceGlobalX >= accLeft && deviceGlobalX <= accRight) {
+              targetIdx = i;
+              break;
+            }
+            accLeft = accRight;
+          }
+
+          if (targetIdx !== activeIdx && screens[targetIdx]) {
+            const newOffsetX = Math.round(deviceGlobalX - screenCenters[targetIdx]);
+            onTransferDevice(
+              screens[activeIdx].id || activeScreenId,
+              screens[targetIdx].id || screens[targetIdx].screenTitle || `screen-${targetIdx}`,
+              newOffsetX,
+              config.deviceOffsetY ?? 0,
+              config.deviceScale ?? 1,
+              config.deviceRotation ?? 0
+            );
+            setDragMode(null);
+            setDraggingTextId(null);
+            return;
+          }
+        }
+      }
+
       setDragMode(null);
       setDraggingTextId(null);
       if (dragMoved) {
         onChangeConfig({}, true);
       }
     }
-  }, [dragMode, dragMoved, isPanning, selectionBox, onChangeConfig]);
+  }, [dragMode, dragMoved, isPanning, selectionBox, screens, activeScreenId, config, onTransferDevice, onChangeConfig]);
 
   useEffect(() => {
     if (dragMode || selectionBox || isPanning) {
@@ -1158,11 +1335,19 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
           const sScale = isThisActiveScreen ? currentScale : (screenCfg.deviceScale ?? 1);
           const sOffsetX = isThisActiveScreen ? currentOffsetX : (screenCfg.deviceOffsetX ?? 0);
           const sOffsetY = isThisActiveScreen ? currentOffsetY : (screenCfg.deviceOffsetY ?? 0);
+          const sRotation = isThisActiveScreen ? currentDeviceRotation : (screenCfg.deviceRotation ?? 0);
+
+          const isGapSnapped = snappedGaps.has(screenIndex);
+          const hasNextScreen = screenIndex < currentScreens.length - 1;
 
           return (
             <div
               key={screenCfg.id || `screen-${screenIndex}`}
-              className={`mockup-screen-wrapper ${isThisActiveScreen ? 'is-active-screen' : ''}`}
+              className={`mockup-screen-wrapper ${isThisActiveScreen ? 'is-active-screen' : ''} ${isGapSnapped ? 'gap-snapped' : ''}`}
+              style={{
+                marginRight: hasNextScreen ? (isGapSnapped ? '6px' : '48px') : '0px',
+                transition: isPanning ? 'none' : 'margin-right 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
+              }}
               onClick={(e) => {
                 e.stopPropagation();
                 if (screenCfg.id && screenCfg.id !== activeScreenId) {
@@ -1265,6 +1450,31 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                       </button>
                     )}
                   </div>
+
+                  {/* Circular >< Snap Button Between Screen Headers */}
+                  {hasNextScreen && (
+                    <button
+                      type="button"
+                      className={`screen-gap-snap-btn ${isGapSnapped ? 'is-snapped' : ''}`}
+                      title={isGapSnapped ? 'Ekran aralığını aç (48px)' : 'Ekranları birbirine yaklaştır (Panorama görünümü)'}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleGapSnap(screenIndex);
+                      }}
+                    >
+                      {isGapSnapped ? (
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="7 8 3 12 7 16" />
+                          <polyline points="17 8 21 12 17 16" />
+                        </svg>
+                      ) : (
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="4 8 8 12 4 16" />
+                          <polyline points="20 8 16 12 20 16" />
+                        </svg>
+                      )}
+                    </button>
+                  )}
                 </div>
               )}
 
@@ -1295,11 +1505,14 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                 }}
                 onPointerDown={(e) => {
                   const target = e.target as HTMLElement;
-                  // If clicking on text, drag handles, or buttons, let them handle it
+                  // If clicking on text, drag handles, device container, or buttons, let them handle it
                   if (
                     target.closest('.free-text-layer') ||
                     target.closest('.layer-drag-bar') ||
+                    target.closest('.device-interactive-container') ||
+                    target.closest('.device-transform-gizmo') ||
                     target.closest('.resize-handle') ||
+                    target.closest('.device-rotate-pill') ||
                     target.closest('.group-selection-border') ||
                     target.closest('.selection-floating-bar')
                   ) {
@@ -1309,6 +1522,14 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                   if (!isThisActiveScreen && screenCfg.id) {
                     onSelectScreen?.(screenCfg.id);
                   }
+
+                  // Immediately deselect device and stop text editing on background click
+                  setIsDeviceSelected(false);
+                  setEditingTextId(null);
+                  onChangeConfig({
+                    selectedTextId: null,
+                    selectedTextIds: [],
+                  });
 
                   const rect = e.currentTarget.getBoundingClientRect();
                   const startX = (e.clientX - rect.left) / effectiveZoom;
@@ -1321,6 +1542,32 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                     currentY: startY,
                   });
                   setDragMoved(false);
+                }}
+                onClick={(e) => {
+                  const target = e.target as HTMLElement;
+                  // If clicking on an element (text, device, handles), do not clear
+                  if (
+                    target.closest('.free-text-layer') ||
+                    target.closest('.layer-drag-bar') ||
+                    target.closest('.device-interactive-container') ||
+                    target.closest('.device-transform-gizmo') ||
+                    target.closest('.resize-handle') ||
+                    target.closest('.device-rotate-pill') ||
+                    target.closest('.group-selection-border') ||
+                    target.closest('.selection-floating-bar')
+                  ) {
+                    return;
+                  }
+
+                  // Clicking on empty area within the mockup box deselects all components
+                  if (!dragMoved) {
+                    setEditingTextId(null);
+                    setIsDeviceSelected(false);
+                    onChangeConfig({
+                      selectedTextId: null,
+                      selectedTextIds: [],
+                    });
+                  }
                 }}
               >
                 {/* Visual Marquee Selection Box (Only for active screen) */}
@@ -1428,7 +1675,7 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                         left: '50%',
                         top: '50%',
                         transform: `translate(calc(-50% + ${layer.x}px), calc(-50% + ${layer.y}px))`,
-                        transition: isDraggingThis || dragMode === 'group-move' ? 'none' : 'transform 0.1s ease-out',
+                        transition: dragMode ? 'none' : 'transform 0.1s ease-out',
                         zIndex: isSelected ? 20 : 15,
                         fontFamily: getFontFamilyCss(layer.fontFamily),
                       }}
@@ -1618,17 +1865,102 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                   );
                 })}
 
+                {/* Seamless Multi-Screen Panorama Bleed: Render overflowing devices from neighbor screens */}
+                {!isDeviceOnly && currentScreens.map((otherScreenCfg, otherIndex) => {
+                  if (otherIndex === screenIndex) return null;
+
+                  const otherIsActive = otherScreenCfg.id === activeScreenId || (!otherScreenCfg.id && otherIndex === 0);
+                  const otherScale = otherIsActive ? currentScale : (otherScreenCfg.deviceScale ?? 1);
+                  const otherOffsetX = otherIsActive ? currentOffsetX : (otherScreenCfg.deviceOffsetX ?? 0);
+                  const otherOffsetY = otherIsActive ? currentOffsetY : (otherScreenCfg.deviceOffsetY ?? 0);
+                  const otherRotation = otherIsActive ? currentDeviceRotation : (otherScreenCfg.deviceRotation ?? 0);
+
+                  // Calculate cumulative distance between screen centers
+                  let distance = 0;
+                  if (otherIndex < screenIndex) {
+                    for (let k = otherIndex; k < screenIndex; k++) {
+                      const dim = getCanvasDimensions(currentScreens[k]);
+                      distance += parseInt(dim.width, 10);
+                    }
+                  } else {
+                    for (let k = screenIndex; k < otherIndex; k++) {
+                      const dim = getCanvasDimensions(currentScreens[k]);
+                      distance += parseInt(dim.width, 10);
+                    }
+                  }
+
+                  const overflowOffsetX = otherIndex < screenIndex 
+                    ? otherOffsetX - distance 
+                    : otherOffsetX + distance;
+
+                  // Only render if within visual range of this screen
+                  const currentCanvasWidth = parseInt(screenDims.width, 10) || 400;
+                  if (Math.abs(overflowOffsetX) > currentCanvasWidth * 2.5) {
+                    return null;
+                  }
+
+                  const otherScreenshotUrl = otherIsActive ? config.screenshotUrl : otherScreenCfg.screenshotUrl;
+                  const otherScreenshotScale = otherIsActive ? config.screenshotScale : otherScreenCfg.screenshotScale;
+                  const otherScreenshotOffsetX = otherIsActive ? config.screenshotOffsetX : otherScreenCfg.screenshotOffsetX;
+                  const otherScreenshotOffsetY = otherIsActive ? config.screenshotOffsetY : otherScreenCfg.screenshotOffsetY;
+                  const otherDeviceType = otherIsActive ? config.deviceType : otherScreenCfg.deviceType;
+                  const otherDeviceColor = otherIsActive ? config.deviceColor : otherScreenCfg.deviceColor;
+                  const otherBorderRadius = otherIsActive ? config.borderRadius : otherScreenCfg.borderRadius;
+                  const otherShadowDepth = otherIsActive ? config.shadowDepth : otherScreenCfg.shadowDepth;
+
+                  return (
+                    <div
+                      key={`overflow-bleed-${otherScreenCfg.id || otherIndex}`}
+                      className="device-interactive-container overflow-bleed-device"
+                      style={{
+                        position: 'absolute',
+                        left: '50%',
+                        top: '50%',
+                        transform: `translate(calc(-50% + ${overflowOffsetX}px), calc(-50% + ${otherOffsetY}px)) scale(${otherScale}) rotate(${otherRotation}deg)`,
+                        transformOrigin: 'center center',
+                        pointerEvents: 'none',
+                        zIndex: 10,
+                        touchAction: 'none',
+                      }}
+                      aria-hidden="true"
+                    >
+                      <div className="device-frame-capture-target">
+                        <DeviceFrame
+                          deviceType={otherDeviceType}
+                          deviceColor={otherDeviceColor}
+                          screenshotUrl={otherScreenshotUrl}
+                          screenshotScale={otherScreenshotScale}
+                          screenshotOffsetX={otherScreenshotOffsetX}
+                          screenshotOffsetY={otherScreenshotOffsetY}
+                          borderRadius={otherBorderRadius}
+                          shadowDepth={otherShadowDepth}
+                          onUploadClick={() => {}}
+                          presetWidth={otherScreenCfg.width}
+                          presetHeight={otherScreenCfg.height}
+                          isDeviceOnly={false}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+
                 {/* Interactive Device Wrapper */}
                 <div
                   className={`device-interactive-container ${
                     !isDeviceOnly && isThisActiveScreen && isDeviceSelected ? 'is-device-selected' : ''
-                  } ${!isDeviceOnly && isThisActiveScreen && (dragMode === 'move' || dragMode?.startsWith('resize-')) ? 'is-dragging' : ''}`}
+                  } ${!isDeviceOnly && isThisActiveScreen && (dragMode === 'move' || dragMode?.startsWith('resize-') || dragMode === 'device-rotate') ? 'is-dragging' : ''}`}
                   style={{
-                    transform: isDeviceOnly ? 'none' : `translate(${sOffsetX}px, ${sOffsetY}px) scale(${sScale})`,
+                    position: isDeviceOnly ? 'relative' : 'absolute',
+                    left: isDeviceOnly ? undefined : '50%',
+                    top: isDeviceOnly ? undefined : '50%',
+                    transform: isDeviceOnly 
+                      ? 'none' 
+                      : `translate(calc(-50% + ${sOffsetX}px), calc(-50% + ${sOffsetY}px)) scale(${sScale}) rotate(${sRotation}deg)`,
                     transformOrigin: 'center center',
                     cursor: dragMode === 'move' ? 'grabbing' : 'default',
                     transition: dragMode ? 'none' : 'transform 0.15s ease-out',
                     touchAction: isDeviceOnly ? 'auto' : 'none',
+                    zIndex: isThisActiveScreen ? 14 : 12,
                   }}
                   onPointerDown={isDeviceOnly ? undefined : (e) => {
                     if (!isThisActiveScreen && screenCfg.id) {
@@ -1677,6 +2009,26 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                         pointerEvents: 'auto',
                       }}
                     >
+                      {/* Top Device Rotate Pill */}
+                      <div
+                        className="device-rotate-pill"
+                        title="Döndürmek için sürükleyin veya 15° çevirmek için tıklayın"
+                        onPointerDown={(e) => {
+                          const deviceEl = e.currentTarget.closest('.device-interactive-container') as HTMLElement;
+                          handleDeviceRotatePointerDown(e, deviceEl);
+                        }}
+                        onClick={(e) => {
+                          if (!dragMoved) {
+                            e.stopPropagation();
+                            const newRot = ((currentDeviceRotation + 15) % 360);
+                            onChangeConfig({ deviceRotation: newRot });
+                          }
+                        }}
+                      >
+                        <RotateCw size={11} />
+                        <span>{currentDeviceRotation}°</span>
+                      </div>
+
                       <div
                         className="resize-handle handle-nw"
                         title="Boyutlandır"
@@ -1706,6 +2058,11 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                               <span>
                                 X: {currentOffsetX}px | Y: {currentOffsetY}px
                               </span>
+                            </>
+                          ) : dragMode === 'device-rotate' ? (
+                            <>
+                              <RotateCw size={12} />
+                              <span>{currentDeviceRotation}°</span>
                             </>
                           ) : dragMode === 'text-move' ? (
                             <>

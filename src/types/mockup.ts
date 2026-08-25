@@ -79,6 +79,7 @@ export interface MockupConfig {
   deviceScale: number;
   deviceOffsetX: number;
   deviceOffsetY: number;
+  deviceRotation?: number;
 
   // Layout & Padding
   padding: number;
