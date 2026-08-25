@@ -101,19 +101,63 @@ body {
   flex-direction: column;
   height: 100%;
   z-index: 10;
+  transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1), min-width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.devtoo-sidebar.is-collapsed {
+  width: 68px;
+  min-width: 68px;
 }
 
 .sidebar-header {
-  padding: 18px 20px;
+  padding: 16px 14px;
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sidebar-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.sidebar-toggle-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  background-color: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.sidebar-toggle-btn:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-default);
+}
+
+.devtoo-sidebar.is-collapsed .sidebar-header {
+  padding: 16px 10px;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .logo-badge {
   width: 34px;
   height: 34px;
+  min-width: 34px;
   background-color: var(--chili-primary);
   border-radius: var(--radius-md);
   display: flex;
@@ -123,6 +167,7 @@ body {
   box-shadow: 0 2px 4px rgba(217, 4, 41, 0.25);
   font-weight: 700;
   letter-spacing: -0.5px;
+  flex-shrink: 0;
 }
 
 .logo-text {
@@ -160,10 +205,16 @@ body {
 .sidebar-nav {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 12px;
+  overflow-x: hidden;
+  padding: 16px 10px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
+}
+
+.devtoo-sidebar.is-collapsed .sidebar-nav {
+  padding: 16px 8px;
+  gap: 10px;
 }
 
 .nav-section-title {
@@ -173,6 +224,7 @@ body {
   letter-spacing: 0.6px;
   color: var(--text-muted);
   padding: 0 8px 6px 8px;
+  white-space: nowrap;
 }
 
 .nav-group {
@@ -196,6 +248,12 @@ body {
   background: transparent;
   width: 100%;
   text-align: left;
+  white-space: nowrap;
+}
+
+.devtoo-sidebar.is-collapsed .nav-item {
+  justify-content: center;
+  padding: 10px;
 }
 
 .nav-item:hover {
@@ -214,11 +272,19 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+  overflow: hidden;
+}
+
+.devtoo-sidebar.is-collapsed .nav-item-left {
+  gap: 0;
+  justify-content: center;
 }
 
 .nav-icon {
-  width: 16px;
-  height: 16px;
+  width: 17px;
+  height: 17px;
+  min-width: 17px;
+  flex-shrink: 0;
 }
 
 .badge-preview {
@@ -238,12 +304,25 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  min-height: 48px;
+}
+
+.devtoo-sidebar.is-collapsed .sidebar-footer {
+  padding: 14px 8px;
+  justify-content: center;
+}
+
+.collapsed-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .dev-profile {
   display: flex;
   align-items: center;
   gap: 8px;
+  white-space: nowrap;
 }
 
 .status-dot {

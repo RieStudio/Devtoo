@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Smartphone, 
   Image, 
@@ -7,7 +7,9 @@ import {
   Gamepad2, 
   Code2, 
   Search,
-  CheckCircle2
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import type { ToolItem } from '../types/mockup';
 
@@ -73,6 +75,8 @@ const TOOLS: ToolItem[] = [
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeTool, onSelectTool }) => {
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+
   const getIcon = (iconName: string) => {
     switch (iconName) {
       case 'Smartphone':
@@ -95,20 +99,33 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTool, onSelectTool }) =>
   const categories = ['Geliştirici Araçları', 'Mağaza & Tasarım', 'Kod & Yardımcılar'] as const;
 
   return (
-    <aside className="devtoo-sidebar">
-      {/* Brand Header */}
+    <aside className={`devtoo-sidebar ${isCollapsed ? 'is-collapsed' : ''}`}>
+      {/* Brand Header & Toggle Button */}
       <div className="sidebar-header">
-        <div className="logo-badge">🌶️</div>
-        <div className="brand-name">
-          Devtoo
+        <div className="sidebar-header-brand">
+          <div className="logo-badge" title="Devtoo">🌶️</div>
+          {!isCollapsed && (
+            <div className="brand-name">
+              Devtoo
+            </div>
+          )}
         </div>
+        <button
+          type="button"
+          className="sidebar-toggle-btn"
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          title={isCollapsed ? 'Menüyü Genişlet' : 'Menüyü Daralt'}
+          aria-label={isCollapsed ? 'Menüyü Genişlet' : 'Menüyü Daralt'}
+        >
+          {isCollapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
+        </button>
       </div>
 
       {/* Navigation List */}
       <nav className="sidebar-nav">
         {categories.map((cat) => (
           <div key={cat} className="nav-group">
-            <div className="nav-section-title">{cat}</div>
+            {!isCollapsed && <div className="nav-section-title">{cat}</div>}
             {TOOLS.filter((t) => t.category === cat).map((tool) => {
               const isActive = activeTool === tool.id;
               return (
@@ -117,13 +134,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTool, onSelectTool }) =>
                   className={`nav-item ${isActive ? 'active' : ''}`}
                   onClick={() => tool.isAvailable && onSelectTool(tool.id)}
                   style={{ opacity: tool.isAvailable ? 1 : 0.65 }}
-                  title={tool.description}
+                  title={isCollapsed ? `${tool.name} ${tool.badge ? `(${tool.badge})` : ''} - ${tool.description}` : tool.description}
                 >
                   <div className="nav-item-left">
                     {getIcon(tool.icon)}
-                    <span>{tool.name}</span>
+                    {!isCollapsed && <span>{tool.name}</span>}
                   </div>
-                  {tool.badge && <span className="badge-preview">{tool.badge}</span>}
+                  {!isCollapsed && tool.badge && <span className="badge-preview">{tool.badge}</span>}
                 </button>
               );
             })}
@@ -133,11 +150,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTool, onSelectTool }) =>
 
       {/* Sidebar Footer Status */}
       <div className="sidebar-footer">
-        <div className="dev-profile">
-          <div className="status-dot" />
-          <span className="status-text">v1.0.0 (Light Mode)</span>
-        </div>
-        <CheckCircle2 size={16} color="#10B981" />
+        {!isCollapsed ? (
+          <>
+            <div className="dev-profile">
+              <div className="status-dot" />
+              <span className="status-text">v1.0.0 (Light Mode)</span>
+            </div>
+            <CheckCircle2 size={16} color="#10B981" />
+          </>
+        ) : (
+          <div className="collapsed-status" title="v1.0.0 Çevrimiçi">
+            <div className="status-dot" />
+          </div>
+        )}
       </div>
     </aside>
   );
