@@ -262,10 +262,16 @@ body {
 }
 
 .nav-item.active {
-  background-color: var(--chili-subtle);
-  color: var(--chili-primary);
+  background-color: #0F172A;
+  color: #FFFFFF;
   font-weight: 600;
-  border-color: var(--chili-border);
+  border-color: #0F172A;
+}
+
+.nav-item.active .badge-preview {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
+  border-color: transparent;
 }
 
 .nav-item-left {
@@ -381,11 +387,11 @@ body {
   gap: 10px;
 }
 
-/* Chili Red Primary Button */
+/* Chili Red Primary Button - Flat Solid Red with White Text (No Neon/Glow) */
 .btn-chili {
   background-color: var(--chili-primary);
-  color: var(--text-on-chili);
-  border: 1px solid var(--chili-active);
+  color: #FFFFFF;
+  border: 1px solid var(--chili-primary);
   padding: 8px 16px;
   border-radius: var(--radius-md);
   font-size: 13px;
@@ -394,18 +400,23 @@ body {
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  transition: all 0.15s ease;
-  box-shadow: 0 1px 2px rgba(217, 4, 41, 0.2);
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .btn-chili:hover {
   background-color: var(--chili-hover);
-  box-shadow: 0 2px 5px rgba(217, 4, 41, 0.3);
+  border-color: var(--chili-hover);
+  color: #FFFFFF;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .btn-chili:active {
   background-color: var(--chili-active);
+  border-color: var(--chili-active);
+  color: #FFFFFF;
   transform: translateY(1px);
+  box-shadow: none;
 }
 
 /* Secondary Button */
@@ -1092,9 +1103,18 @@ body {
 }
 
 .layer-chip-btn.active {
-  background-color: var(--chili-subtle);
+  background-color: var(--chili-primary);
   border-color: var(--chili-primary);
-  color: var(--chili-primary);
+  color: #FFFFFF;
+}
+
+.layer-chip-btn.active .layer-chip-delete {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.layer-chip-btn.active .layer-chip-delete:hover {
+  background-color: rgba(0, 0, 0, 0.25);
+  color: #FFFFFF;
 }
 
 .layer-chip-text {
@@ -1493,8 +1513,8 @@ input[type="range"] {
 
 .scale-pill-btn.active {
   border-color: var(--chili-primary);
-  background-color: var(--chili-subtle);
-  color: var(--chili-primary);
+  background-color: var(--chili-primary);
+  color: #FFFFFF;
   font-weight: 700;
 }
 
@@ -1560,10 +1580,10 @@ input[type="range"] {
 }
 
 .export-mode-tab.active {
-  background-color: #FFFFFF;
-  color: var(--chili-primary);
-  border-color: #CBD5E1;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  background-color: #0F172A;
+  color: #FFFFFF;
+  border-color: #0F172A;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
 /* Clean Device Only Mode */

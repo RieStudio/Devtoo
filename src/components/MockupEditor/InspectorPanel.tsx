@@ -295,8 +295,8 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '4px',
-                color: devices.length >= 6 ? '#94A3B8' : '#D90429',
-                backgroundColor: devices.length >= 6 ? '#F1F5F9' : 'rgba(217, 4, 41, 0.08)',
+                color: devices.length >= 6 ? '#94A3B8' : '#FFFFFF',
+                backgroundColor: devices.length >= 6 ? '#F1F5F9' : '#0F172A',
                 border: 'none',
                 borderRadius: '6px',
                 padding: '4px 9px',
@@ -331,18 +331,19 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                     padding: '8px 10px',
                     borderRadius: '8px',
                     border: isSelected ? '1.5px solid #D90429' : '1px solid #E2E8F0',
-                    backgroundColor: isSelected ? '#FFF0F3' : '#F8FAFC',
+                    backgroundColor: isSelected ? '#D90429' : '#F8FAFC',
+                    color: isSelected ? '#FFFFFF' : '#1E293B',
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Smartphone size={15} color={isSelected ? '#D90429' : '#64748B'} />
+                    <Smartphone size={15} color={isSelected ? '#FFFFFF' : '#64748B'} />
                     <div>
-                      <div style={{ fontSize: '12px', fontWeight: isSelected ? 700 : 600, color: isSelected ? '#D90429' : '#1E293B' }}>
+                      <div style={{ fontSize: '12px', fontWeight: isSelected ? 700 : 600, color: isSelected ? '#FFFFFF' : '#1E293B' }}>
                         Cihaz {idx + 1}: {devModel.name}
                       </div>
-                      <div style={{ fontSize: '10.5px', color: '#64748B' }}>
+                      <div style={{ fontSize: '10.5px', color: isSelected ? 'rgba(255, 255, 255, 0.85)' : '#64748B' }}>
                         {dev.screenshotUrl ? 'Görsel yüklendi' : 'Görsel yok'} • {dev.deviceRotation ?? 0}°
                       </div>
                     </div>
@@ -350,7 +351,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     {isSelected && (
-                      <span style={{ fontSize: '10px', fontWeight: 700, color: '#D90429', backgroundColor: '#FFE3E8', padding: '2px 6px', borderRadius: '4px' }}>
+                      <span style={{ fontSize: '10px', fontWeight: 700, color: '#D90429', backgroundColor: '#FFFFFF', padding: '2px 6px', borderRadius: '4px' }}>
                         Seçili
                       </span>
                     )}
@@ -359,7 +360,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                       style={{
                         background: 'none',
                         border: 'none',
-                        color: '#94A3B8',
+                        color: isSelected ? 'rgba(255, 255, 255, 0.8)' : '#94A3B8',
                         cursor: 'pointer',
                         padding: '4px',
                         display: 'flex',
@@ -367,8 +368,8 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                         justifyContent: 'center',
                         borderRadius: '4px',
                       }}
-                      onMouseEnter={(e) => (e.currentTarget.style.color = '#D90429')}
-                      onMouseLeave={(e) => (e.currentTarget.style.color = '#94A3B8')}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = isSelected ? '#FFFFFF' : '#D90429')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = isSelected ? 'rgba(255, 255, 255, 0.8)' : '#94A3B8')}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleDeleteDevice(dev.id);
@@ -403,7 +404,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                     alignItems: 'center',
                     gap: '5px',
                     padding: '6px 12px',
-                    backgroundColor: '#D90429',
+                    backgroundColor: '#0F172A',
                     color: '#FFFFFF',
                     border: 'none',
                     borderRadius: '6px',
@@ -504,9 +505,9 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                     fontSize: '11px',
                     fontWeight: isTabActive ? 700 : 500,
                     borderRadius: '6px',
-                    border: isTabActive ? '1px solid #FFCCD5' : '1px solid transparent',
-                    backgroundColor: isTabActive ? '#FFFFFF' : 'transparent',
-                    color: isTabActive ? '#D90429' : '#475569',
+                    border: isTabActive ? '1px solid #D90429' : '1px solid transparent',
+                    backgroundColor: isTabActive ? '#D90429' : 'transparent',
+                    color: isTabActive ? '#FFFFFF' : '#475569',
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
                   }}
@@ -533,18 +534,19 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                     padding: '9px 12px',
                     borderRadius: '8px',
                     border: isSelected ? '1px solid #D90429' : '1px solid #E2E8F0',
-                    backgroundColor: isSelected ? '#FFF0F3' : '#FFFFFF',
+                    backgroundColor: isSelected ? '#D90429' : '#FFFFFF',
+                    color: isSelected ? '#FFFFFF' : '#0F172A',
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <Smartphone size={16} color={isSelected ? '#D90429' : '#64748B'} />
-                    <div style={{ fontSize: '13px', fontWeight: isSelected ? 700 : 600, color: isSelected ? '#D90429' : '#0F172A' }}>
+                    <Smartphone size={16} color={isSelected ? '#FFFFFF' : '#64748B'} />
+                    <div style={{ fontSize: '13px', fontWeight: isSelected ? 700 : 600, color: isSelected ? '#FFFFFF' : '#0F172A' }}>
                       {model.name}
                     </div>
                   </div>
-                  {isSelected && <Check size={16} color="#D90429" />}
+                  {isSelected && <Check size={16} color="#FFFFFF" />}
                 </div>
               );
             })}
@@ -826,8 +828,8 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '3px',
-                color: '#D90429',
-                backgroundColor: 'rgba(217, 4, 41, 0.08)',
+                color: '#FFFFFF',
+                backgroundColor: '#0F172A',
                 border: 'none',
                 borderRadius: '5px',
                 padding: '3px 8px',
