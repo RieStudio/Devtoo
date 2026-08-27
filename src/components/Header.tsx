@@ -75,7 +75,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         <button className="btn-chili" onClick={onExport} disabled={isExporting}>
           <Download size={14} />
-          <span>{isExporting ? 'Dışa Aktarılıyor...' : screenCount > 1 ? 'Seçili Ekranı İndir' : 'PNG Olarak İndir'}</span>
+          <span>{isExporting ? 'Dışa Aktarılıyor...' : 'İndir'}</span>
         </button>
       </div>
     </header>

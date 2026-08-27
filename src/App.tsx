@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { toPng } from 'html-to-image';
+import { toPng, toJpeg, toSvg } from 'html-to-image';
 import JSZip from 'jszip';
 import { AlertCircle, X } from 'lucide-react';
 import type { MockupConfig } from './types/mockup';
@@ -10,6 +10,7 @@ import { Header } from './components/Header';
 import { MockupCanvas } from './components/MockupEditor/MockupCanvas';
 import { InspectorPanel } from './components/MockupEditor/InspectorPanel';
 import { ImageCropModal } from './components/MockupEditor/ImageCropModal';
+import { ExportModal, type ExportFormat } from './components/MockupEditor/ExportModal';
 
 const INITIAL_CONFIG: MockupConfig = {
   id: 'screen-1',
@@ -97,6 +98,7 @@ export function App() {
   const [screens, setScreens] = useState<MockupConfig[]>([INITIAL_CONFIG]);
   const [activeScreenId, setActiveScreenId] = useState<string>(INITIAL_CONFIG.id || 'screen-1');
   const [isExporting, setIsExporting] = useState<boolean>(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
   const [isCropModalOpen, setIsCropModalOpen] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -442,8 +444,8 @@ export function App() {
         const activeIds = activeScreenConfig.selectedTextIds && activeScreenConfig.selectedTextIds.length > 0
           ? activeScreenConfig.selectedTextIds
           : activeScreenConfig.selectedTextId
-          ? [activeScreenConfig.selectedTextId]
-          : [];
+            ? [activeScreenConfig.selectedTextId]
+            : [];
 
         if (activeIds.length > 0) {
           e.preventDefault();
@@ -462,8 +464,8 @@ export function App() {
         const activeIds = activeScreenConfig.selectedTextIds && activeScreenConfig.selectedTextIds.length > 0
           ? activeScreenConfig.selectedTextIds
           : activeScreenConfig.selectedTextId
-          ? [activeScreenConfig.selectedTextId]
-          : [];
+            ? [activeScreenConfig.selectedTextId]
+            : [];
 
         if (activeIds.length > 0) {
           e.preventDefault();
@@ -510,8 +512,8 @@ export function App() {
         const activeIds = activeScreenConfig.selectedTextIds && activeScreenConfig.selectedTextIds.length > 0
           ? activeScreenConfig.selectedTextIds
           : activeScreenConfig.selectedTextId
-          ? [activeScreenConfig.selectedTextId]
-          : [];
+            ? [activeScreenConfig.selectedTextId]
+            : [];
 
         if (activeIds.length > 0) {
           e.preventDefault();
@@ -566,14 +568,14 @@ export function App() {
         const updatedDevs = currentDevs.map((d) =>
           d.id === targetDevId
             ? {
-                ...d,
-                screenshotUrl: rawUrl,
-                originalScreenshotUrl: rawUrl,
-                cropData: null,
-                screenshotScale: 1,
-                screenshotOffsetX: 0,
-                screenshotOffsetY: 0,
-              }
+              ...d,
+              screenshotUrl: rawUrl,
+              originalScreenshotUrl: rawUrl,
+              cropData: null,
+              screenshotScale: 1,
+              screenshotOffsetX: 0,
+              screenshotOffsetY: 0,
+            }
             : d
         );
 
@@ -603,76 +605,213 @@ export function App() {
     input.click();
   };
 
-  // Export Active Screen
-  const handleExportPng = async (overrideMode?: 'full-canvas' | 'device-only') => {
-    const targetMode = overrideMode || activeScreenConfig.exportMode;
-    const targetElement = targetMode === 'device-only' ? deviceFrameRef.current : exportRef.current;
+  // Helper to generate image data URL based on format and real targeted dimensions
+  const generateImageDataUrl = async (
+    element: HTMLElement,
+    format: ExportFormat,
+    isDeviceOnly: boolean,
+    targetWidth?: number,
+    targetHeight?: number
+  ): Promise<string> => {
+    // 0.88 fixed web-optimized quality for JPEG and WEBP
+    const compressionQuality = 0.88;
 
-    if (!targetElement) return;
+    const finalTargetWidth = targetWidth || (isDeviceOnly ? (element.offsetWidth || 1080) : 1080);
+    const finalTargetHeight = targetHeight || (isDeviceOnly ? (element.offsetHeight || 1920) : 1920);
+
+    // Save previous inline styles so we can restore them cleanly
+    const prevWidth = element.style.width;
+    const prevHeight = element.style.height;
+    const prevMinHeight = element.style.minHeight;
+    const prevAspectRatio = element.style.aspectRatio;
+
+    // Fixed base layout width for clean rendering
+    const baseDomWidth = isDeviceOnly ? (element.offsetWidth || 378) : 378;
+    // Calculate DOM height dynamically matching the exact target aspect ratio
+    const targetAspectRatio = finalTargetWidth / finalTargetHeight;
+    const baseDomHeight = isDeviceOnly ? (element.offsetHeight || 672) : Math.round(baseDomWidth / targetAspectRatio);
 
     try {
-      setIsExporting(true);
-      const pixelRatio = activeScreenConfig.exportScale || 2;
-      const dataUrl = await toPng(targetElement, {
+      if (!isDeviceOnly) {
+        // Temporarily adjust canvas container dimensions to match target ratio
+        // This ensures the background canvas adapts cleanly while devices and text retain their natural aspect ratio!
+        element.style.width = `${baseDomWidth}px`;
+        element.style.height = `${baseDomHeight}px`;
+        element.style.minHeight = `${baseDomHeight}px`;
+        element.style.aspectRatio = `${finalTargetWidth} / ${finalTargetHeight}`;
+      }
+
+      // Compute exact pixel ratio: target pixels divided by DOM pixels
+      const calculatedPixelRatio = finalTargetWidth / baseDomWidth;
+
+      const commonOptions = {
         cacheBust: true,
-        pixelRatio: pixelRatio,
-        backgroundColor: targetMode === 'device-only' ? undefined : undefined,
-        style: targetMode === 'device-only' ? {
+        width: baseDomWidth,
+        height: baseDomHeight,
+        pixelRatio: calculatedPixelRatio,
+        backgroundColor: isDeviceOnly ? undefined : undefined,
+        style: isDeviceOnly ? {
           background: 'transparent',
           backgroundColor: 'transparent',
           boxShadow: 'none',
         } : undefined,
-      });
+      };
 
-      const link = document.createElement('a');
-      const filename = targetMode === 'device-only'
-        ? `devtoo-${activeScreenConfig.deviceType}-transparent-${Date.now()}.png`
-        : `devtoo-mockup-${activeScreenConfig.preset}-${Date.now()}.png`;
-      link.download = filename;
-      link.href = dataUrl;
-      link.click();
-    } catch (err) {
-      console.error('Dışa aktarma hatası:', err);
-      alert('Görsel dışa aktarılırken bir hata oluştu. Lütfen tekrar deneyin.');
+      // Helper to guarantee 100% exact canvas pixel output with zero distortion
+      const processExactCanvasOutput = (
+        rawUrl: string,
+        mimeType: string,
+        quality?: number
+      ): Promise<string> => {
+        return new Promise<string>((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = finalTargetWidth;
+            canvas.height = finalTargetHeight;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.imageSmoothingEnabled = true;
+              ctx.imageSmoothingQuality = 'high';
+
+              if (isDeviceOnly) {
+                // Center device in transparent canvas without any distortion
+                const scale = Math.min(finalTargetWidth / img.width, finalTargetHeight / img.height, 1);
+                const drawW = img.width * scale;
+                const drawH = img.height * scale;
+                const drawX = (finalTargetWidth - drawW) / 2;
+                const drawY = (finalTargetHeight - drawH) / 2;
+                ctx.drawImage(img, drawX, drawY, drawW, drawH);
+              } else {
+                // Draw 1:1 image matching the exact canvas bounds
+                ctx.drawImage(img, 0, 0, finalTargetWidth, finalTargetHeight);
+              }
+
+              resolve(canvas.toDataURL(mimeType, quality));
+            } else {
+              resolve(rawUrl);
+            }
+          };
+          img.onerror = () => reject(new Error('Canvas dönüştürme hatası'));
+          img.src = rawUrl;
+        });
+      };
+
+      if (format === 'svg') {
+        // SVG is vector-based: use pixelRatio: 1 to prevent embedding bloated 50MB+ Base64 images
+        const svgOptions = {
+          ...commonOptions,
+          pixelRatio: 1,
+        };
+        return await toSvg(element, svgOptions);
+      } else if (format === 'jpeg') {
+        const rawJpeg = await toJpeg(element, { ...commonOptions, quality: compressionQuality });
+        return await processExactCanvasOutput(rawJpeg, 'image/jpeg', compressionQuality);
+      } else if (format === 'webp') {
+        const rawPng = await toPng(element, commonOptions);
+        return await processExactCanvasOutput(rawPng, 'image/webp', compressionQuality);
+      } else {
+        // Default PNG - Lossless
+        const rawPng = await toPng(element, commonOptions);
+        return await processExactCanvasOutput(rawPng, 'image/png');
+      }
     } finally {
-      setIsExporting(false);
+      // Restore original DOM styling immediately
+      if (!isDeviceOnly) {
+        element.style.width = prevWidth;
+        element.style.height = prevHeight;
+        element.style.minHeight = prevMinHeight;
+        element.style.aspectRatio = prevAspectRatio;
+      }
     }
   };
 
-  // Export All Screens in a single ZIP archive
-  const handleExportAllPng = async () => {
+  // Perform Export with specified options from modal
+  const handlePerformExport = async ({
+    format,
+    targetWidth,
+    targetHeight,
+    scope,
+  }: {
+    format: ExportFormat;
+    targetWidth: number;
+    targetHeight: number;
+    scale: number;
+    quality?: number;
+    scope: 'active' | 'all';
+  }) => {
     try {
       setIsExporting(true);
-      const zip = new JSZip();
+      const ext = format === 'jpeg' ? 'jpg' : format;
 
-      for (let i = 0; i < screens.length; i++) {
-        const s = screens[i];
-        const targetElement = s.id ? screenRefs.current.get(s.id) : null;
-        if (targetElement) {
-          const pixelRatio = s.exportScale || 2;
-          const dataUrl = await toPng(targetElement, {
-            cacheBust: true,
-            pixelRatio: pixelRatio,
-          });
+      if (scope === 'all' && screens.length > 1) {
+        // Multi-screen ZIP Export
+        const zip = new JSZip();
 
-          // Convert Data URL base64 to binary buffer for JSZip
-          const base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
-          const screenFileName = `ekran-${i + 1}-${s.preset || 'mockup'}.png`;
-          zip.file(screenFileName, base64Data, { base64: true });
+        for (let i = 0; i < screens.length; i++) {
+          const s = screens[i];
+          const targetElement = s.id ? screenRefs.current.get(s.id) : null;
+          if (targetElement) {
+            const dataUrl = await generateImageDataUrl(
+              targetElement,
+              format,
+              s.exportMode === 'device-only',
+              targetWidth,
+              targetHeight
+            );
+
+            if (format === 'svg') {
+              // SVG is standard XML / data-URI text
+              const svgContent = decodeURIComponent(dataUrl.replace(/^data:image\/svg\+xml;charset=utf-8,/, ''));
+              zip.file(`ekran-${i + 1}-${s.preset || 'mockup'}.svg`, svgContent);
+            } else {
+              // Extract base64
+              const base64Data = dataUrl.replace(/^data:image\/[a-z0-9-+.]+;base64,/, '');
+              zip.file(`ekran-${i + 1}-${s.preset || 'mockup'}.${ext}`, base64Data, { base64: true });
+            }
+          }
         }
+
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        const downloadUrl = URL.createObjectURL(zipBlob);
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = `devtoo-mockups-${Date.now()}.zip`;
+        link.click();
+        URL.revokeObjectURL(downloadUrl);
+        showToast('Tüm ekranlar başarıyla indirildi.');
+      } else {
+        // Single Active Screen Export
+        const isDevOnly = activeScreenConfig.exportMode === 'device-only';
+        const targetElement = isDevOnly ? deviceFrameRef.current : exportRef.current;
+
+        if (!targetElement) {
+          showToast('Dışa aktarılacak ekran bulunamadı.');
+          return;
+        }
+
+        const dataUrl = await generateImageDataUrl(
+          targetElement,
+          format,
+          isDevOnly,
+          targetWidth,
+          targetHeight
+        );
+        const filename = isDevOnly
+          ? `devtoo-${activeScreenConfig.deviceType}-transparent-${Date.now()}.${ext}`
+          : `devtoo-mockup-${activeScreenConfig.preset}-${Date.now()}.${ext}`;
+
+        const link = document.createElement('a');
+        link.download = filename;
+        link.href = dataUrl;
+        link.click();
+        showToast(`Görsel ${format.toUpperCase()} formatında indirildi.`);
       }
 
-      // Generate ZIP blob and trigger single download
-      const zipBlob = await zip.generateAsync({ type: 'blob' });
-      const downloadUrl = URL.createObjectURL(zipBlob);
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = `devtoo-mockups-${Date.now()}.zip`;
-      link.click();
-      URL.revokeObjectURL(downloadUrl);
+      setIsExportModalOpen(false);
     } catch (err) {
-      console.error('Toplu dışa aktarma hatası:', err);
-      showToast('Görseller ZIP olarak indirilirken bir hata oluştu.');
+      console.error('Dışa aktarma hatası:', err);
+      showToast('Görsel dışa aktarılırken bir hata oluştu. Lütfen tekrar deneyin.');
     } finally {
       setIsExporting(false);
     }
@@ -694,8 +833,8 @@ export function App() {
       <div className="main-workspace">
         {/* Üst Navigasyon Barı */}
         <Header
-          onExport={handleExportPng}
-          onExportAll={handleExportAllPng}
+          onExport={() => setIsExportModalOpen(true)}
+          onExportAll={() => setIsExportModalOpen(true)}
           screenCount={screens.length}
           onUploadClick={handleTriggerUpload}
           onUndo={handleUndo}
@@ -744,13 +883,13 @@ export function App() {
             const updatedDevs = currentScreenDevices.map((d) =>
               d.id === activeSelectedDev.id
                 ? {
-                    ...d,
-                    screenshotUrl: croppedDataUrl,
-                    cropData: cropDetails,
-                    screenshotScale: 1,
-                    screenshotOffsetX: 0,
-                    screenshotOffsetY: 0,
-                  }
+                  ...d,
+                  screenshotUrl: croppedDataUrl,
+                  cropData: cropDetails,
+                  screenshotScale: 1,
+                  screenshotOffsetX: 0,
+                  screenshotOffsetY: 0,
+                }
                 : d
             );
             handleUpdateConfig({
@@ -768,13 +907,13 @@ export function App() {
             const updatedDevs = currentScreenDevices.map((d) =>
               d.id === activeSelectedDev.id
                 ? {
-                    ...d,
-                    screenshotUrl: origUrl,
-                    cropData: null,
-                    screenshotScale: 1,
-                    screenshotOffsetX: 0,
-                    screenshotOffsetY: 0,
-                  }
+                  ...d,
+                  screenshotUrl: origUrl,
+                  cropData: null,
+                  screenshotScale: 1,
+                  screenshotOffsetX: 0,
+                  screenshotOffsetY: 0,
+                }
                 : d
             );
             handleUpdateConfig({
@@ -790,6 +929,18 @@ export function App() {
           onCancel={() => setIsCropModalOpen(false)}
         />
       )}
+
+      {/* Export Format & Options Modal */}
+      <ExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        onExport={handlePerformExport}
+        screenCount={screens.length}
+        activeScreenTitle={activeScreenConfig.screenTitle || 'Ekran'}
+        canvasWidth={activeScreenConfig.width || 1080}
+        canvasHeight={activeScreenConfig.height || 1920}
+        isExporting={isExporting}
+      />
 
       {/* Elegant Toast Alert Notification */}
       {toastMessage && (
