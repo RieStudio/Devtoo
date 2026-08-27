@@ -7,7 +7,6 @@ import {
   Gamepad2, 
   Code2, 
   Search,
-  CheckCircle2,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
@@ -147,23 +146,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTool, onSelectTool }) =>
           </div>
         ))}
       </nav>
-
-      {/* Sidebar Footer Status */}
-      <div className="sidebar-footer">
-        {!isCollapsed ? (
-          <>
-            <div className="dev-profile">
-              <div className="status-dot" />
-              <span className="status-text">v1.0.0 (Light Mode)</span>
-            </div>
-            <CheckCircle2 size={16} color="#10B981" />
-          </>
-        ) : (
-          <div className="collapsed-status" title="v1.0.0 Çevrimiçi">
-            <div className="status-dot" />
-          </div>
-        )}
-      </div>
     </aside>
   );
 };

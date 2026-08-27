@@ -2059,69 +2059,78 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                       </div>
 
                       {/* Transform Gizmo only on active selected device */}
-                      {!isExporting && !isDeviceOnly && isThisActiveScreen && isDevSelected && (
-                        <div
-                          className="device-transform-gizmo"
-                          style={{
-                            opacity: 1,
-                            pointerEvents: 'auto',
-                          }}
-                        >
-                          {/* Top Device Rotate Pill */}
-                          <div
-                            className="device-rotate-pill"
-                            title="Döndürmek için sürükleyin veya 15° çevirmek için tıklayın"
-                            onPointerDown={(e) => {
-                              const deviceEl = e.currentTarget.closest('.device-interactive-container') as HTMLElement;
-                              handleDeviceRotatePointerDown(e, deviceEl, screenDev.id);
-                            }}
-                            onClick={(e) => {
-                              if (!dragMoved) {
-                                e.stopPropagation();
-                                const newRot = ((devRotation + 15) % 360);
-                                const updatedDevs = activeDevices.map((d) =>
-                                  d.id === screenDev.id ? { ...d, deviceRotation: newRot } : d
-                                );
-                                onChangeConfig({ devices: updatedDevs, deviceRotation: newRot });
-                              }
-                            }}
-                          >
-                            <RotateCw size={11} />
-                            <span>{devRotation}°</span>
-                          </div>
+                      {!isExporting && !isDeviceOnly && isThisActiveScreen && isDevSelected && (() => {
+                        // Calculate if device top edge is near or beyond canvas top edge
+                        const canvasHeight = parseInt(screenDims.minHeight, 10) || 540;
+                        const approxDeviceHeight = (260 / (389 / 800)) * devScale; // ~535px scaled
+                        const topEdgeY = (canvasHeight / 2) + devOffsetY - (approxDeviceHeight / 2);
+                        const isTopEdgeNearTop = topEdgeY <= 40;
 
-                          {/* Quick Delete Pill on Canvas */}
+                        return (
                           <div
-                            className="device-delete-pill"
-                            title="Bu cihazı tuvalden sil (Delete tuşuyla da silebilirsiniz)"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const remainingDevs = activeDevices.filter((d) => d.id !== screenDev.id);
-                              const nextSelectedDevId = remainingDevs[0]?.id || null;
-                              onChangeConfig({
-                                devices: remainingDevs,
-                                selectedDeviceId: nextSelectedDevId,
-                                ...(remainingDevs[0] ? {
-                                  deviceType: remainingDevs[0].deviceType,
-                                  deviceColor: remainingDevs[0].deviceColor,
-                                  screenshotUrl: remainingDevs[0].screenshotUrl,
-                                  screenshotScale: remainingDevs[0].screenshotScale,
-                                  screenshotOffsetX: remainingDevs[0].screenshotOffsetX,
-                                  screenshotOffsetY: remainingDevs[0].screenshotOffsetY,
-                                  deviceScale: remainingDevs[0].deviceScale,
-                                  deviceOffsetX: remainingDevs[0].deviceOffsetX,
-                                  deviceOffsetY: remainingDevs[0].deviceOffsetY,
-                                  deviceRotation: remainingDevs[0].deviceRotation,
-                                } : {
-                                  screenshotUrl: null,
-                                  originalScreenshotUrl: null,
-                                  cropData: null,
-                                }),
-                              });
+                            className="device-transform-gizmo"
+                            style={{
+                              opacity: 1,
+                              pointerEvents: 'auto',
                             }}
                           >
-                            <Trash2 size={11} />
-                          </div>
+                            {/* Device Rotate Pill (Placed at top normally, or bottom if near top edge) */}
+                            <div
+                              className={`device-rotate-pill ${isTopEdgeNearTop ? 'position-bottom' : ''}`}
+                              style={isTopEdgeNearTop ? { top: 'auto', bottom: '-34px' } : undefined}
+                              title="Döndürmek için sürükleyin veya 15° çevirmek için tıklayın"
+                              onPointerDown={(e) => {
+                                const deviceEl = e.currentTarget.closest('.device-interactive-container') as HTMLElement;
+                                handleDeviceRotatePointerDown(e, deviceEl, screenDev.id);
+                              }}
+                              onClick={(e) => {
+                                if (!dragMoved) {
+                                  e.stopPropagation();
+                                  const newRot = ((devRotation + 15) % 360);
+                                  const updatedDevs = activeDevices.map((d) =>
+                                    d.id === screenDev.id ? { ...d, deviceRotation: newRot } : d
+                                  );
+                                  onChangeConfig({ devices: updatedDevs, deviceRotation: newRot });
+                                }
+                              }}
+                            >
+                              <RotateCw size={11} />
+                              <span>{devRotation}°</span>
+                            </div>
+
+                            {/* Quick Delete Pill on Canvas */}
+                            <div
+                              className="device-delete-pill"
+                              style={isTopEdgeNearTop ? { top: 'auto', bottom: '-34px' } : undefined}
+                              title="Bu cihazı tuvalden sil (Delete tuşuyla da silebilirsiniz)"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const remainingDevs = activeDevices.filter((d) => d.id !== screenDev.id);
+                                const nextSelectedDevId = remainingDevs[0]?.id || null;
+                                onChangeConfig({
+                                  devices: remainingDevs,
+                                  selectedDeviceId: nextSelectedDevId,
+                                  ...(remainingDevs[0] ? {
+                                    deviceType: remainingDevs[0].deviceType,
+                                    deviceColor: remainingDevs[0].deviceColor,
+                                    screenshotUrl: remainingDevs[0].screenshotUrl,
+                                    screenshotScale: remainingDevs[0].screenshotScale,
+                                    screenshotOffsetX: remainingDevs[0].screenshotOffsetX,
+                                    screenshotOffsetY: remainingDevs[0].screenshotOffsetY,
+                                    deviceScale: remainingDevs[0].deviceScale,
+                                    deviceOffsetX: remainingDevs[0].deviceOffsetX,
+                                    deviceOffsetY: remainingDevs[0].deviceOffsetY,
+                                    deviceRotation: remainingDevs[0].deviceRotation,
+                                  } : {
+                                    screenshotUrl: null,
+                                    originalScreenshotUrl: null,
+                                    cropData: null,
+                                  }),
+                                });
+                              }}
+                            >
+                              <Trash2 size={11} />
+                            </div>
 
                           <div
                             className="resize-handle handle-nw"
@@ -2144,16 +2153,9 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                             onPointerDown={(e) => handlePointerDown(e, 'resize-se', screenDev.id)}
                           />
 
-                          {dragMode && (
+                          {dragMode && dragMode !== 'move' && (
                             <div className="transform-floating-pill">
-                              {dragMode === 'move' ? (
-                                <>
-                                  <Move size={12} />
-                                  <span>
-                                    X: {devOffsetX}px | Y: {devOffsetY}px
-                                  </span>
-                                </>
-                              ) : dragMode === 'device-rotate' ? (
+                              {dragMode === 'device-rotate' ? (
                                 <>
                                   <RotateCw size={12} />
                                   <span>{devRotation}°</span>
@@ -2171,8 +2173,9 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                               )}
                             </div>
                           )}
-                        </div>
-                      )}
+                          </div>
+                        );
+                      })()}
                     </div>
                   );
                 })}

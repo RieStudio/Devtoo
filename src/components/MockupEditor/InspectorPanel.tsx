@@ -350,34 +350,71 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    {isSelected && (
-                      <span style={{ fontSize: '10px', fontWeight: 700, color: '#D90429', backgroundColor: '#FFFFFF', padding: '2px 6px', borderRadius: '4px' }}>
-                        Seçili
-                      </span>
+                    {isSelected ? (
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '2px',
+                          backgroundColor: '#FFFFFF',
+                          borderRadius: '6px',
+                          padding: '2px 4px 2px 6px',
+                        }}
+                      >
+                        <span style={{ fontSize: '10px', fontWeight: 700, color: '#D90429' }}>
+                          Seçili
+                        </span>
+                        <button
+                          type="button"
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#D90429',
+                            cursor: 'pointer',
+                            padding: '2px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: '4px',
+                            opacity: 0.85,
+                            transition: 'opacity 0.15s ease',
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                          onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.85')}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteDevice(dev.id);
+                          }}
+                          title="Bu cihazı kaldır"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#94A3B8',
+                          cursor: 'pointer',
+                          padding: '4px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: '4px',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.color = '#D90429')}
+                        onMouseLeave={(e) => (e.currentTarget.style.color = '#94A3B8')}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteDevice(dev.id);
+                        }}
+                        title="Bu cihazı kaldır"
+                      >
+                        <Trash2 size={13} />
+                      </button>
                     )}
-                    <button
-                      type="button"
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: isSelected ? 'rgba(255, 255, 255, 0.8)' : '#94A3B8',
-                        cursor: 'pointer',
-                        padding: '4px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderRadius: '4px',
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.color = isSelected ? '#FFFFFF' : '#D90429')}
-                      onMouseLeave={(e) => (e.currentTarget.style.color = isSelected ? 'rgba(255, 255, 255, 0.8)' : '#94A3B8')}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteDevice(dev.id);
-                      }}
-                      title="Bu cihazı kaldır"
-                    >
-                      <Trash2 size={13} />
-                    </button>
                   </div>
                 </div>
               );
@@ -649,7 +686,33 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 <Maximize2 size={13} color="#64748B" />
                 <span>Cihaz Boyutu</span>
               </span>
-              <span className="control-value">%{Math.round((activeDevice.deviceScale ?? 1) * 100)}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                <span style={{ fontSize: '11px', color: '#64748B', fontFamily: 'var(--font-mono)' }}>%</span>
+                <input
+                  type="number"
+                  min="35"
+                  max="220"
+                  value={Math.round((activeDevice.deviceScale ?? 1) * 100)}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    if (!isNaN(val)) {
+                      handleUpdateActiveDevice({ deviceScale: Math.max(0.35, Math.min(2.2, val / 100)) });
+                    }
+                  }}
+                  style={{
+                    width: '46px',
+                    padding: '2px 4px',
+                    fontSize: '11px',
+                    fontFamily: 'var(--font-mono)',
+                    textAlign: 'right',
+                    borderRadius: '4px',
+                    border: '1px solid #CBD5E1',
+                    background: '#FFFFFF',
+                    color: '#1E293B',
+                    outline: 'none',
+                  }}
+                />
+              </div>
             </div>
             <input
               type="range"
@@ -659,23 +722,6 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               value={activeDevice.deviceScale ?? 1}
               onChange={(e) => handleUpdateActiveDevice({ deviceScale: Number(e.target.value) })}
             />
-            {/* Quick scale buttons */}
-            <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
-              {[
-                { label: '%75', val: 0.75 },
-                { label: '%100', val: 1.0 },
-                { label: '%125', val: 1.25 },
-                { label: '%150', val: 1.5 },
-              ].map((btn) => (
-                <button
-                  key={btn.label}
-                  className={`scale-pill-btn ${(activeDevice.deviceScale ?? 1) === btn.val ? 'active' : ''}`}
-                  onClick={() => handleUpdateActiveDevice({ deviceScale: btn.val })}
-                >
-                  {btn.label}
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* Device Horizontal Position (X) */}
@@ -739,7 +785,33 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 <RotateCw size={13} color="#64748B" />
                 <span>Cihaz Döndürme</span>
               </span>
-              <span className="control-value">{activeDevice.deviceRotation ?? 0}°</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                <input
+                  type="number"
+                  min="-180"
+                  max="180"
+                  value={activeDevice.deviceRotation ?? 0}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    if (!isNaN(val)) {
+                      handleUpdateActiveDevice({ deviceRotation: Math.max(-180, Math.min(180, val)) });
+                    }
+                  }}
+                  style={{
+                    width: '46px',
+                    padding: '2px 4px',
+                    fontSize: '11px',
+                    fontFamily: 'var(--font-mono)',
+                    textAlign: 'right',
+                    borderRadius: '4px',
+                    border: '1px solid #CBD5E1',
+                    background: '#FFFFFF',
+                    color: '#1E293B',
+                    outline: 'none',
+                  }}
+                />
+                <span style={{ fontSize: '11px', color: '#64748B', fontFamily: 'var(--font-mono)' }}>°</span>
+              </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <input
@@ -757,24 +829,6 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               >
                 0°
               </button>
-            </div>
-            {/* Quick rotation buttons */}
-            <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
-              {[
-                { label: '-15°', val: ((activeDevice.deviceRotation ?? 0) - 15 + 360) % 360 > 180 ? ((activeDevice.deviceRotation ?? 0) - 15) : ((activeDevice.deviceRotation ?? 0) - 15) },
-                { label: '0°', val: 0 },
-                { label: '+15°', val: ((activeDevice.deviceRotation ?? 0) + 15) },
-                { label: '45°', val: 45 },
-                { label: '-45°', val: -45 },
-              ].map((btn) => (
-                <button
-                  key={btn.label}
-                  className={`scale-pill-btn ${(activeDevice.deviceRotation ?? 0) === btn.val ? 'active' : ''}`}
-                  onClick={() => handleUpdateActiveDevice({ deviceRotation: btn.val })}
-                >
-                  {btn.label}
-                </button>
-              ))}
             </div>
           </div>
 
