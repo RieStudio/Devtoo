@@ -732,6 +732,7 @@ export function App() {
     targetWidth,
     targetHeight,
     scope,
+    customFilename,
   }: {
     format: ExportFormat;
     targetWidth: number;
@@ -739,14 +740,29 @@ export function App() {
     scale: number;
     quality?: number;
     scope: 'active' | 'all';
+    customFilename?: string;
   }) => {
     try {
       setIsExporting(true);
       const ext = format === 'jpeg' ? 'jpg' : format;
 
+      const sanitizeName = (rawName: string) => {
+        return rawName
+          .trim()
+          .replace(/ğ/g, 'g').replace(/Ğ/g, 'g')
+          .replace(/ü/g, 'u').replace(/Ü/g, 'u')
+          .replace(/ş/g, 's').replace(/Ş/g, 's')
+          .replace(/ı/g, 'i').replace(/İ/g, 'i')
+          .replace(/ö/g, 'o').replace(/Ö/g, 'o')
+          .replace(/ç/g, 'c').replace(/Ç/g, 'c')
+          .replace(/[^a-zA-Z0-9_-]+/g, '-')
+          .replace(/^-+|-+$/g, '') || 'mockup';
+      };
+
       if (scope === 'all' && screens.length > 1) {
         // Multi-screen ZIP Export
         const zip = new JSZip();
+        const zipBaseName = customFilename ? sanitizeName(customFilename) : 'devtoo-mockups';
 
         for (let i = 0; i < screens.length; i++) {
           const s = screens[i];
@@ -760,14 +776,17 @@ export function App() {
               targetHeight
             );
 
+            const screenCleanTitle = s.screenTitle ? sanitizeName(s.screenTitle) : `ekran-${i + 1}`;
+            const fileItemName = `${String(i + 1).padStart(2, '0')}-${screenCleanTitle}`;
+
             if (format === 'svg') {
               // SVG is standard XML / data-URI text
               const svgContent = decodeURIComponent(dataUrl.replace(/^data:image\/svg\+xml;charset=utf-8,/, ''));
-              zip.file(`ekran-${i + 1}-${s.preset || 'mockup'}.svg`, svgContent);
+              zip.file(`${fileItemName}.svg`, svgContent);
             } else {
               // Extract base64
               const base64Data = dataUrl.replace(/^data:image\/[a-z0-9-+.]+;base64,/, '');
-              zip.file(`ekran-${i + 1}-${s.preset || 'mockup'}.${ext}`, base64Data, { base64: true });
+              zip.file(`${fileItemName}.${ext}`, base64Data, { base64: true });
             }
           }
         }
@@ -776,7 +795,7 @@ export function App() {
         const downloadUrl = URL.createObjectURL(zipBlob);
         const link = document.createElement('a');
         link.href = downloadUrl;
-        link.download = `devtoo-mockups-${Date.now()}.zip`;
+        link.download = `${zipBaseName}.zip`;
         link.click();
         URL.revokeObjectURL(downloadUrl);
         showToast('Tüm ekranlar başarıyla indirildi.');
@@ -797,12 +816,19 @@ export function App() {
           targetWidth,
           targetHeight
         );
-        const filename = isDevOnly
-          ? `devtoo-${activeScreenConfig.deviceType}-transparent-${Date.now()}.${ext}`
-          : `devtoo-mockup-${activeScreenConfig.preset}-${Date.now()}.${ext}`;
+
+        let finalName: string;
+        if (customFilename) {
+          finalName = `${sanitizeName(customFilename)}.${ext}`;
+        } else {
+          const baseTitle = activeScreenConfig.screenTitle
+            ? sanitizeName(activeScreenConfig.screenTitle)
+            : (isDevOnly ? `${activeScreenConfig.deviceType}-cihaz` : `mockup-${activeScreenConfig.preset || 'tasarim'}`);
+          finalName = `${baseTitle}.${ext}`;
+        }
 
         const link = document.createElement('a');
-        link.download = filename;
+        link.download = finalName;
         link.href = dataUrl;
         link.click();
         showToast(`Görsel ${format.toUpperCase()} formatında indirildi.`);

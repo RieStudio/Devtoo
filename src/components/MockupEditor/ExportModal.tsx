@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Download, X, FileImage, Layers, Check, Sparkles } from 'lucide-react';
+import { Download, X, FileImage, Layers, Check, Sparkles, Tag } from 'lucide-react';
 import appleSvg from '../../assets/apple.svg';
 import googlePlaySvg from '../../assets/googleplay.svg';
 
@@ -27,6 +27,7 @@ interface ExportModalProps {
     scale: number;
     quality: number;
     scope: 'active' | 'all';
+    customFilename?: string;
   }) => void;
   screenCount: number;
   activeScreenTitle: string;
@@ -81,6 +82,14 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   const [selectedPresetCategory, setSelectedPresetCategory] = useState<ExportPresetCategory>('playstore');
   const [selectedPresetId, setSelectedPresetId] = useState<string>('playstore-1x');
   const [exportScope, setExportScope] = useState<'active' | 'all'>('active');
+  const [customFilename, setCustomFilename] = useState<string>('');
+
+  // Update default filename placeholder when active screen changes or modal opens
+  React.useEffect(() => {
+    if (isOpen) {
+      setCustomFilename(activeScreenTitle ? activeScreenTitle.trim() : '');
+    }
+  }, [isOpen, activeScreenTitle]);
 
   if (!isOpen) return null;
 
@@ -170,6 +179,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       scale: activePreset.scaleFactor,
       quality: 0.88,
       scope: screenCount > 1 ? exportScope : 'active',
+      customFilename: customFilename.trim() || undefined,
     });
   };
 
@@ -357,6 +367,59 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                   </button>
                 );
               })}
+            </div>
+          </div>
+
+          {/* Dosya Adı / Proje İsmi Girişi */}
+          <div>
+            <div style={{ fontSize: '13px', fontWeight: 600, color: '#334155', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Tag size={14} color="#64748B" />
+                <span>Dosya Adı</span>
+              </div>
+              <span style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 400 }}>
+                {exportScope === 'all' && screenCount > 1 ? 'ZIP ve dosya öneki' : 'Özel isim belirleyebilirsiniz'}
+              </span>
+            </div>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <input
+                type="text"
+                value={customFilename}
+                onChange={(e) => setCustomFilename(e.target.value)}
+                placeholder={activeScreenTitle || 'ornek-tasarim'}
+                style={{
+                  width: '100%',
+                  padding: '9px 12px',
+                  paddingRight: selectedFormat === 'svg' ? '45px' : '55px',
+                  borderRadius: '10px',
+                  border: '1px solid #E2E8F0',
+                  fontSize: '13px',
+                  color: '#0F172A',
+                  outline: 'none',
+                  backgroundColor: '#F8FAFC',
+                  transition: 'all 0.15s ease',
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = '#D90429';
+                  e.currentTarget.style.backgroundColor = '#FFFFFF';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = '#E2E8F0';
+                  e.currentTarget.style.backgroundColor = '#F8FAFC';
+                }}
+              />
+              <span
+                style={{
+                  position: 'absolute',
+                  right: '12px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  color: '#94A3B8',
+                  pointerEvents: 'none',
+                }}
+              >
+                {exportScope === 'all' && screenCount > 1 ? '.zip' : `.${selectedFormat === 'jpeg' ? 'jpg' : selectedFormat}`}
+              </span>
             </div>
           </div>
 
