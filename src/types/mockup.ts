@@ -68,6 +68,21 @@ export interface TextLayer {
   width?: number;
 }
 
+export type ShapeType = 'rectangle' | 'rounded-rectangle' | 'circle' | 'triangle' | 'star' | 'heart' | 'badge';
+
+export interface ShapeLayer {
+  id: string;
+  type: ShapeType;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  color: string;
+  opacity?: number;
+  rotation?: number;
+  borderRadius?: number;
+}
+
 export interface CanvasDeviceItem {
   id: string;
   deviceType: DeviceType;
@@ -135,6 +150,10 @@ export interface MockupConfig {
   textLayers: TextLayer[];
   selectedTextId: string | null;
   selectedTextIds?: string[];
+
+  // Shape Layers
+  shapeLayers?: ShapeLayer[];
+  selectedShapeId?: string | null;
   
   // Export scale
   exportScale: 1 | 2 | 3;

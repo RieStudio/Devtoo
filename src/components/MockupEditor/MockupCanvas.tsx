@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import type { MockupConfig } from '../../types/mockup';
+import type { MockupConfig, ShapeType } from '../../types/mockup';
 import { getMockupDevices } from '../../types/mockup';
 import { DeviceFrame } from './DeviceFrame';
 import { 
@@ -32,6 +32,13 @@ interface MockupCanvasProps {
     newRotation: number,
     deviceId?: string
   ) => void;
+  onTransferShape?: (
+    sourceScreenId: string,
+    targetScreenId: string,
+    newX: number,
+    newY: number,
+    shapeId: string
+  ) => void;
   config: MockupConfig;
   onChangeConfig: (updated: Partial<MockupConfig>, recordHistory?: boolean) => void;
   onCommitHistory?: () => void;
@@ -59,6 +66,16 @@ type DragMode =
   | 'text-corner-ne'
   | 'text-corner-sw'
   | 'text-corner-se'
+  | 'shape-move'
+  | 'shape-rotate'
+  | 'shape-resize-nw'
+  | 'shape-resize-ne'
+  | 'shape-resize-sw'
+  | 'shape-resize-se'
+  | 'shape-resize-top'
+  | 'shape-resize-bottom'
+  | 'shape-resize-left'
+  | 'shape-resize-right'
   | null;
 
 const getFontFamilyCss = (family: string) => {
@@ -125,6 +142,93 @@ const getFontFamilyCss = (family: string) => {
     case 'sans':
     default:
       return '"Inter", ui-sans-serif, system-ui, -apple-system, sans-serif';
+  }
+};
+
+export const renderShapeSvgContent = (shape: { type: ShapeType; color?: string; borderRadius?: number }) => {
+  const color = shape.color || '#D90429';
+  switch (shape.type) {
+    case 'circle':
+      return (
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ width: '100%', height: '100%', display: 'block', overflow: 'visible' }}>
+          <ellipse cx="50" cy="50" rx="48" ry="48" fill={color} />
+        </svg>
+      );
+    case 'rectangle':
+    case 'rounded-rectangle':
+      return (
+        <div
+          style={{
+            width: '100%',
+            height: '100%',
+            backgroundColor: color,
+            borderRadius: `${shape.borderRadius ?? 0}px`,
+          }}
+        />
+      );
+    case 'triangle': {
+      const r = Math.min(28, Math.max(0, (shape.borderRadius ?? 0) * 0.45));
+      if (r <= 0.5) {
+        return (
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ width: '100%', height: '100%', display: 'block', overflow: 'visible' }}>
+            <polygon points="50,6 96,94 4,94" fill={color} />
+          </svg>
+        );
+      }
+
+      // Geometry for triangle with vertices (50, 6), (96, 94), (4, 94)
+      const p1x = 50 - r * 0.463;
+      const p1y = 6 + r * 0.886;
+      const p2x = 50 + r * 0.463;
+      const p2y = 6 + r * 0.886;
+
+      const p3x = 96 - r * 0.463;
+      const p3y = 94 - r * 0.886;
+      const p4x = 96 - r;
+      const p4y = 94;
+
+      const p5x = 4 + r;
+      const p5y = 94;
+      const p6x = 4 + r * 0.463;
+      const p6y = 94 - r * 0.886;
+
+      const pathData = `M ${p2x} ${p2y} L ${p3x} ${p3y} Q 96 94 ${p4x} ${p4y} L ${p5x} ${p5y} Q 4 94 ${p6x} ${p6y} L ${p1x} ${p1y} Q 50 6 ${p2x} ${p2y} Z`;
+
+      return (
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ width: '100%', height: '100%', display: 'block', overflow: 'visible' }}>
+          <path d={pathData} fill={color} />
+        </svg>
+      );
+    }
+    case 'star':
+      return (
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ width: '100%', height: '100%', display: 'block', overflow: 'visible' }}>
+          <polygon
+            points="50,5 64,36 98,36 70,57 81,91 50,70 19,91 30,57 2,36 36,36"
+            fill={color}
+          />
+        </svg>
+      );
+    case 'heart':
+      return (
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ width: '100%', height: '100%', display: 'block', overflow: 'visible' }}>
+          <path
+            d="M50 88.9L16.7 55.6C7.6 46.5 7.6 31.8 16.7 22.7 25.8 13.6 40.5 13.6 49.6 22.7L50 23.1 50.4 22.7C59.5 13.6 74.2 13.6 83.3 22.7 92.4 31.8 92.4 46.5 83.3 55.6L50 88.9z"
+            fill={color}
+          />
+        </svg>
+      );
+    case 'badge':
+      return (
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ width: '100%', height: '100%', display: 'block', overflow: 'visible' }}>
+          <path
+            d="M50 6 L88 20 V50 C88 74 50 94 50 94 C50 94 12 74 12 50 V20 Z"
+            fill={color}
+          />
+        </svg>
+      );
+    default:
+      return <div style={{ width: '100%', height: '100%', backgroundColor: color }} />;
   }
 };
 
@@ -224,6 +328,7 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
   onRotateScreen,
   onUpdateScreenTitle,
   onTransferDevice,
+  onTransferShape,
   config,
   onChangeConfig,
   onUploadImageClick,
@@ -292,6 +397,7 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
 
   const [dragMode, setDragMode] = useState<DragMode>(null);
   const [draggingTextId, setDraggingTextId] = useState<string | null>(null);
+  const [draggingShapeId, setDraggingShapeId] = useState<string | null>(null);
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [dragMoved, setDragMoved] = useState(false);
   const [alignmentGuides, setAlignmentGuides] = useState<{ showVertical: boolean; showHorizontal: boolean }>({
@@ -721,6 +827,164 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
     onChangeConfig({ selectedTextId: layerId });
   };
 
+  // Shape pointer down for moving
+  const handleShapePointerDown = (e: React.PointerEvent, shapeId: string) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    const shape = (config.shapeLayers || []).find((s) => s.id === shapeId);
+    if (!shape) return;
+
+    setDragMode('shape-move');
+    setDraggingShapeId(shapeId);
+    setDragMoved(false);
+    setIsDeviceSelected(false);
+    onChangeConfig({
+      selectedShapeId: shapeId,
+      selectedTextId: null,
+      selectedTextIds: [],
+    });
+
+    startPosRef.current = {
+      clientX: e.clientX,
+      clientY: e.clientY,
+      initialOffsetX: shape.x,
+      initialOffsetY: shape.y,
+      initialScale: 1,
+    };
+  };
+
+  // Shape pointer down for rotating
+  const handleShapeRotatePointerDown = (e: React.PointerEvent, shapeId: string, shapeEl: HTMLElement | null) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    const shape = (config.shapeLayers || []).find((s) => s.id === shapeId);
+    if (!shape) return;
+
+    let cx = e.clientX;
+    let cy = e.clientY + 40;
+
+    if (shapeEl) {
+      const rect = shapeEl.getBoundingClientRect();
+      cx = rect.left + rect.width / 2;
+      cy = rect.top + rect.height / 2;
+    }
+
+    const initialAngle = Math.atan2(e.clientY - cy, e.clientX - cx) * (180 / Math.PI);
+
+    rotateCenterRef.current = {
+      centerX: cx,
+      centerY: cy,
+      startRotation: shape.rotation || 0,
+      startPointerAngle: initialAngle,
+    };
+
+    setDragMode('shape-rotate');
+    setDraggingShapeId(shapeId);
+    setDragMoved(false);
+    onChangeConfig({
+      selectedShapeId: shapeId,
+      selectedTextId: null,
+      selectedTextIds: [],
+    });
+  };
+
+  // Shape pointer down for corner resizing
+  const shapeResizeRef = useRef<{
+    startX: number;
+    startY: number;
+    initialX: number;
+    initialY: number;
+    initialWidth: number;
+    initialHeight: number;
+    rotation: number;
+    handle: 'nw' | 'ne' | 'sw' | 'se' | 'top' | 'bottom' | 'left' | 'right';
+    type: ShapeType;
+  }>({
+    startX: 0,
+    startY: 0,
+    initialX: 0,
+    initialY: 0,
+    initialWidth: 100,
+    initialHeight: 100,
+    rotation: 0,
+    handle: 'se',
+    type: 'rectangle',
+  });
+
+  const handleShapeCornerResizeStart = (
+    e: React.PointerEvent,
+    shapeId: string,
+    corner: 'nw' | 'ne' | 'sw' | 'se',
+    currentX: number,
+    currentY: number,
+    currentWidth: number,
+    currentHeight: number,
+    rotation: number,
+    type: ShapeType
+  ) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    shapeResizeRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      initialX: currentX,
+      initialY: currentY,
+      initialWidth: currentWidth,
+      initialHeight: currentHeight,
+      rotation: rotation || 0,
+      handle: corner,
+      type,
+    };
+
+    setDragMode(`shape-resize-${corner}` as DragMode);
+    setDraggingShapeId(shapeId);
+    setDragMoved(false);
+    onChangeConfig({
+      selectedShapeId: shapeId,
+      selectedTextId: null,
+      selectedTextIds: [],
+    });
+  };
+
+  const handleShapeSideResizeStart = (
+    e: React.PointerEvent,
+    shapeId: string,
+    side: 'top' | 'bottom' | 'left' | 'right',
+    currentX: number,
+    currentY: number,
+    currentWidth: number,
+    currentHeight: number,
+    rotation: number,
+    type: ShapeType
+  ) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    shapeResizeRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      initialX: currentX,
+      initialY: currentY,
+      initialWidth: currentWidth,
+      initialHeight: currentHeight,
+      rotation: rotation || 0,
+      handle: side,
+      type,
+    };
+
+    setDragMode(`shape-resize-${side}` as DragMode);
+    setDraggingShapeId(shapeId);
+    setDragMoved(false);
+    onChangeConfig({
+      selectedShapeId: shapeId,
+      selectedTextId: null,
+      selectedTextIds: [],
+    });
+  };
+
   // Canvas pointer down on background (Pan canvas only when clicking outside of any mockup screen)
   const handleCanvasPointerDown = (e: React.PointerEvent) => {
     const target = e.target as HTMLElement;
@@ -842,6 +1106,12 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
           if (l) {
             initialX = l.x;
             initialY = l.y;
+          }
+        } else if (dragMode === 'shape-move' && draggingShapeId) {
+          const s = (config.shapeLayers || []).find((sh) => sh.id === draggingShapeId);
+          if (s) {
+            initialX = s.x;
+            initialY = s.y;
           }
         }
 
@@ -1013,6 +1283,26 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
             l.id === draggingTextId ? { ...l, x: newX, y: newY } : l
           ),
         }, false);
+      } else if (dragMode === 'shape-move' && draggingShapeId) {
+        let newX = Math.round(startPosRef.current.initialOffsetX + deltaX);
+        let newY = Math.round(startPosRef.current.initialOffsetY + deltaY);
+
+        const snapX = Math.abs(newX) <= 4;
+        const snapY = Math.abs(newY) <= 4;
+
+        if (snapX) newX = 0;
+        if (snapY) newY = 0;
+
+        setAlignmentGuides({
+          showVertical: snapX,
+          showHorizontal: snapY,
+        });
+
+        onChangeConfig({
+          shapeLayers: (config.shapeLayers || []).map((s) =>
+            s.id === draggingShapeId ? { ...s, x: newX, y: newY } : s
+          ),
+        }, false);
       } else if (dragMode === 'device-rotate') {
         const { centerX, centerY, startRotation, startPointerAngle } = rotateCenterRef.current;
         const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
@@ -1150,9 +1440,89 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
           devices: updatedDevices,
           deviceScale: newScale,
         }, false);
+      } else if (dragMode === 'shape-rotate' && draggingShapeId) {
+        const { centerX, centerY, startRotation, startPointerAngle } = rotateCenterRef.current;
+        const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
+        const deltaAngle = currentAngle - startPointerAngle;
+        let newRot = Math.round((startRotation + deltaAngle) % 360);
+        if (newRot < -180) newRot += 360;
+        if (newRot > 180) newRot -= 360;
+
+        if (Math.abs(newRot) < 3) newRot = 0;
+        if (Math.abs(newRot - 90) < 3) newRot = 90;
+        if (Math.abs(newRot + 90) < 3) newRot = -90;
+        if (Math.abs(Math.abs(newRot) - 180) < 3) newRot = 180;
+
+        onChangeConfig({
+          shapeLayers: (config.shapeLayers || []).map((s) =>
+            s.id === draggingShapeId ? { ...s, rotation: newRot } : s
+          ),
+        }, false);
+      } else if (dragMode.startsWith('shape-resize-') && draggingShapeId) {
+        const { startX, startY, initialX, initialY, initialWidth, initialHeight, rotation, handle, type } = shapeResizeRef.current;
+        const dX = (e.clientX - startX) / effectiveZoom;
+        const dY = (e.clientY - startY) / effectiveZoom;
+
+        const rad = (rotation || 0) * (Math.PI / 180);
+        const cos = Math.cos(rad);
+        const sin = Math.sin(rad);
+        const localDX = dX * cos + dY * sin;
+        const localDY = -dX * sin + dY * cos;
+
+        let newW = initialWidth;
+        let newH = initialHeight;
+        let shiftLocalX = 0;
+        let shiftLocalY = 0;
+
+        if (handle === 'left') {
+          newW = Math.max(10, Math.round(initialWidth - localDX));
+          shiftLocalX = -(newW - initialWidth) / 2;
+        } else if (handle === 'right') {
+          newW = Math.max(10, Math.round(initialWidth + localDX));
+          shiftLocalX = (newW - initialWidth) / 2;
+        } else if (handle === 'top') {
+          newH = Math.max(10, Math.round(initialHeight - localDY));
+          shiftLocalY = -(newH - initialHeight) / 2;
+        } else if (handle === 'bottom') {
+          newH = Math.max(10, Math.round(initialHeight + localDY));
+          shiftLocalY = (newH - initialHeight) / 2;
+        } else {
+          // Corner handles: NW, NE, SW, SE (uniform / proportional scaling from center)
+          const signX = handle === 'se' || handle === 'ne' ? 1 : -1;
+          const signY = handle === 'se' || handle === 'sw' ? 1 : -1;
+
+          // Compute distance along diagonal
+          const deltaProj = (localDX * signX + localDY * signY) / 2;
+          const initialDiag = Math.hypot(initialWidth, initialHeight);
+          const scale = Math.max(0.05, (initialDiag + deltaProj * 2) / initialDiag);
+
+          newW = Math.max(10, Math.round(initialWidth * scale));
+          newH = Math.max(10, Math.round(initialHeight * scale));
+        }
+
+        // Equal aspect ratio ONLY when resizing from corner handles (if desired)
+        if (handle !== 'left' && handle !== 'right' && handle !== 'top' && handle !== 'bottom') {
+          if (type === 'circle' || type === 'star' || type === 'heart' || type === 'badge') {
+            const avg = Math.round((newW + newH) / 2);
+            newW = avg;
+            newH = avg;
+          }
+        }
+
+        // Transform local center shift back to canvas coordinates
+        const deltaGlobalX = shiftLocalX * cos - shiftLocalY * sin;
+        const deltaGlobalY = shiftLocalX * sin + shiftLocalY * cos;
+        const newX = Math.round(initialX + deltaGlobalX);
+        const newY = Math.round(initialY + deltaGlobalY);
+
+        onChangeConfig({
+          shapeLayers: (config.shapeLayers || []).map((s) =>
+            s.id === draggingShapeId ? { ...s, width: newW, height: newH, x: newX, y: newY } : s
+          ),
+        }, false);
       }
     },
-    [dragMode, draggingTextId, config.textLayers, config.selectedTextId, isDeviceSelected, selectionBox, isPanning, effectiveZoom, onChangeConfig, exportRef]
+    [dragMode, draggingTextId, draggingShapeId, config.textLayers, config.shapeLayers, config.selectedTextId, config.selectedShapeId, isDeviceSelected, selectionBox, isPanning, effectiveZoom, onChangeConfig, exportRef]
   );
 
   const handlePointerUp = useCallback(() => {
@@ -1222,13 +1592,64 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
         }
       }
 
+      // Auto-transfer shape to another screen if its center crossed into that screen
+      const wasDraggingShape = dragMode === 'shape-move';
+      if (wasDraggingShape && dragMoved && draggingShapeId && screens && screens.length > 1 && onTransferShape) {
+        const activeIdx = screens.findIndex((s) => s.id === activeScreenId);
+        if (activeIdx !== -1) {
+          const screenWidths = screens.map((s) => parseInt(getCanvasDimensions(s).width, 10) || 400);
+          const screenCenters: number[] = [];
+          let currentAcc = 0;
+          for (let i = 0; i < screenWidths.length; i++) {
+            if (i === 0) {
+              screenCenters.push(screenWidths[0] / 2);
+              currentAcc = screenWidths[0];
+            } else {
+              screenCenters.push(currentAcc + screenWidths[i] / 2);
+              currentAcc += screenWidths[i];
+            }
+          }
+
+          const targetShape = (config.shapeLayers || []).find((s) => s.id === draggingShapeId);
+          if (targetShape) {
+            const shapeGlobalX = screenCenters[activeIdx] + targetShape.x;
+
+            let targetIdx = activeIdx;
+            let accLeft = 0;
+            for (let i = 0; i < screenWidths.length; i++) {
+              const accRight = accLeft + screenWidths[i];
+              if (shapeGlobalX >= accLeft && shapeGlobalX <= accRight) {
+                targetIdx = i;
+                break;
+              }
+              accLeft = accRight;
+            }
+
+            if (targetIdx !== activeIdx && screens[targetIdx]) {
+              const newX = Math.round(shapeGlobalX - screenCenters[targetIdx]);
+              onTransferShape(
+                screens[activeIdx].id || activeScreenId,
+                screens[targetIdx].id || screens[targetIdx].screenTitle || `screen-${targetIdx}`,
+                newX,
+                targetShape.y,
+                draggingShapeId
+              );
+              setDragMode(null);
+              setDraggingShapeId(null);
+              return;
+            }
+          }
+        }
+      }
+
       setDragMode(null);
       setDraggingTextId(null);
+      setDraggingShapeId(null);
       if (dragMoved) {
         onChangeConfig({}, true);
       }
     }
-  }, [dragMode, dragMoved, isPanning, selectionBox, screens, activeScreenId, config, onTransferDevice, onChangeConfig]);
+  }, [dragMode, dragMoved, isPanning, selectionBox, screens, activeScreenId, config, onTransferDevice, onTransferShape, onChangeConfig]);
 
   useEffect(() => {
     if (dragMode || selectionBox || isPanning) {
@@ -1592,12 +2013,13 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                     onSelectScreen?.(screenCfg.id);
                   }
 
-                  // Immediately deselect device and stop text editing on background click
+                  // Immediately deselect device, shapes, and stop text editing on background click
                   setIsDeviceSelected(false);
                   setEditingTextId(null);
                   onChangeConfig({
                     selectedTextId: null,
                     selectedTextIds: [],
+                    selectedShapeId: null,
                   });
 
                   const rect = e.currentTarget.getBoundingClientRect();
@@ -1614,10 +2036,12 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                 }}
                 onClick={(e) => {
                   const target = e.target as HTMLElement;
-                  // If clicking on an element (text, device, handles), do not clear
+                  // If clicking on an element (text, device, shape, handles), do not clear
                   if (
                     target.closest('.free-text-layer') ||
                     target.closest('.layer-drag-bar') ||
+                    target.closest('.free-shape-layer') ||
+                    target.closest('.shape-drag-bar') ||
                     target.closest('.device-interactive-container') ||
                     target.closest('.device-transform-gizmo') ||
                     target.closest('.resize-handle') ||
@@ -1635,6 +2059,7 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                     onChangeConfig({
                       selectedTextId: null,
                       selectedTextIds: [],
+                      selectedShapeId: null,
                     });
                   }
                 }}
@@ -1724,6 +2149,252 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                     </div>
                   );
                 })()}
+
+                {/* Seamless Multi-Screen Panorama Bleed: Render overflowing shapes from neighbor screens */}
+                {!isDeviceOnly && currentScreens.map((otherScreenCfg, otherIndex) => {
+                  if (otherIndex === screenIndex) return null;
+
+                  const otherIsActiveScreen = otherScreenCfg.id === activeScreenId || (!otherScreenCfg.id && otherIndex === 0);
+                  const otherShapes = (otherIsActiveScreen ? config.shapeLayers : otherScreenCfg.shapeLayers) || [];
+                  if (otherShapes.length === 0) return null;
+
+                  // Calculate cumulative distance between screen centers
+                  let distance = 0;
+                  if (otherIndex < screenIndex) {
+                    for (let k = otherIndex; k < screenIndex; k++) {
+                      const dim = getCanvasDimensions(currentScreens[k]);
+                      distance += parseInt(dim.width, 10);
+                    }
+                  } else {
+                    for (let k = screenIndex; k < otherIndex; k++) {
+                      const dim = getCanvasDimensions(currentScreens[k]);
+                      distance += parseInt(dim.width, 10);
+                    }
+                  }
+
+                  const currentCanvasWidth = parseInt(screenDims.width, 10) || 400;
+
+                  return otherShapes.map((shape) => {
+                    const overflowX = otherIndex < screenIndex
+                      ? shape.x - distance
+                      : shape.x + distance;
+
+                    // Only render if within visual range of this screen
+                    if (Math.abs(overflowX) > currentCanvasWidth * 2.5) {
+                      return null;
+                    }
+
+                    return (
+                      <div
+                        key={`overflow-bleed-shape-${otherScreenCfg.id || otherIndex}-${shape.id}`}
+                        className="free-shape-layer overflow-bleed-shape"
+                        style={{
+                          position: 'absolute',
+                          left: '50%',
+                          top: '50%',
+                          transform: `translate(calc(-50% + ${overflowX}px), calc(-50% + ${shape.y}px))`,
+                          cursor: 'pointer',
+                          zIndex: 6,
+                          opacity: (shape.opacity ?? 100) / 100,
+                          touchAction: 'none',
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (otherScreenCfg.id) {
+                            onSelectScreen?.(otherScreenCfg.id);
+                          }
+                          onChangeConfig({
+                            selectedShapeId: shape.id,
+                            selectedTextId: null,
+                            selectedTextIds: [],
+                          });
+                        }}
+                      >
+                        <div
+                          className="free-shape-rotated-wrap"
+                          style={{
+                            width: `${shape.width}px`,
+                            height: `${shape.height}px`,
+                            transform: `rotate(${shape.rotation || 0}deg)`,
+                            transformOrigin: 'center center',
+                            position: 'relative',
+                          }}
+                        >
+                          {renderShapeSvgContent(shape)}
+                        </div>
+                      </div>
+                    );
+                  });
+                })}
+
+                {/* Free Floating Shape Layers (Background Elements) */}
+                {!isDeviceOnly && (screenCfg.shapeLayers || []).map((shape) => {
+                  const isSelected = isThisActiveScreen && screenCfg.selectedShapeId === shape.id;
+                  const isDraggingThis = isThisActiveScreen && dragMode === 'shape-move' && draggingShapeId === shape.id;
+                  const canvasH = screenCfg.width > screenCfg.height ? 380 : screenCfg.width === screenCfg.height ? 440 : 640;
+                  const isTouchingTopBorder = shape.y <= -(canvasH / 2 - 45);
+
+                  return (
+                    <div
+                      key={shape.id}
+                      data-shape-id={shape.id}
+                      className={`free-shape-layer ${isSelected ? 'is-selected' : ''} ${isDraggingThis ? 'is-dragging' : ''}`}
+                      style={{
+                        position: 'absolute',
+                        left: '50%',
+                        top: '50%',
+                        transform: `translate(calc(-50% + ${shape.x}px), calc(-50% + ${shape.y}px))`,
+                        transition: dragMode ? 'none' : 'transform 0.1s ease-out',
+                        zIndex: isSelected ? 18 : 6,
+                        opacity: (shape.opacity ?? 100) / 100,
+                      }}
+                      onPointerDown={(e) => {
+                        if (!isThisActiveScreen) {
+                          if (screenCfg.id) onSelectScreen?.(screenCfg.id);
+                          return;
+                        }
+                        const target = e.target as HTMLElement;
+                        if (target.closest('.shape-corner-handle') || target.closest('.shape-rotate-btn')) {
+                          return;
+                        }
+                        handleShapePointerDown(e, shape.id);
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!isThisActiveScreen && screenCfg.id) {
+                          onSelectScreen?.(screenCfg.id);
+                        }
+                        setIsDeviceSelected(false);
+                        setEditingTextId(null);
+                        if (dragMoved) return;
+
+                        onChangeConfig({
+                          selectedShapeId: shape.id,
+                          selectedTextId: null,
+                          selectedTextIds: [],
+                        });
+                      }}
+                    >
+                      {/* Individual Drag & Rotate Handle Bar for Shapes */}
+                      {!isExporting && isSelected && (
+                        <div
+                          className={`layer-drag-bar shape-drag-bar ${isTouchingTopBorder ? 'bar-at-bottom' : 'bar-at-top'} ${
+                            dragMode === 'shape-rotate' && draggingShapeId === shape.id ? 'is-rotating' : ''
+                          }`}
+                          title="Bileşeni taşımak veya döndürmek için sürükleyin"
+                        >
+                          <div
+                            className="layer-move-handle"
+                            onPointerDown={(e) => handleShapePointerDown(e, shape.id)}
+                            title="Bileşeni taşımak için basılı tutup sürükleyin"
+                          >
+                            <Move size={12} />
+                          </div>
+
+                          <div className="layer-drag-bar-divider" />
+
+                          <div
+                            className={`layer-rotate-btn shape-rotate-btn ${(shape.rotation || 0) !== 0 ? 'active' : ''}`}
+                            title="Döndürmek için basılı tutup sürükleyin (veya 15° artırmak için tıklayın)"
+                            onPointerDown={(e) => handleShapeRotatePointerDown(e, shape.id, e.currentTarget.closest('.free-shape-layer'))}
+                            onClick={(e) => {
+                              if (!dragMoved) {
+                                e.stopPropagation();
+                                const nextRot = ((shape.rotation || 0) + 15) % 360;
+                                onChangeConfig({
+                                  shapeLayers: (screenCfg.shapeLayers || []).map((s) =>
+                                    s.id === shape.id ? { ...s, rotation: nextRot } : s
+                                  ),
+                                  selectedShapeId: shape.id,
+                                });
+                              }
+                            }}
+                          >
+                            <RotateCw size={10} />
+                            <span>{(shape.rotation || 0)}°</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Rotated shape wrapper */}
+                      <div
+                        className="free-shape-rotated-wrap"
+                        style={{
+                          width: `${shape.width}px`,
+                          height: `${shape.height}px`,
+                          transform: `rotate(${shape.rotation || 0}deg)`,
+                          transformOrigin: 'center center',
+                          position: 'relative',
+                        }}
+                      >
+                        {isSelected && !isExporting && (
+                          <>
+                            <div
+                              className="text-corner-handle shape-corner-handle handle-nw"
+                              title="Köşeden boyutlandır"
+                              onPointerDown={(e) =>
+                                handleShapeCornerResizeStart(e, shape.id, 'nw', shape.x, shape.y, shape.width, shape.height, shape.rotation || 0, shape.type)
+                              }
+                            />
+                            <div
+                              className="text-corner-handle shape-corner-handle handle-ne"
+                              title="Köşeden boyutlandır"
+                              onPointerDown={(e) =>
+                                handleShapeCornerResizeStart(e, shape.id, 'ne', shape.x, shape.y, shape.width, shape.height, shape.rotation || 0, shape.type)
+                              }
+                            />
+                            <div
+                              className="text-corner-handle shape-corner-handle handle-sw"
+                              title="Köşeden boyutlandır"
+                              onPointerDown={(e) =>
+                                handleShapeCornerResizeStart(e, shape.id, 'sw', shape.x, shape.y, shape.width, shape.height, shape.rotation || 0, shape.type)
+                              }
+                            />
+                            <div
+                              className="text-corner-handle shape-corner-handle handle-se"
+                              title="Köşeden boyutlandır"
+                              onPointerDown={(e) =>
+                                handleShapeCornerResizeStart(e, shape.id, 'se', shape.x, shape.y, shape.width, shape.height, shape.rotation || 0, shape.type)
+                              }
+                            />
+
+                            {/* 4 Kenar Tutamaçları: Sol, Sağ, Üst, Alt */}
+                            <div
+                              className="text-border-handle handle-left"
+                              title="Soldan genişlet / daralt"
+                              onPointerDown={(e) =>
+                                handleShapeSideResizeStart(e, shape.id, 'left', shape.x, shape.y, shape.width, shape.height, shape.rotation || 0, shape.type)
+                              }
+                            />
+                            <div
+                              className="text-border-handle handle-right"
+                              title="Sağdan genişlet / daralt"
+                              onPointerDown={(e) =>
+                                handleShapeSideResizeStart(e, shape.id, 'right', shape.x, shape.y, shape.width, shape.height, shape.rotation || 0, shape.type)
+                              }
+                            />
+                            <div
+                              className="text-border-handle handle-top"
+                              title="Yukarıdan genişlet / daralt"
+                              onPointerDown={(e) =>
+                                handleShapeSideResizeStart(e, shape.id, 'top', shape.x, shape.y, shape.width, shape.height, shape.rotation || 0, shape.type)
+                              }
+                            />
+                            <div
+                              className="text-border-handle handle-bottom"
+                              title="Aşağıdan genişlet / daralt"
+                              onPointerDown={(e) =>
+                                handleShapeSideResizeStart(e, shape.id, 'bottom', shape.x, shape.y, shape.width, shape.height, shape.rotation || 0, shape.type)
+                              }
+                            />
+                          </>
+                        )}
+
+                        {renderShapeSvgContent(shape)}
+                      </div>
+                    </div>
+                  );
+                })}
 
                 {/* Free Floating Draggable Multi-Text Layers */}
                 {!isDeviceOnly && screenCfg.showHeadline && (screenCfg.textLayers || []).map((layer) => {

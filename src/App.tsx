@@ -152,6 +152,8 @@ export function App() {
       frameRotation: cfg.frameRotation,
       showHeadline: cfg.showHeadline,
       textLayers: cfg.textLayers,
+      shapeLayers: cfg.shapeLayers,
+      selectedShapeId: cfg.selectedShapeId,
     })));
   };
 
@@ -437,6 +439,65 @@ export function App() {
     showToast(`Cihaz ${targetTitle} aktarıldı`);
   };
 
+  const handleTransferShape = (
+    sourceScreenId: string,
+    targetScreenId: string,
+    newX: number,
+    newY: number,
+    shapeId: string
+  ) => {
+    setScreens((prevScreens) => {
+      const source = prevScreens.find((s) => s.id === sourceScreenId);
+      const target = prevScreens.find((s) => s.id === targetScreenId);
+      if (!source || !target) return prevScreens;
+
+      const sourceShapes = source.shapeLayers || [];
+      const movingShape = sourceShapes.find((s) => s.id === shapeId);
+      if (!movingShape) return prevScreens;
+
+      const transferredShape: typeof movingShape = {
+        ...movingShape,
+        id: movingShape.id,
+        x: newX,
+        y: newY,
+      };
+
+      const remainingSourceShapes = sourceShapes.filter((s) => s.id !== movingShape.id);
+      const targetShapes = target.shapeLayers || [];
+      const nextTargetShapes = [...targetShapes, transferredShape];
+
+      const nextScreens = prevScreens.map((s) => {
+        if (s.id === targetScreenId) {
+          return {
+            ...s,
+            shapeLayers: nextTargetShapes,
+            selectedShapeId: transferredShape.id,
+          };
+        }
+        if (s.id === sourceScreenId) {
+          return {
+            ...s,
+            shapeLayers: remainingSourceShapes,
+            selectedShapeId: null,
+          };
+        }
+        return s;
+      });
+
+      const newHist = historyRef.current.slice(0, historyIndexRef.current + 1);
+      newHist.push(JSON.parse(JSON.stringify(nextScreens)));
+      if (newHist.length > 60) newHist.shift();
+      historyRef.current = newHist;
+      historyIndexRef.current = newHist.length - 1;
+
+      return nextScreens;
+    });
+
+    setActiveScreenId(targetScreenId);
+    const targetTitle = screens.find((s) => s.id === targetScreenId)?.screenTitle || 'Yeni ekrana';
+    showToast(`Şekil ${targetTitle} aktarıldı`);
+  };
+
   const handleUndo = () => {
     if (historyIndexRef.current > 0) {
       historyIndexRef.current -= 1;
@@ -581,6 +642,14 @@ export function App() {
             textLayers: remaining,
             selectedTextId: remaining[0]?.id || null,
             selectedTextIds: remaining[0] ? [remaining[0].id] : [],
+          });
+        } else if (activeScreenConfig.selectedShapeId) {
+          // Delete selected shape layer from screen
+          e.preventDefault();
+          const remainingShapes = (activeScreenConfig.shapeLayers || []).filter((s) => s.id !== activeScreenConfig.selectedShapeId);
+          handleUpdateConfig({
+            shapeLayers: remainingShapes,
+            selectedShapeId: null,
           });
         } else if (activeScreenConfig.selectedDeviceId) {
           // Delete selected device from screen
@@ -941,6 +1010,7 @@ export function App() {
             onRotateScreen={handleRotateScreen}
             onUpdateScreenTitle={handleUpdateScreenTitle}
             onTransferDevice={handleTransferDevice}
+            onTransferShape={handleTransferShape}
             config={activeScreenConfig}
             onChangeConfig={handleUpdateConfig}
             onUploadImageClick={handleTriggerUpload}

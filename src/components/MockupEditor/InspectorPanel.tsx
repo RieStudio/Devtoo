@@ -24,12 +24,21 @@ import {
   Type, 
   Plus, 
   RotateCw,
+  RotateCcw,
   Laptop,
   Tablet,
   Tv,
   Watch,
-  ChevronDown
+  ChevronDown,
+  Shapes,
+  Square,
+  Circle,
+  Triangle,
+  Star,
+  Heart,
+  Shield
 } from 'lucide-react';
+import type { ShapeLayer, ShapeType } from '../../types/mockup';
 
 interface InspectorPanelProps {
   config: MockupConfig;
@@ -188,6 +197,11 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   const [isOtherOpen, setIsOtherOpen] = useState(false);
   const otherPopoverRef = useRef<HTMLDivElement>(null);
 
+  // Shape Picker popup state
+  const [isShapePickerOpen, setIsShapePickerOpen] = useState(false);
+  const shapePopoverRef = useRef<HTMLDivElement>(null);
+  const shapeColorPickerInputRef = useRef<HTMLInputElement>(null);
+
   // Color / Variant dropdown state
   const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
   const colorDropdownRef = useRef<HTMLDivElement>(null);
@@ -214,14 +228,17 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
       if (colorDropdownRef.current && !colorDropdownRef.current.contains(event.target as Node)) {
         setIsColorDropdownOpen(false);
       }
+      if (shapePopoverRef.current && !shapePopoverRef.current.contains(event.target as Node)) {
+        setIsShapePickerOpen(false);
+      }
     };
-    if (isOtherOpen || isColorDropdownOpen) {
+    if (isOtherOpen || isColorDropdownOpen || isShapePickerOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isOtherOpen, isColorDropdownOpen]);
+  }, [isOtherOpen, isColorDropdownOpen, isShapePickerOpen]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -303,6 +320,56 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
       textLayers: remaining,
       selectedTextId: remaining.length > 0 ? remaining[0].id : null,
       selectedTextIds: remaining.length > 0 ? [remaining[0].id] : [],
+    });
+  };
+
+  // Shape Layers Management
+  const selectedShape = (config.shapeLayers || []).find((s) => s.id === config.selectedShapeId) || null;
+
+  const handleAddShape = (type: ShapeType) => {
+    const newId = `shape-${Date.now()}`;
+    const shapes = config.shapeLayers || [];
+    const lastShape = shapes[shapes.length - 1];
+
+    const baseOffsetX = lastShape ? (lastShape.x || 0) + 20 : 0;
+    const baseOffsetY = lastShape ? (lastShape.y || 0) + 20 : 0;
+
+    const newShape: ShapeLayer = {
+      id: newId,
+      type,
+      x: baseOffsetX,
+      y: baseOffsetY,
+      width: type === 'circle' ? 120 : type === 'star' || type === 'heart' || type === 'badge' ? 110 : 130,
+      height: type === 'circle' ? 120 : type === 'star' || type === 'heart' || type === 'badge' ? 110 : 130,
+      color: '#D90429',
+      opacity: 100,
+      rotation: 0,
+      borderRadius: type === 'rounded-rectangle' ? 16 : 0,
+    };
+
+    onChangeConfig({
+      shapeLayers: [...shapes, newShape],
+      selectedShapeId: newId,
+      selectedTextId: null,
+      selectedTextIds: [],
+    });
+    setIsShapePickerOpen(false);
+  };
+
+  const handleUpdateSelectedShape = (updated: Partial<ShapeLayer>) => {
+    if (!selectedShape) return;
+    onChangeConfig({
+      shapeLayers: (config.shapeLayers || []).map((s) =>
+        s.id === selectedShape.id ? { ...s, ...updated } : s
+      ),
+    });
+  };
+
+  const handleDeleteSelectedShape = (shapeId: string) => {
+    const remaining = (config.shapeLayers || []).filter((s) => s.id !== shapeId);
+    onChangeConfig({
+      shapeLayers: remaining,
+      selectedShapeId: remaining.length > 0 ? remaining[0].id : null,
     });
   };
 
@@ -986,7 +1053,386 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
       {/* Section 3: Canvas Background (Only in Full Visual Mode) */}
       {!isDeviceOnly && (
         <div className="inspector-section">
-          <div className="section-label">Arka Plan</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <div className="section-label" style={{ marginBottom: 0 }}>Arka Plan</div>
+            
+            {/* Şekil Ekle Popover Wrapper */}
+            <div style={{ position: 'relative' }} ref={shapePopoverRef}>
+              <button
+                type="button"
+                className="btn-text-action"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  color: '#FFFFFF',
+                  backgroundColor: isShapePickerOpen ? '#1E293B' : '#0F172A',
+                  border: 'none',
+                  borderRadius: '5px',
+                  padding: '3px 8px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                  transition: 'background-color 0.15s ease',
+                }}
+                onClick={() => setIsShapePickerOpen(!isShapePickerOpen)}
+                title="Arka plana temel geometrik şekiller veya rozetler ekleyin"
+              >
+                <Plus size={11} />
+                <span>Şekil Ekle</span>
+              </button>
+
+              {/* Ufak Pencere / Popover */}
+              {isShapePickerOpen && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 6px)',
+                    right: 0,
+                    width: '240px',
+                    backgroundColor: '#FFFFFF',
+                    borderRadius: '10px',
+                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+                    border: '1px solid #E2E8F0',
+                    padding: '10px',
+                    zIndex: 100,
+                    animation: 'toastSlideDown 0.15s cubic-bezier(0.16, 1, 0.3, 1)',
+                  }}
+                >
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', marginBottom: '8px', paddingBottom: '4px', borderBottom: '1px solid #F1F5F9' }}>
+                    <span>Temel Şekiller</span>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+                    {[
+                      { type: 'rectangle' as ShapeType, label: 'Dikdörtgen', icon: <Square size={18} /> },
+                      { type: 'circle' as ShapeType, label: 'Daire', icon: <Circle size={18} /> },
+                      { type: 'triangle' as ShapeType, label: 'Üçgen', icon: <Triangle size={18} /> },
+                      { type: 'star' as ShapeType, label: 'Yıldız', icon: <Star size={18} /> },
+                      { type: 'heart' as ShapeType, label: 'Kalp', icon: <Heart size={18} /> },
+                      { type: 'badge' as ShapeType, label: 'Rozet', icon: <Shield size={18} /> },
+                    ].map((item) => (
+                      <button
+                        key={item.type}
+                        type="button"
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '4px',
+                          padding: '8px 4px',
+                          backgroundColor: '#F8FAFC',
+                          border: '1px solid #E2E8F0',
+                          borderRadius: '8px',
+                          color: '#334155',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#F1F5F9';
+                          e.currentTarget.style.borderColor = '#0F172A';
+                          e.currentTarget.style.color = '#0F172A';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = '#F8FAFC';
+                          e.currentTarget.style.borderColor = '#E2E8F0';
+                          e.currentTarget.style.color = '#334155';
+                        }}
+                        onClick={() => handleAddShape(item.type)}
+                      >
+                        {item.icon}
+                        <span style={{ fontSize: '10px', fontWeight: 500, textAlign: 'center', whiteSpace: 'nowrap' }}>
+                          {item.label}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Arka Plan Şekilleri Seçim Çipleri */}
+          {(config.shapeLayers || []).length > 0 && (
+            <div style={{ marginBottom: '12px' }}>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: '#64748B', marginBottom: '6px' }}>
+                Eklenen Bileşenler ({config.shapeLayers?.length})
+              </div>
+              <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
+                {(config.shapeLayers || []).map((shape, index) => {
+                  const isSelected = config.selectedShapeId === shape.id;
+                  const labelMap: Record<ShapeType, string> = {
+                    rectangle: 'Dikdörtgen',
+                    'rounded-rectangle': 'Yuvarlak Kutu',
+                    circle: 'Daire',
+                    triangle: 'Üçgen',
+                    star: 'Yıldız',
+                    heart: 'Kalp',
+                    badge: 'Rozet',
+                  };
+                  return (
+                    <button
+                      key={shape.id}
+                      type="button"
+                      className={`layer-chip-btn ${isSelected ? 'active' : ''}`}
+                      onClick={() => {
+                        onChangeConfig({
+                          selectedShapeId: shape.id,
+                          selectedTextId: null,
+                          selectedTextIds: [],
+                        });
+                      }}
+                      style={{ flexShrink: 0 }}
+                    >
+                      <div
+                        style={{
+                          width: '10px',
+                          height: '10px',
+                          borderRadius: shape.type === 'circle' ? '50%' : '2px',
+                          backgroundColor: shape.color || '#D90429',
+                          border: '1px solid rgba(0,0,0,0.15)',
+                        }}
+                      />
+                      <span className="layer-chip-text">{labelMap[shape.type] || `Şekil ${index + 1}`}</span>
+                      <span
+                        className="layer-chip-del"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteSelectedShape(shape.id);
+                        }}
+                        title="Bu bileşeni sil"
+                      >
+                        &times;
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Seçili Şekil Düzenleme Kontrolleri */}
+          {selectedShape ? (
+            <div
+              style={{
+                backgroundColor: '#F8FAFC',
+                border: '1px solid #E2E8F0',
+                borderRadius: '8px',
+                padding: '10px',
+                marginBottom: '12px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <Shapes size={12} color="#D90429" />
+                  <span>Seçili Bileşen Ayarları</span>
+                </span>
+                <button
+                  type="button"
+                  style={{
+                    border: 'none',
+                    background: 'transparent',
+                    color: '#EF4444',
+                    cursor: 'pointer',
+                    fontSize: '11px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '2px 4px',
+                  }}
+                  onClick={() => handleDeleteSelectedShape(selectedShape.id)}
+                  title="Bileşeni Sil"
+                >
+                  <Trash2 size={12} />
+                  <span>Sil</span>
+                </button>
+              </div>
+
+              {/* Şekil Rengi */}
+              <div className="control-group" style={{ marginBottom: '8px' }}>
+                <div className="control-label">
+                  <span>Bileşen Rengi</span>
+                  <span className="control-value">{selectedShape.color.toUpperCase()}</span>
+                </div>
+                <div className="color-picker-row" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  {PALETTE_PRESETS.map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      title={color}
+                      className={`color-swatch-btn ${selectedShape.color.toLowerCase() === color.toLowerCase() ? 'selected' : ''}`}
+                      style={{ backgroundColor: color, width: '22px', height: '22px' }}
+                      onClick={() => handleUpdateSelectedShape({ color })}
+                    />
+                  ))}
+
+                  {/* Özel Renk Seç Butonu ve Hemen Altında Açılan Renk Paleti */}
+                  <div style={{ position: 'relative', display: 'inline-flex' }}>
+                    <button
+                      type="button"
+                      title="Özel Renk Seç"
+                      className="color-swatch-btn custom-palette-btn"
+                      style={{
+                        width: '22px',
+                        height: '22px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: 'conic-gradient(from 180deg at 50% 50%, #FF0000 0deg, #FFFF00 60deg, #00FF00 120deg, #00FFFF 180deg, #0000FF 240deg, #FF00FF 300deg, #FF0000 360deg)',
+                      }}
+                      onClick={() => shapeColorPickerInputRef.current?.click()}
+                    >
+                      <Pipette size={11} style={{ color: '#FFFFFF', filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.8))' }} />
+                    </button>
+
+                    <input
+                      ref={shapeColorPickerInputRef}
+                      type="color"
+                      value={selectedShape.color.startsWith('#') && selectedShape.color.length === 7 ? selectedShape.color : '#D90429'}
+                      style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        width: '32px',
+                        height: '32px',
+                        padding: 0,
+                        margin: 0,
+                        border: 'none',
+                        opacity: 0,
+                        cursor: 'pointer',
+                        zIndex: 10,
+                      }}
+                      onChange={(e) => handleUpdateSelectedShape({ color: e.target.value })}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Genişlik & Yükseklik Sliderları */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
+                <div className="control-group" style={{ marginBottom: 0 }}>
+                  <div className="control-label" style={{ fontSize: '11px' }}>
+                    <span>Genişlik</span>
+                    <span className="control-value">{selectedShape.width}px</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={20}
+                    max={600}
+                    step={2}
+                    value={selectedShape.width}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      handleUpdateSelectedShape({
+                        width: val,
+                        ...(selectedShape.type === 'circle' ? { height: val } : {}),
+                      });
+                    }}
+                    className="input-range"
+                  />
+                </div>
+
+                <div className="control-group" style={{ marginBottom: 0 }}>
+                  <div className="control-label" style={{ fontSize: '11px' }}>
+                    <span>Yükseklik</span>
+                    <span className="control-value">{selectedShape.height}px</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={20}
+                    max={600}
+                    step={2}
+                    value={selectedShape.height}
+                    disabled={selectedShape.type === 'circle'}
+                    onChange={(e) => handleUpdateSelectedShape({ height: Number(e.target.value) })}
+                    className="input-range"
+                  />
+                </div>
+              </div>
+
+              {/* Saydamlık & Döndürme */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '6px' }}>
+                <div className="control-group" style={{ marginBottom: 0 }}>
+                  <div className="control-label" style={{ fontSize: '11px' }}>
+                    <span>Saydamlık</span>
+                    <span className="control-value">%{selectedShape.opacity ?? 100}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={10}
+                    max={100}
+                    step={5}
+                    value={selectedShape.opacity ?? 100}
+                    onChange={(e) => handleUpdateSelectedShape({ opacity: Number(e.target.value) })}
+                    className="input-range"
+                  />
+                </div>
+
+                <div className="control-group" style={{ marginBottom: 0 }}>
+                  <div className="control-label" style={{ fontSize: '11px' }}>
+                    <span>Döndürme</span>
+                    <span className="control-value">{selectedShape.rotation ?? 0}°</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={-180}
+                    max={180}
+                    step={1}
+                    value={selectedShape.rotation ?? 0}
+                    onChange={(e) => handleUpdateSelectedShape({ rotation: Number(e.target.value) })}
+                    className="input-range"
+                  />
+                </div>
+              </div>
+
+              {/* Dikdörtgen ve Üçgen için Köşeleri Yuvarlaştır Çubuğu */}
+              {(selectedShape.type === 'rectangle' || selectedShape.type === 'triangle') && (
+                <div className="control-group" style={{ marginBottom: '6px' }}>
+                  <div className="control-label" style={{ fontSize: '11px' }}>
+                    <span>Köşeleri Yuvarlaştır</span>
+                    <span className="control-value">{selectedShape.borderRadius ?? 0}px</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={selectedShape.type === 'triangle' ? 60 : 120}
+                    step={1}
+                    value={selectedShape.borderRadius ?? 0}
+                    onChange={(e) => handleUpdateSelectedShape({ borderRadius: Number(e.target.value) })}
+                    className="input-range"
+                  />
+                </div>
+              )}
+
+              {/* Orijinale Getir Butonu */}
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{ width: '100%', fontSize: '11px', padding: '5px 8px', justifyContent: 'center', marginTop: '4px' }}
+                onClick={() => {
+                  const defaultSize = selectedShape.type === 'circle' ? 120 : selectedShape.type === 'star' || selectedShape.type === 'heart' || selectedShape.type === 'badge' ? 110 : 130;
+                  handleUpdateSelectedShape({
+                    x: 0,
+                    y: 0,
+                    rotation: 0,
+                    width: defaultSize,
+                    height: defaultSize,
+                    opacity: 100,
+                    borderRadius: 0,
+                  });
+                }}
+                title="Konumu merkeze alır, açıyı sıfırlar ve boyutları varsayılana getirir"
+              >
+                <RotateCcw size={12} color="#0F172A" />
+                <span>Orijinale Getir</span>
+              </button>
+            </div>
+          ) : null}
+
           <div className="control-group">
             <div className="control-label">Desen / Doku</div>
             <select
