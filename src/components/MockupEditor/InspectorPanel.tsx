@@ -1471,6 +1471,58 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                     </div>
                   </div>
 
+                  {/* Satırlar Arası Uzaklık (Line Height) Slider & Manual Input */}
+                  <div className="control-group">
+                    <div className="control-label">
+                      <span>Satır Aralığı</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <input
+                          type="number"
+                          min="0.8"
+                          max="3.0"
+                          step="0.05"
+                          value={selectedLayer.lineHeight !== undefined ? Number(selectedLayer.lineHeight.toFixed(2)) : 1.2}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value);
+                            if (!isNaN(val)) {
+                              handleUpdateSelectedLayer({ lineHeight: Math.max(0.5, Math.min(4.0, Number(val.toFixed(2)))) });
+                            }
+                          }}
+                          style={{
+                            width: '48px',
+                            padding: '2px 4px',
+                            fontSize: '11px',
+                            fontFamily: 'var(--font-mono)',
+                            textAlign: 'right',
+                            borderRadius: '4px',
+                            border: '1px solid #CBD5E1',
+                            background: '#FFFFFF',
+                            color: '#1E293B',
+                            outline: 'none',
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <input
+                        type="range"
+                        min="0.8"
+                        max="3.0"
+                        step="0.05"
+                        value={selectedLayer.lineHeight !== undefined ? selectedLayer.lineHeight : 1.2}
+                        onChange={(e) => handleUpdateSelectedLayer({ lineHeight: Number(parseFloat(e.target.value).toFixed(2)) })}
+                        style={{ flex: 1 }}
+                      />
+                      <button
+                        className="stepper-mini-btn"
+                        title="Varsayılana Sıfırla (1.2)"
+                        onClick={() => handleUpdateSelectedLayer({ lineHeight: 1.2 })}
+                      >
+                        1.2
+                      </button>
+                    </div>
+                  </div>
+
                   {/* Color Picker */}
                   <div className="control-group">
                     <div className="control-label">

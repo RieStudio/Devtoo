@@ -1926,6 +1926,7 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                             textDecoration: layer.isUnderline ? 'underline' : 'none',
                             textAlign: layer.textAlign || 'center',
                             letterSpacing: `${layer.letterSpacing ?? 0}px`,
+                            lineHeight: layer.lineHeight !== undefined ? layer.lineHeight : 1.2,
                             width: '100%',
                           }}
                         />

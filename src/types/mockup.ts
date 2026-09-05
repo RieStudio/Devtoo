@@ -63,6 +63,7 @@ export interface TextLayer {
   isUnderline: boolean;
   textAlign: 'left' | 'center' | 'right';
   letterSpacing?: number;
+  lineHeight?: number;
   rotation?: number;
   width?: number;
 }
