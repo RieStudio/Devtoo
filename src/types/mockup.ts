@@ -1,10 +1,29 @@
+export type DeviceCategory = 'phone' | 'pc' | 'tab' | 'tv' | 'watch';
+
 export type DeviceType = 
+  // Phones
   | 'iphone-17'
   | 'iphone-17-pro'
   | 'iphone-17-pro-max' 
   | 'galaxy-s26-ultra' 
   | 'pixel-10'
-  | 'pixel-10-pro';
+  | 'pixel-10-pro'
+  // Computers
+  | 'macbook-pro'
+  | 'macbook-air'
+  | 'macbook-neo'
+  | 'imac'
+  | 'studio-display'
+  // Tablets
+  | 'ipad-pro'
+  | 'ipad-air'
+  | 'ipad-mini'
+  | 'ipad'
+  // TVs
+  | 'apple-tv'
+  // Watches
+  | 'apple-watch-ultra-3'
+  | 'apple-watch-11';
 
 export type DeviceBrand = 'apple' | 'samsung' | 'google';
 
@@ -23,11 +42,12 @@ export interface CanvasPreset {
 
 export interface DeviceModelInfo {
   id: DeviceType;
+  category?: DeviceCategory;
   brand: DeviceBrand;
   name: string;
   tag: string;
   defaultRatio: number;
-  colors: { id: string; name: string; hex: string; borderHex: string }[];
+  colors: { id: string; name: string; hex: string; borderHex: string; imagePath?: string }[];
 }
 
 export interface TextLayer {

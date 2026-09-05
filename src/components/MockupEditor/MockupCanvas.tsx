@@ -21,6 +21,7 @@ interface MockupCanvasProps {
   onAddScreen: () => void;
   onDuplicateScreen: (id: string) => void;
   onDeleteScreen: (id: string) => void;
+  onRotateScreen?: (id: string) => void;
   onUpdateScreenTitle?: (id: string, title: string) => void;
   onTransferDevice?: (
     sourceScreenId: string,
@@ -220,6 +221,7 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
   onAddScreen,
   onDuplicateScreen,
   onDeleteScreen,
+  onRotateScreen,
   onUpdateScreenTitle,
   onTransferDevice,
   config,
@@ -1455,6 +1457,28 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                   </div>
 
                   <div className="mockup-screen-actions">
+                    <button
+                      type="button"
+                      className="screen-action-btn rotate-btn"
+                      title={screenCfg.width > screenCfg.height ? 'Dikey Görünüme Döndür (Portre)' : 'Yatay Görünüme Döndür (Manzara)'}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (screenCfg.id && screenCfg.id !== activeScreenId) {
+                          onSelectScreen?.(screenCfg.id);
+                        }
+                        if (onRotateScreen && screenCfg.id) {
+                          onRotateScreen(screenCfg.id);
+                        } else {
+                          onChangeConfig({
+                            width: screenCfg.height,
+                            height: screenCfg.width,
+                          }, true);
+                        }
+                      }}
+                    >
+                      <RotateCw size={13} />
+                    </button>
+
                     <button
                       type="button"
                       className="screen-action-btn"

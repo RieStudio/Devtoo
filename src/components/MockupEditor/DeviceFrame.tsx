@@ -1,6 +1,6 @@
 import React from 'react';
 import type { DeviceType } from '../../types/mockup';
-import { DEVICE_MODELS } from '../../constants/devices';
+import { DEVICE_MODELS, DEVICE_CUTOUTS, getDeviceBorderRadius } from '../../constants/devices';
 
 interface DeviceFrameProps {
   deviceType: DeviceType;
@@ -19,6 +19,7 @@ interface DeviceFrameProps {
 
 export const DeviceFrame: React.FC<DeviceFrameProps> = ({
   deviceType,
+  deviceColor,
   screenshotUrl,
   screenshotScale = 1,
   screenshotOffsetX = 0,
@@ -52,7 +53,7 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
   };
 
   // Render screenshot or upload dropzone container
-  const renderScreenContent = (cornerRad: number) => {
+  const renderScreenContent = (computedCornerRadius: string) => {
     if (!screenshotUrl) {
       return (
         <div
@@ -69,7 +70,7 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
             padding: '20px 16px',
             textAlign: 'center',
             gap: '12px',
-            borderRadius: `${cornerRad}px`,
+            borderRadius: computedCornerRadius,
             boxSizing: 'border-box'
           }}
         >
@@ -107,7 +108,7 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
           width: '100%',
           height: '100%',
           overflow: 'hidden',
-          borderRadius: `${cornerRad}px`,
+          borderRadius: computedCornerRadius,
           position: 'relative',
           display: 'flex',
           alignItems: 'center',
@@ -159,59 +160,51 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
           position: 'relative'
         }}
       >
-        {renderScreenContent(borderRadius)}
+        {renderScreenContent(`${borderRadius}px`)}
       </div>
     );
   }
 
-  // Map device type to real photorealistic transparent frame image
+  // Map device type and selected color to real image asset path
   const getDeviceAssetPath = () => {
-    switch (deviceType) {
-      case 'iphone-17-pro-max':
-        return '/devices/iphone-17-pro-max.png';
-      case 'iphone-17-pro':
-        return '/devices/iphone-17-pro.png';
-      case 'iphone-17':
-        return '/devices/iphone-17.png';
-      case 'galaxy-s26-ultra':
-        return '/devices/galaxy-s26-ultra.png';
-      case 'pixel-10-pro':
-        return '/devices/pixel-10-pro.png';
-      case 'pixel-10':
-        return '/devices/pixel-10.png';
-      default:
-        return '/devices/iphone-17-pro-max.png';
+    const matchedColor = modelInfo.colors.find((c) => c.id === deviceColor) || modelInfo.colors[0];
+    if (matchedColor?.imagePath) {
+      return matchedColor.imagePath;
     }
+    return modelInfo.colors[0]?.imagePath || '/devices/phone/apple/iphone-17-pro-max.png';
   };
 
-  // Screen cutout coordinates: Individually calibrated to tuck slightly under the opaque bezels
-  // ensuring edge-to-edge seamless display with zero white fringes on dark/black screenshots.
+  // Screen cutout coordinates calibrated individually per device family
   const getCutoutSpecs = () => {
-    switch (deviceType) {
-      case 'iphone-17-pro-max':
-      case 'iphone-17-pro':
-        return { top: '1.2%', left: '3.0%', width: '94.0%', height: '97.6%', cornerRadius: 36 };
-      case 'iphone-17':
-        return { top: '1.2%', left: '3.0%', width: '94.0%', height: '97.6%', cornerRadius: 36 };
-      case 'galaxy-s26-ultra':
-        return { top: '1.0%', left: '2.0%', width: '96.0%', height: '98.0%', cornerRadius: 16 };
-      case 'pixel-10-pro':
-        return { top: '1.2%', left: '2.8%', width: '94.4%', height: '97.6%', cornerRadius: 30 };
-      case 'pixel-10':
-        return { top: '1.6%', left: '3.8%', width: '92.4%', height: '96.8%', cornerRadius: 32 };
-      default:
-        return { top: '1.2%', left: '3.0%', width: '94.0%', height: '97.6%', cornerRadius: 36 };
+    if (DEVICE_CUTOUTS[deviceType]) {
+      return DEVICE_CUTOUTS[deviceType];
     }
+    return { top: '1.75%', left: '4.37%', width: '91.52%', height: '96.50%', radiusRatio: 0.14036 };
   };
 
   const specs = getCutoutSpecs();
   const assetPath = getDeviceAssetPath();
 
-  // Outer frame display dimensions
-  let displayWidth = 260;
-  if (isLandscape) displayWidth = 440;
+  // Outer frame default display dimensions based on device category
+  const getDisplayWidth = () => {
+    const category = modelInfo.category || 'phone';
+    switch (category) {
+      case 'pc':
+        return 480;
+      case 'tab':
+        return 440;
+      case 'tv':
+        return 500;
+      case 'watch':
+        return 220;
+      case 'phone':
+      default:
+        return isLandscape ? 440 : 260;
+    }
+  };
 
-  const scaledCornerRad = Math.round(specs.cornerRadius * (displayWidth / 260));
+  const displayWidth = getDisplayWidth();
+  const computedBorderRadius = getDeviceBorderRadius(specs, displayWidth);
 
   return (
     <div
@@ -232,12 +225,12 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({
           width: specs.width,
           height: specs.height,
           zIndex: 1,
-          borderRadius: `${scaledCornerRad}px`,
+          borderRadius: computedBorderRadius,
           overflow: 'hidden',
           backgroundColor: '#000000'
         }}
       >
-        {renderScreenContent(scaledCornerRad)}
+        {renderScreenContent(computedBorderRadius)}
       </div>
 
       {/* LAYER 2: Device frame image - drives container height via natural aspect ratio */}

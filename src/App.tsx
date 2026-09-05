@@ -268,6 +268,65 @@ export function App() {
     historyIndexRef.current = newHist.length - 1;
   };
 
+  const handleRotateScreen = (screenId: string) => {
+    setScreens((prevScreens) => {
+      const nextScreens = prevScreens.map((s, idx) => {
+        if (s.id === screenId || (!s.id && (activeScreenId === screenId || idx === 0))) {
+          const oldW = s.width;
+          const oldH = s.height;
+          const newW = oldH;
+          const newH = oldW;
+
+          // Scale factor for Y-coordinates based on height change
+          // For portrait -> landscape (e.g. 672px height -> 378px height, ratio = 378/672 = 0.5625)
+          // For landscape -> portrait (e.g. 378px height -> 672px height, ratio = 672/378 = 1.7778)
+          const yRatio = newH / oldH;
+
+          // Adapt text layers so they don't get pushed out of visible canvas bounds
+          const updatedTextLayers = (s.textLayers || []).map((l) => {
+            const scaledY = Math.round(l.y * yRatio);
+            return {
+              ...l,
+              y: scaledY,
+            };
+          });
+
+          // Adapt devices in this screen so their vertical placement scales with canvas height
+          const currentDevs = getMockupDevices(s);
+          const updatedDevs = currentDevs.map((d) => {
+            const scaledDevY = Math.round((d.deviceOffsetY ?? 0) * yRatio);
+            return {
+              ...d,
+              deviceOffsetY: scaledDevY,
+            };
+          });
+
+          return {
+            ...s,
+            width: newW,
+            height: newH,
+            textLayers: updatedTextLayers,
+            devices: updatedDevs,
+            deviceOffsetY: Math.round((s.deviceOffsetY ?? 0) * yRatio),
+          };
+        }
+        return s;
+      });
+
+      const prevSnap = getScreensSnapshot(historyRef.current[historyIndexRef.current] || prevScreens);
+      const nextSnap = getScreensSnapshot(nextScreens);
+      if (prevSnap !== nextSnap) {
+        const newHist = historyRef.current.slice(0, historyIndexRef.current + 1);
+        newHist.push(JSON.parse(JSON.stringify(nextScreens)));
+        if (newHist.length > 60) newHist.shift();
+        historyRef.current = newHist;
+        historyIndexRef.current = newHist.length - 1;
+      }
+
+      return nextScreens;
+    });
+  };
+
   const handleTransferDevice = (
     sourceScreenId: string,
     targetScreenId: string,
@@ -879,6 +938,7 @@ export function App() {
             onAddScreen={handleAddScreen}
             onDuplicateScreen={handleDuplicateScreen}
             onDeleteScreen={handleDeleteScreen}
+            onRotateScreen={handleRotateScreen}
             onUpdateScreenTitle={handleUpdateScreenTitle}
             onTransferDevice={handleTransferDevice}
             config={activeScreenConfig}

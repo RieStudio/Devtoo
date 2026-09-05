@@ -620,6 +620,20 @@ body {
   color: var(--text-primary);
 }
 
+.screen-action-btn.rotate-btn:hover {
+  background-color: var(--chili-subtle);
+  color: var(--chili-primary);
+}
+
+.screen-action-btn.rotate-btn:hover svg {
+  transform: rotate(180deg);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.screen-action-btn.rotate-btn svg {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 .screen-action-btn.delete:hover {
   background-color: #FFE3E3;
   color: #E03131;
@@ -699,7 +713,11 @@ body {
   background-color: #FFFFFF;
   border-radius: 8px;
   box-shadow: var(--shadow-canvas);
-  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
+              height 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
+              min-height 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.2s ease, 
+              border-color 0.2s ease;
   display: flex;
   flex-direction: column;
   align-items: center;

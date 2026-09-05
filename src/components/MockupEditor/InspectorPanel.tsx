@@ -1,29 +1,34 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import type { MockupConfig, DeviceType, BackgroundType, DeviceBrand, TextLayer, CanvasDeviceItem } from '../../types/mockup';
 import { getMockupDevices } from '../../types/mockup';
 import { DEVICE_MODELS } from '../../constants/devices';
 import { 
   Upload, 
-  Trash2,
-  Sliders,
-  Smartphone,
-  Check,
-  Pipette,
-  Crop,
-  Move,
-  Maximize2,
-  Crosshair,
-  Layers,
-  Image as ImageIcon,
-  Bold,
-  Italic,
-  Underline,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  Type,
-  Plus,
-  RotateCw
+  Trash2, 
+  Sliders, 
+  Smartphone, 
+  Check, 
+  Pipette, 
+  Crop, 
+  Move, 
+  Maximize2, 
+  Crosshair, 
+  Layers, 
+  Image as ImageIcon, 
+  Bold, 
+  Italic, 
+  Underline, 
+  AlignLeft, 
+  AlignCenter, 
+  AlignRight, 
+  Type, 
+  Plus, 
+  RotateCw,
+  Laptop,
+  Tablet,
+  Tv,
+  Watch,
+  ChevronDown
 } from 'lucide-react';
 
 interface InspectorPanelProps {
@@ -158,9 +163,65 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
     });
   };
 
-  // Active Brand tab state ('apple', 'samsung', 'google', 'other')
+  // Active device model definition
   const currentDeviceModel = DEVICE_MODELS.find((m) => m.id === activeDevice.deviceType) || DEVICE_MODELS[0];
+
+  // Device category mapping: 'phone', 'pc', 'tab', 'tv', 'watch'
+  type OtherCategory = 'pc' | 'tab' | 'tv' | 'watch';
+  const initialCategory = currentDeviceModel.category === 'phone' ? 'phone' : (currentDeviceModel.category as OtherCategory || 'phone');
+  const [selectedCategory, setSelectedCategory] = useState<'phone' | OtherCategory>(initialCategory);
+  
+  const categoryLabels: Record<OtherCategory, string> = {
+    pc: 'Bilgisayar',
+    tab: 'Tablet',
+    tv: 'Televizyon',
+    watch: 'Akıllı Saat',
+  };
+  const [otherCategoryName, setOtherCategoryName] = useState<string>(
+    initialCategory !== 'phone' ? categoryLabels[initialCategory as OtherCategory] : ''
+  );
+
+  // Active Brand tab state ('apple', 'samsung', 'google')
   const [selectedBrand, setSelectedBrand] = useState<DeviceBrand>(currentDeviceModel.brand);
+
+  // Other Devices category popup state
+  const [isOtherOpen, setIsOtherOpen] = useState(false);
+  const otherPopoverRef = useRef<HTMLDivElement>(null);
+
+  // Color / Variant dropdown state
+  const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
+  const colorDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Keep selectedCategory in sync if activeDevice changes
+  useEffect(() => {
+    if (currentDeviceModel) {
+      if (currentDeviceModel.category && currentDeviceModel.category !== 'phone') {
+        setSelectedCategory(currentDeviceModel.category as OtherCategory);
+        setOtherCategoryName(categoryLabels[currentDeviceModel.category as OtherCategory]);
+      } else {
+        setSelectedCategory('phone');
+        setSelectedBrand(currentDeviceModel.brand);
+      }
+    }
+  }, [activeDevice.deviceType]);
+
+  // Close popup on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (otherPopoverRef.current && !otherPopoverRef.current.contains(event.target as Node)) {
+        setIsOtherOpen(false);
+      }
+      if (colorDropdownRef.current && !colorDropdownRef.current.contains(event.target as Node)) {
+        setIsColorDropdownOpen(false);
+      }
+    };
+    if (isOtherOpen || isColorDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOtherOpen, isColorDropdownOpen]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -175,12 +236,13 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
     }
   };
 
-  // Filter models for selected brand tab
-  const brandModels = DEVICE_MODELS.filter((m) => m.brand === selectedBrand);
+  // Filter models for phone brands or selected other categories
+  const brandModels = DEVICE_MODELS.filter((m) => (m.category || 'phone') === 'phone' && m.brand === selectedBrand);
+  const categoryModels = DEVICE_MODELS.filter((m) => m.category === selectedCategory);
 
   const handleSelectModel = (modelId: DeviceType) => {
     const modelDef = DEVICE_MODELS.find((m) => m.id === modelId);
-    const defaultColor = modelDef?.colors[0].id || 'default';
+    const defaultColor = modelDef?.colors[0]?.id || 'default';
     handleUpdateActiveDevice({
       deviceType: modelId,
       deviceColor: defaultColor,
@@ -525,14 +587,14 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             )}
           </div>
 
-          {/* Brand Tabs */}
-          <div style={{ display: 'flex', gap: '4px', backgroundColor: '#F1F3F5', padding: '3px', borderRadius: '8px' }}>
+          {/* Brand Tabs with 'Diğer' Button */}
+          <div style={{ position: 'relative', display: 'flex', gap: '4px', backgroundColor: '#F1F3F5', padding: '3px', borderRadius: '8px' }}>
             {[
               { id: 'apple', label: 'Apple' },
               { id: 'samsung', label: 'Samsung' },
               { id: 'google', label: 'Google' },
             ].map((tab) => {
-              const isTabActive = selectedBrand === tab.id;
+              const isTabActive = selectedCategory === 'phone' && selectedBrand === tab.id;
               return (
                 <button
                   key={tab.id}
@@ -548,46 +610,376 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
                   }}
-                  onClick={() => setSelectedBrand(tab.id as DeviceBrand)}
+                  onClick={() => {
+                    setIsOtherOpen(false);
+                    setSelectedCategory('phone');
+                    setSelectedBrand(tab.id as DeviceBrand);
+                  }}
                 >
                   {tab.label}
                 </button>
               );
             })}
+
+            {/* Diğer Butonu */}
+            <div style={{ flex: 1, position: 'relative' }} ref={otherPopoverRef}>
+              <button
+                type="button"
+                style={{
+                  width: '100%',
+                  padding: '6px 2px',
+                  fontSize: selectedCategory === 'watch' ? '10px' : '11px',
+                  letterSpacing: selectedCategory === 'watch' ? '-0.2px' : 'normal',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  fontWeight: isOtherOpen || selectedCategory !== 'phone' ? 700 : 500,
+                  borderRadius: '6px',
+                  border: isOtherOpen || selectedCategory !== 'phone' ? '1px solid #D90429' : '1px solid transparent',
+                  backgroundColor: isOtherOpen || selectedCategory !== 'phone' ? '#D90429' : 'transparent',
+                  color: isOtherOpen || selectedCategory !== 'phone' ? '#FFFFFF' : '#475569',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '2px',
+                  transition: 'all 0.15s ease',
+                }}
+                onClick={() => setIsOtherOpen((prev) => !prev)}
+              >
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {selectedCategory !== 'phone' ? otherCategoryName : 'Diğer'}
+                </span>
+                <ChevronDown size={11} style={{ flexShrink: 0, transform: isOtherOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s ease' }} />
+              </button>
+
+              {/* Diğer Cihazlar Küçük Pencere / Popover */}
+              {isOtherOpen && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 6px)',
+                    right: 0,
+                    width: '190px',
+                    backgroundColor: '#FFFFFF',
+                    borderRadius: '10px',
+                    boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.2), 0 8px 10px -6px rgba(15, 23, 42, 0.15)',
+                    border: '1px solid #E2E8F0',
+                    padding: '6px',
+                    zIndex: 50,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '3px',
+                    animation: 'fadeIn 0.15s ease-out',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      color: '#94A3B8',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      padding: '4px 6px 6px',
+                      borderBottom: '1px solid #F1F5F9',
+                      marginBottom: '2px',
+                    }}
+                  >
+                    Diğer Cihaz Türleri
+                  </div>
+
+                  {[
+                    { id: 'pc', label: 'Bilgisayar', icon: Laptop },
+                    { id: 'tab', label: 'Tablet', icon: Tablet },
+                    { id: 'tv', label: 'Televizyon', icon: Tv },
+                    { id: 'watch', label: 'Akıllı Saat', icon: Watch },
+                  ].map((item) => {
+                    const IconComponent = item.icon;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          width: '100%',
+                          padding: '7px 9px',
+                          border: 'none',
+                          borderRadius: '6px',
+                          backgroundColor: selectedCategory === item.id ? '#FFF1F2' : '#F8FAFC',
+                          color: selectedCategory === item.id ? '#D90429' : '#334155',
+                          fontSize: '12px',
+                          fontWeight: selectedCategory === item.id ? 700 : 500,
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                          textAlign: 'left',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#FFF1F2';
+                          e.currentTarget.style.color = '#D90429';
+                        }}
+                        onMouseLeave={(e) => {
+                          if (selectedCategory !== item.id) {
+                            e.currentTarget.style.backgroundColor = '#F8FAFC';
+                            e.currentTarget.style.color = '#334155';
+                          }
+                        }}
+                        onClick={() => {
+                          const catId = item.id as OtherCategory;
+                          setSelectedCategory(catId);
+                          setOtherCategoryName(item.label);
+                          const firstModel = DEVICE_MODELS.find((m) => m.category === catId);
+                          if (firstModel) {
+                            handleSelectModel(firstModel.id);
+                          }
+                          setIsOtherOpen(false);
+                        }}
+                      >
+                        <IconComponent size={14} />
+                        <span>{item.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Model Cards List for Active Brand */}
+          {/* Model Cards List */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px' }}>
-            {brandModels.map((model) => {
-              const isSelected = activeDevice.deviceType === model.id;
-              return (
-                <div
-                  key={model.id}
-                  onClick={() => handleSelectModel(model.id)}
+            {selectedCategory === 'phone' ? (
+              brandModels.map((model) => {
+                const isSelected = activeDevice.deviceType === model.id;
+                return (
+                  <div
+                    key={model.id}
+                    onClick={() => handleSelectModel(model.id)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '9px 12px',
+                      borderRadius: '8px',
+                      border: isSelected ? '1px solid #D90429' : '1px solid #E2E8F0',
+                      backgroundColor: isSelected ? '#D90429' : '#FFFFFF',
+                      color: isSelected ? '#FFFFFF' : '#0F172A',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <Smartphone size={16} color={isSelected ? '#FFFFFF' : '#64748B'} />
+                      <div style={{ fontSize: '13px', fontWeight: isSelected ? 700 : 600, color: isSelected ? '#FFFFFF' : '#0F172A' }}>
+                        {model.name}
+                      </div>
+                    </div>
+                    {isSelected && <Check size={16} color="#FFFFFF" />}
+                  </div>
+                );
+              })
+            ) : (
+              categoryModels.map((model) => {
+                const CategoryIcon = 
+                  selectedCategory === 'pc' ? Laptop :
+                  selectedCategory === 'tab' ? Tablet :
+                  selectedCategory === 'tv' ? Tv : Watch;
+                const isSelected = activeDevice.deviceType === model.id;
+                return (
+                  <div
+                    key={model.id}
+                    onClick={() => handleSelectModel(model.id)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '9px 12px',
+                      borderRadius: '8px',
+                      border: isSelected ? '1px solid #D90429' : '1px solid #E2E8F0',
+                      backgroundColor: isSelected ? '#D90429' : '#FFFFFF',
+                      color: isSelected ? '#FFFFFF' : '#0F172A',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <CategoryIcon size={16} color={isSelected ? '#FFFFFF' : '#64748B'} />
+                      <div style={{ fontSize: '13px', fontWeight: isSelected ? 700 : 600, color: isSelected ? '#FFFFFF' : '#0F172A' }}>
+                        {model.name}
+                      </div>
+                    </div>
+                    {isSelected && <Check size={16} color="#FFFFFF" />}
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Color / Variant Selector if device has multiple color options */}
+          {currentDeviceModel && currentDeviceModel.colors.length > 1 && (() => {
+            const isSmartWatch = currentDeviceModel.category === 'watch';
+            const colorSectionTitle = isSmartWatch ? 'Kasa / Kordon Rengi' : 'Kasa Rengi';
+            const activeColorObj = currentDeviceModel.colors.find((c) => c.id === activeDevice.deviceColor) || currentDeviceModel.colors[0];
+
+            return (
+              <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #E2E8F0', position: 'relative' }} ref={colorDropdownRef}>
+                <div className="control-label" style={{ marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '11.5px', fontWeight: 600, color: '#475569' }}>{colorSectionTitle}</span>
+                </div>
+
+                {/* Butona Basarak Renk Seçme Tetikleyici Butonu */}
+                <button
+                  type="button"
                   style={{
+                    width: '100%',
+                    padding: '8px 10px',
+                    backgroundColor: isColorDropdownOpen ? '#FFF1F2' : '#FFFFFF',
+                    border: isColorDropdownOpen ? '1.5px solid #D90429' : '1px solid #E2E8F0',
+                    borderRadius: '8px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    padding: '9px 12px',
-                    borderRadius: '8px',
-                    border: isSelected ? '1px solid #D90429' : '1px solid #E2E8F0',
-                    backgroundColor: isSelected ? '#D90429' : '#FFFFFF',
-                    color: isSelected ? '#FFFFFF' : '#0F172A',
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
+                    boxShadow: isColorDropdownOpen ? '0 0 0 3px rgba(217, 4, 41, 0.1)' : 'none',
+                    gap: '8px',
                   }}
+                  onClick={() => setIsColorDropdownOpen((prev) => !prev)}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <Smartphone size={16} color={isSelected ? '#FFFFFF' : '#64748B'} />
-                    <div style={{ fontSize: '13px', fontWeight: isSelected ? 700 : 600, color: isSelected ? '#FFFFFF' : '#0F172A' }}>
-                      {model.name}
-                    </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
+                    <span
+                      style={{
+                        width: '14px',
+                        height: '14px',
+                        borderRadius: '50%',
+                        backgroundColor: activeColorObj.hex,
+                        border: '1.5px solid rgba(0,0,0,0.15)',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                        display: 'inline-block',
+                        flexShrink: 0,
+                      }}
+                    />
+                    <span
+                      style={{
+                        fontSize: isSmartWatch ? '11px' : '12px',
+                        fontWeight: 600,
+                        color: '#0F172A',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: 'block',
+                        textAlign: 'left',
+                      }}
+                      title={activeColorObj.name}
+                    >
+                      {activeColorObj.name}
+                    </span>
                   </div>
-                  {isSelected && <Check size={16} color="#FFFFFF" />}
-                </div>
-              );
-            })}
-          </div>
+                  <ChevronDown
+                    size={14}
+                    color={isColorDropdownOpen ? '#D90429' : '#64748B'}
+                    style={{
+                      flexShrink: 0,
+                      transform: isColorDropdownOpen ? 'rotate(180deg)' : 'none',
+                      transition: 'transform 0.15s ease',
+                    }}
+                  />
+                </button>
+
+                {/* Açılır Renk Seçenekleri Menüsü */}
+                {isColorDropdownOpen && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 'calc(100% + 4px)',
+                      left: 0,
+                      right: 0,
+                      maxHeight: '220px',
+                      overflowY: 'auto',
+                      backgroundColor: '#FFFFFF',
+                      borderRadius: '8px',
+                      boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.2), 0 8px 10px -6px rgba(15, 23, 42, 0.15)',
+                      border: '1px solid #E2E8F0',
+                      padding: '4px',
+                      zIndex: 60,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '2px',
+                      animation: 'fadeIn 0.12s ease-out',
+                    }}
+                  >
+                    {currentDeviceModel.colors.map((c) => {
+                      const isColorActive = (activeDevice.deviceColor || currentDeviceModel.colors[0].id) === c.id;
+                      return (
+                        <button
+                          key={c.id}
+                          type="button"
+                          style={{
+                            width: '100%',
+                            padding: '6px 8px',
+                            fontSize: isSmartWatch ? '10.5px' : '11.5px',
+                            lineHeight: '1.2',
+                            fontWeight: isColorActive ? 700 : 500,
+                            borderRadius: '6px',
+                            border: 'none',
+                            backgroundColor: isColorActive ? '#FFF1F2' : '#FFFFFF',
+                            color: isColorActive ? '#D90429' : '#334155',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            cursor: 'pointer',
+                            transition: 'all 0.1s ease',
+                            textAlign: 'left',
+                            gap: '6px',
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isColorActive) {
+                              e.currentTarget.style.backgroundColor = '#F8FAFC';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isColorActive) {
+                              e.currentTarget.style.backgroundColor = '#FFFFFF';
+                            }
+                          }}
+                          onClick={() => {
+                            handleUpdateActiveDevice({ deviceColor: c.id });
+                            setIsColorDropdownOpen(false);
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '7px', minWidth: 0, flex: 1 }}>
+                            <span
+                              style={{
+                                width: '12px',
+                                height: '12px',
+                                borderRadius: '50%',
+                                backgroundColor: c.hex,
+                                border: '1px solid rgba(0,0,0,0.15)',
+                                display: 'inline-block',
+                                flexShrink: 0,
+                              }}
+                            />
+                            <span
+                              style={{
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                display: 'block',
+                              }}
+                              title={c.name}
+                            >
+                              {c.name}
+                            </span>
+                          </div>
+                          {isColorActive && <Check size={13} color="#D90429" style={{ flexShrink: 0 }} />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </div>
       )}
 
