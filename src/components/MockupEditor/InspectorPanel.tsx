@@ -594,7 +594,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
       {/* Section 3: Canvas Background (Only in Full Visual Mode) */}
       {!isDeviceOnly && (
         <div className="inspector-section">
-          <div className="section-label">Arka Plan (Canvas)</div>
+          <div className="section-label">Arka Plan</div>
           <div className="control-group">
             <div className="control-label">Desen / Doku</div>
             <select
@@ -605,6 +605,21 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               <option value="solid">Düz Renk</option>
               <option value="dots">Noktalı Izgara (Dot Matrix)</option>
               <option value="grid">Kare Izgara (Dev Grid)</option>
+            </select>
+          </div>
+
+          <div className="control-group">
+            <div className="control-label">Gölge Efekti</div>
+            <select
+              className="input-select"
+              value={activeDevice.shadowDepth || config.shadowDepth || 'medium'}
+              onChange={(e) => handleUpdateActiveDevice({ shadowDepth: e.target.value as any })}
+            >
+              <option value="none">Gölge Yok</option>
+              <option value="soft">Yumuşak Gölge</option>
+              <option value="medium">Standart Gölge</option>
+              <option value="dramatic">Derin Mağaza Gölgesi</option>
+              <option value="chili-glow">Vurgulu Gölge</option>
             </select>
           </div>
 
@@ -842,27 +857,6 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               <Crosshair size={12} color="#D90429" />
               <span>Merkeze ve Düz Konuma Getir</span>
             </button>
-          </div>
-        </div>
-      )}
-
-      {/* Section 5: Shadow & Effects (Only in Full Canvas Mode) */}
-      {!isDeviceOnly && (
-        <div className="inspector-section">
-          <div className="section-label">Gölge Efekti</div>
-
-          <div className="control-group">
-            <select
-              className="input-select"
-              value={activeDevice.shadowDepth || config.shadowDepth || 'medium'}
-              onChange={(e) => handleUpdateActiveDevice({ shadowDepth: e.target.value as any })}
-            >
-              <option value="none">Gölge Yok</option>
-              <option value="soft">Yumuşak Gölge</option>
-              <option value="medium">Standart Gölge</option>
-              <option value="dramatic">Derin Mağaza Gölgesi</option>
-              <option value="chili-glow">Vurgulu Gölge</option>
-            </select>
           </div>
         </div>
       )}
