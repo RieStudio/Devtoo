@@ -67,6 +67,98 @@ const TEXT_PALETTE_PRESETS = [
   '#F59E0B', // Turuncu
 ];
 
+interface NumericBadgeInputProps {
+  value: number;
+  min: number;
+  max: number;
+  fallbackValue?: number;
+  onChange: (val: number) => void;
+  style?: React.CSSProperties;
+}
+
+const NumericBadgeInput: React.FC<NumericBadgeInputProps> = ({
+  value,
+  min,
+  max,
+  fallbackValue,
+  onChange,
+  style,
+}) => {
+  const [localText, setLocalText] = useState<string>(String(value));
+  const [isFocused, setIsFocused] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!isFocused) {
+      setLocalText(String(value));
+    }
+  }, [value, isFocused]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const text = e.target.value;
+
+    // Only allow valid numeric characters (+, -, digits)
+    if (min < 0) {
+      if (!/^-?\d*$/.test(text)) return;
+    } else {
+      if (!/^\d*$/.test(text)) return;
+    }
+
+    setLocalText(text);
+
+    if (text === '' || text === '-') {
+      return;
+    }
+
+    const num = Number(text);
+    if (!isNaN(num) && num >= min && num <= max) {
+      onChange(num);
+    }
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+    if (localText === '' || localText === '-' || isNaN(Number(localText))) {
+      const fallback = fallbackValue ?? (min > 0 ? min : 0);
+      setLocalText(String(fallback));
+      onChange(fallback);
+      return;
+    }
+
+    const num = Number(localText);
+    const clamped = Math.max(min, Math.min(max, num));
+    setLocalText(String(clamped));
+    onChange(clamped);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      (e.target as HTMLInputElement).blur();
+    }
+  };
+
+  return (
+    <input
+      type="text"
+      inputMode="numeric"
+      autoComplete="off"
+      spellCheck={false}
+      value={isFocused ? localText : value}
+      onFocus={(e) => {
+        setIsFocused(true);
+        setLocalText(String(value));
+        e.target.select();
+      }}
+      onBlur={handleBlur}
+      onChange={handleChange}
+      onKeyDown={handleKeyDown}
+      style={{
+        ...style,
+        borderColor: isFocused ? '#D90429' : (style?.borderColor || '#CBD5E1'),
+      }}
+    />
+  );
+};
+
 export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   config,
   onChangeConfig,
@@ -417,31 +509,33 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               <Smartphone size={13} color="#D90429" />
               <span>Cihazlar ({devices.length})</span>
             </div>
-            <button
-              type="button"
-              className="btn-text-action"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-                color: devices.length >= 6 ? '#94A3B8' : '#FFFFFF',
-                backgroundColor: devices.length >= 6 ? '#F1F5F9' : '#0F172A',
-                border: 'none',
-                borderRadius: '6px',
-                padding: '4px 9px',
-                fontSize: '11px',
-                fontWeight: 700,
-                cursor: devices.length >= 6 ? 'not-allowed' : 'pointer',
-                whiteSpace: 'nowrap',
-                transition: 'all 0.15s ease',
-              }}
-              onClick={handleAddDevice}
-              disabled={devices.length >= 6}
-              title={devices.length >= 6 ? 'Maksimum 6 cihaza ulaşıldı' : 'Bu ekrana yeni bir cihaz ekleyin'}
-            >
-              <Plus size={12} />
-              <span>Cihaz Ekle {devices.length >= 6 ? '(Maks. 6)' : ''}</span>
-            </button>
+            {devices.length > 0 && (
+              <button
+                type="button"
+                className="btn-text-action"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  color: devices.length >= 6 ? '#94A3B8' : '#FFFFFF',
+                  backgroundColor: devices.length >= 6 ? '#F1F5F9' : '#0F172A',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '4px 9px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: devices.length >= 6 ? 'not-allowed' : 'pointer',
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.15s ease',
+                }}
+                onClick={handleAddDevice}
+                disabled={devices.length >= 6}
+                title={devices.length >= 6 ? 'Maksimum 6 cihaza ulaşıldı' : 'Bu ekrana yeni bir cihaz ekleyin'}
+              >
+                <Plus size={12} />
+                <span>Cihaz Ekle {devices.length >= 6 ? '(Maks. 6)' : ''}</span>
+              </button>
+            )}
           </div>
 
           {/* Device Tabs / Chips List */}
@@ -1541,28 +1635,27 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               </span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                 <span style={{ fontSize: '11px', color: '#64748B', fontFamily: 'var(--font-mono)' }}>%</span>
-                <input
-                  type="number"
-                  min="35"
-                  max="220"
+                <NumericBadgeInput
+                  key={`scale-${activeDevice.id}`}
                   value={Math.round((activeDevice.deviceScale ?? 1) * 100)}
-                  onChange={(e) => {
-                    const val = Number(e.target.value);
-                    if (!isNaN(val)) {
-                      handleUpdateActiveDevice({ deviceScale: Math.max(0.35, Math.min(2.2, val / 100)) });
-                    }
+                  min={35}
+                  max={220}
+                  fallbackValue={100}
+                  onChange={(val) => {
+                    handleUpdateActiveDevice({ deviceScale: val / 100 });
                   }}
                   style={{
-                    width: '46px',
+                    width: '52px',
                     padding: '2px 4px',
                     fontSize: '11px',
                     fontFamily: 'var(--font-mono)',
-                    textAlign: 'right',
+                    textAlign: 'center',
                     borderRadius: '4px',
                     border: '1px solid #CBD5E1',
                     background: '#FFFFFF',
                     color: '#1E293B',
                     outline: 'none',
+                    boxSizing: 'border-box',
                   }}
                 />
               </div>
@@ -1639,28 +1732,27 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 <span>Cihaz Döndürme</span>
               </span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                <input
-                  type="number"
-                  min="-180"
-                  max="180"
+                <NumericBadgeInput
+                  key={`rot-${activeDevice.id}`}
                   value={activeDevice.deviceRotation ?? 0}
-                  onChange={(e) => {
-                    const val = Number(e.target.value);
-                    if (!isNaN(val)) {
-                      handleUpdateActiveDevice({ deviceRotation: Math.max(-180, Math.min(180, val)) });
-                    }
+                  min={-180}
+                  max={180}
+                  fallbackValue={0}
+                  onChange={(val) => {
+                    handleUpdateActiveDevice({ deviceRotation: val });
                   }}
                   style={{
-                    width: '46px',
+                    width: '52px',
                     padding: '2px 4px',
                     fontSize: '11px',
                     fontFamily: 'var(--font-mono)',
-                    textAlign: 'right',
+                    textAlign: 'center',
                     borderRadius: '4px',
                     border: '1px solid #CBD5E1',
                     background: '#FFFFFF',
                     color: '#1E293B',
                     outline: 'none',
+                    boxSizing: 'border-box',
                   }}
                 />
                 <span style={{ fontSize: '11px', color: '#64748B', fontFamily: 'var(--font-mono)' }}>°</span>
@@ -1935,16 +2027,17 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                             }
                           }}
                           style={{
-                            width: '48px',
+                            width: '52px',
                             padding: '2px 4px',
                             fontSize: '11px',
                             fontFamily: 'var(--font-mono)',
-                            textAlign: 'right',
+                            textAlign: 'center',
                             borderRadius: '4px',
                             border: '1px solid #CBD5E1',
                             background: '#FFFFFF',
                             color: '#1E293B',
                             outline: 'none',
+                            boxSizing: 'border-box',
                           }}
                         />
                       </div>

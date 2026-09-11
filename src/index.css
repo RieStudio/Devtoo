@@ -1281,6 +1281,16 @@ body {
 }
 
 /* Crisp Input Controls */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
 .input-text, .input-select {
   width: 100%;
   padding: 8px 12px;
