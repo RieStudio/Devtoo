@@ -1363,42 +1363,39 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                     />
                   ))}
 
-                  {/* Özel Renk Seç Butonu ve Hemen Altında Açılan Renk Paleti */}
-                  <div style={{ position: 'relative', display: 'inline-flex' }}>
-                    <button
-                      type="button"
-                      title="Özel Renk Seç"
-                      className="color-swatch-btn custom-palette-btn"
-                      style={{
-                        width: '22px',
-                        height: '22px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: 'conic-gradient(from 180deg at 50% 50%, #FF0000 0deg, #FFFF00 60deg, #00FF00 120deg, #00FFFF 180deg, #0000FF 240deg, #FF00FF 300deg, #FF0000 360deg)',
-                      }}
-                      onClick={() => shapeColorPickerInputRef.current?.click()}
-                    >
-                      <Pipette size={11} style={{ color: '#FFFFFF', filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.8))' }} />
-                    </button>
-
+                  {/* Özel Renk Seç Butonu ve Üstünde Açılan Native Color Picker */}
+                  <div
+                    title="Özel Renk Seç"
+                    className="color-swatch-btn custom-palette-btn"
+                    style={{
+                      position: 'relative',
+                      width: '22px',
+                      height: '22px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: 'conic-gradient(from 180deg at 50% 50%, #FF0000 0deg, #FFFF00 60deg, #00FF00 120deg, #00FFFF 180deg, #0000FF 240deg, #FF00FF 300deg, #FF0000 360deg)',
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      margin: 0,
+                    }}
+                  >
+                    <Pipette size={11} style={{ color: '#FFFFFF', filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.8))', pointerEvents: 'none' }} />
                     <input
                       ref={shapeColorPickerInputRef}
                       type="color"
                       value={selectedShape.color.startsWith('#') && selectedShape.color.length === 7 ? selectedShape.color : '#D90429'}
                       style={{
                         position: 'absolute',
-                        top: '100%',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        width: '32px',
-                        height: '32px',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
                         padding: 0,
                         margin: 0,
                         border: 'none',
                         opacity: 0,
                         cursor: 'pointer',
-                        zIndex: 10,
                       }}
                       onChange={(e) => handleUpdateSelectedShape({ color: e.target.value })}
                     />
@@ -1573,23 +1570,14 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 />
               ))}
 
-              {/* Gizli native color input */}
-              <input
-                ref={colorPickerInputRef}
-                type="color"
-                value={config.bgColor.startsWith('#') && config.bgColor.length === 7 ? config.bgColor : '#D90429'}
-                style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0 }}
-                onChange={(e) => onChangeConfig({ bgColor: e.target.value })}
-              />
-
-              {/* Renk Paleti Açma Butonu */}
-              <button
-                type="button"
+              {/* Renk Paleti Açma Butonu ve Üstünde Açılan Native Color Picker */}
+              <div
                 title="Özel Arka Plan Rengini Aç"
                 className={`color-swatch-btn custom-palette-btn ${
                   !PALETTE_PRESETS.includes(config.bgColor.toUpperCase()) ? 'selected' : ''
                 }`}
                 style={{
+                  position: 'relative',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -1597,11 +1585,31 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                     ? config.bgColor 
                     : 'conic-gradient(from 180deg at 50% 50%, #FF0000 0deg, #FFFF00 60deg, #00FF00 120deg, #00FFFF 180deg, #0000FF 240deg, #FF00FF 300deg, #FF0000 360deg)',
                   color: !PALETTE_PRESETS.includes(config.bgColor.toUpperCase()) ? '#FFFFFF' : '#334155',
+                  overflow: 'hidden',
+                  cursor: 'pointer',
+                  margin: 0,
                 }}
-                onClick={() => colorPickerInputRef.current?.click()}
               >
-                <Pipette size={14} style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.6))', color: '#FFFFFF' }} />
-              </button>
+                <Pipette size={14} style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.6))', color: '#FFFFFF', pointerEvents: 'none' }} />
+                <input
+                  ref={colorPickerInputRef}
+                  type="color"
+                  value={config.bgColor.startsWith('#') && config.bgColor.length === 7 ? config.bgColor : '#D90429'}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    opacity: 0,
+                    cursor: 'pointer',
+                    padding: 0,
+                    margin: 0,
+                    border: 'none',
+                  }}
+                  onChange={(e) => onChangeConfig({ bgColor: e.target.value })}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -2079,21 +2087,14 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                         />
                       ))}
 
-                      <input
-                        ref={textColorPickerInputRef}
-                        type="color"
-                        value={selectedLayer.color.startsWith('#') && selectedLayer.color.length === 7 ? selectedLayer.color : '#0F172A'}
-                        style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0 }}
-                        onChange={(e) => handleUpdateSelectedLayer({ color: e.target.value })}
-                      />
-
-                      <button
-                        type="button"
+                      {/* Özel Metin Rengi Açma Butonu ve Üstünde Açılan Native Color Picker */}
+                      <div
                         title="Özel Metin Rengini Aç"
                         className={`color-swatch-btn custom-palette-btn ${
                           !TEXT_PALETTE_PRESETS.includes(selectedLayer.color.toUpperCase()) ? 'selected' : ''
                         }`}
                         style={{
+                          position: 'relative',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -2101,11 +2102,31 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                             ? selectedLayer.color 
                             : 'conic-gradient(from 180deg at 50% 50%, #FF0000 0deg, #FFFF00 60deg, #00FF00 120deg, #00FFFF 180deg, #0000FF 240deg, #FF00FF 300deg, #FF0000 360deg)',
                           color: !TEXT_PALETTE_PRESETS.includes(selectedLayer.color.toUpperCase()) ? '#FFFFFF' : '#334155',
+                          overflow: 'hidden',
+                          cursor: 'pointer',
+                          margin: 0,
                         }}
-                        onClick={() => textColorPickerInputRef.current?.click()}
                       >
-                        <Pipette size={14} style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.6))', color: '#FFFFFF' }} />
-                      </button>
+                        <Pipette size={14} style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.6))', color: '#FFFFFF', pointerEvents: 'none' }} />
+                        <input
+                          ref={textColorPickerInputRef}
+                          type="color"
+                          value={selectedLayer.color.startsWith('#') && selectedLayer.color.length === 7 ? selectedLayer.color : '#0F172A'}
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            opacity: 0,
+                            cursor: 'pointer',
+                            padding: 0,
+                            margin: 0,
+                            border: 'none',
+                          }}
+                          onChange={(e) => handleUpdateSelectedLayer({ color: e.target.value })}
+                        />
+                      </div>
                     </div>
                   </div>
 
