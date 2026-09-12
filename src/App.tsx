@@ -11,6 +11,7 @@ import { MockupCanvas } from './components/MockupEditor/MockupCanvas';
 import { InspectorPanel } from './components/MockupEditor/InspectorPanel';
 import { ImageCropModal } from './components/MockupEditor/ImageCropModal';
 import { ExportModal, type ExportFormat } from './components/MockupEditor/ExportModal';
+import { AppIconResizer } from './components/AppIconResizer/AppIconResizer';
 
 const INITIAL_CONFIG: MockupConfig = {
   id: 'screen-1',
@@ -101,6 +102,12 @@ export function App() {
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
   const [isCropModalOpen, setIsCropModalOpen] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // App Icon Resizer Header Integration
+  const iconExportRef = useRef<(() => void) | null>(null);
+  const iconUploadRef = useRef<(() => void) | null>(null);
+  const [isIconExporting, setIsIconExporting] = useState<boolean>(false);
+  const [hasIconImage, setHasIconImage] = useState<boolean>(false);
 
   const toastTimeoutRef = useRef<any>(null);
   const showToast = (msg: string) => {
@@ -987,19 +994,32 @@ export function App() {
       <div className="main-workspace">
         {/* Üst Navigasyon Barı */}
         <Header
-          onExport={() => setIsExportModalOpen(true)}
+          activeTool={activeTool}
+          onExport={
+            activeTool === 'app-icon-resizer'
+              ? () => iconExportRef.current?.()
+              : () => setIsExportModalOpen(true)
+          }
           onExportAll={() => setIsExportModalOpen(true)}
           screenCount={screens.length}
-          onUploadClick={handleTriggerUpload}
+          onUploadClick={
+            activeTool === 'app-icon-resizer'
+              ? () => iconUploadRef.current?.()
+              : handleTriggerUpload
+          }
           onUndo={handleUndo}
           onRedo={handleRedo}
           canUndo={historyIndexRef.current > 0}
           canRedo={historyIndexRef.current < historyRef.current.length - 1}
-          isExporting={isExporting}
+          isExporting={activeTool === 'app-icon-resizer' ? isIconExporting : isExporting}
+          hasIconImage={hasIconImage}
         />
 
-        {/* Editör & Sağ Inspector Alanı */}
-        <div className="editor-container">
+        {/* Mockup Editor Çalışma Alanı */}
+        <div
+          className="editor-container"
+          style={{ display: activeTool === 'mockup-editor' ? 'flex' : 'none' }}
+        >
           <MockupCanvas
             screens={screens}
             activeScreenId={activeScreenId}
@@ -1027,6 +1047,15 @@ export function App() {
             onOpenCropModal={() => setIsCropModalOpen(true)}
           />
         </div>
+
+        {/* App Icon Resizer Çalışma Alanı */}
+        <AppIconResizer
+          isVisible={activeTool === 'app-icon-resizer'}
+          onRegisterExport={(fn) => { iconExportRef.current = fn; }}
+          onRegisterUpload={(fn) => { iconUploadRef.current = fn; }}
+          onExportStateChange={setIsIconExporting}
+          onHasImageChange={setHasIconImage}
+        />
       </div>
 
       {/* Interactive Crop Modal */}

@@ -31,8 +31,7 @@ const TOOLS: ToolItem[] = [
     name: 'App Icon Resizer',
     category: 'Geliştirici Araçları',
     icon: 'Image',
-    isAvailable: false,
-    badge: 'YAKINDA',
+    isAvailable: true,
     description: 'iOS & Android simge seti boyutlandırma'
   },
   {
