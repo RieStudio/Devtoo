@@ -125,6 +125,7 @@ export async function exportIconZipBundle(
     isTransparentBg: boolean;
     paddingPercent: number;
     appName: string;
+    customZipName?: string;
   },
   onProgress?: (percent: number, statusText: string) => void
 ): Promise<void> {
@@ -230,7 +231,14 @@ Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}
   const safeAppName = (options.appName || 'app-icons')
     .toLowerCase()
     .replace(/[^a-z0-9_-]/g, '-');
-  downloadBlob(zipBlob, `${safeAppName}-iconset.zip`);
+
+  let finalFileName = `${safeAppName}-iconset.zip`;
+  if (options.customZipName && options.customZipName.trim()) {
+    const raw = options.customZipName.trim();
+    finalFileName = raw.toLowerCase().endsWith('.zip') ? raw : `${raw}.zip`;
+  }
+
+  downloadBlob(zipBlob, finalFileName);
 
   if (onProgress) {
     onProgress(100, 'İndirme tamamlandı!');

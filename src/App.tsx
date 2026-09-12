@@ -106,6 +106,7 @@ export function App() {
   // App Icon Resizer Header Integration
   const iconExportRef = useRef<(() => void) | null>(null);
   const iconUploadRef = useRef<(() => void) | null>(null);
+  const iconCropRef = useRef<(() => void) | null>(null);
   const [isIconExporting, setIsIconExporting] = useState<boolean>(false);
   const [hasIconImage, setHasIconImage] = useState<boolean>(false);
 
@@ -1007,6 +1008,11 @@ export function App() {
               ? () => iconUploadRef.current?.()
               : handleTriggerUpload
           }
+          onCropClick={
+            activeTool === 'app-icon-resizer'
+              ? () => iconCropRef.current?.()
+              : () => setIsCropModalOpen(true)
+          }
           onUndo={handleUndo}
           onRedo={handleRedo}
           canUndo={historyIndexRef.current > 0}
@@ -1053,6 +1059,7 @@ export function App() {
           isVisible={activeTool === 'app-icon-resizer'}
           onRegisterExport={(fn) => { iconExportRef.current = fn; }}
           onRegisterUpload={(fn) => { iconUploadRef.current = fn; }}
+          onRegisterCrop={(fn) => { iconCropRef.current = fn; }}
           onExportStateChange={setIsIconExporting}
           onHasImageChange={setHasIconImage}
         />

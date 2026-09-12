@@ -8,8 +8,6 @@ import {
   Laptop, 
   Sun, 
   Moon, 
-  Crop, 
-  RefreshCw,
   Lock
 } from 'lucide-react';
 import appleSvg from '../../assets/apple.svg';
@@ -188,45 +186,6 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
                 <Layers size={14} />
                 <span>Tüm Boyutlar Galerisi ({ALL_ICON_SIZES.length})</span>
               </button>
-            </div>
-
-            {/* Quick Actions on Loaded Image */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {onOpenCropModal && (
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  style={{ padding: '6px 12px', fontSize: '12px' }}
-                  onClick={onOpenCropModal}
-                  title="Görseli kare olarak kırp"
-                >
-                  <Crop size={13} />
-                  <span>Kırp</span>
-                </button>
-              )}
-              <button
-                type="button"
-                className="btn-secondary"
-                style={{ padding: '6px 12px', fontSize: '12px' }}
-                onClick={() => fileInputRef.current?.click()}
-                title="Yeni bir görsel yükleyin"
-              >
-                <RefreshCw size={13} />
-                <span>Görsel Değiştir</span>
-              </button>
-              {onTriggerExport && (
-                <button
-                  type="button"
-                  className="btn-chili"
-                  style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 600 }}
-                  onClick={onTriggerExport}
-                  disabled={isExporting}
-                  title="Tüm simge paketlerini (.ZIP) indir"
-                >
-                  <Download size={13} />
-                  <span>{isExporting ? 'Paketleniyor...' : 'İndir'}</span>
-                </button>
-              )}
             </div>
           </div>
 

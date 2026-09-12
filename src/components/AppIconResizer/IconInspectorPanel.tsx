@@ -1,35 +1,28 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { 
-  Download, 
   Sliders, 
   ShieldCheck, 
   Pipette, 
   Smartphone, 
-  FolderArchive,
-  Info,
   Globe
 } from 'lucide-react';
 import appleSvg from '../../assets/apple.svg';
 import androidSvg from '../../assets/android.svg';
 import type { IconResizerConfig, CornerRadiusType } from '../../types/iconResizer';
 import { IOS_ICON_SIZES, ANDROID_ICON_SIZES, WEB_ICON_SIZES, ALL_ICON_SIZES } from '../../constants/iconSizes';
-import { exportIconZipBundle } from '../../utils/iconGenerator';
 
 interface IconInspectorPanelProps {
   config: IconResizerConfig;
   onChangeConfig: (updated: Partial<IconResizerConfig>) => void;
   onTriggerUpload: () => void;
   onOpenCropModal?: () => void;
-  onExport?: (platformFilter?: 'ios' | 'android' | 'web') => void;
-  isExporting?: boolean;
-  exportProgressText?: string;
-  exportPercent?: number;
 }
 
 const COLOR_PRESETS = [
   '#FFFFFF', // Beyaz
-  '#0F172A', // Siyah
-  '#D90429', // Şili Kırmızısı
+  '#000000', // Siyah
+  '#D90429', // Chili Kırmızı
+  '#0F172A', // Slate Koyu
   '#3B82F6', // Mavi
   '#10B981', // Yeşil
   '#8B5CF6', // Mor
@@ -41,19 +34,8 @@ export const IconInspectorPanel: React.FC<IconInspectorPanelProps> = ({
   onChangeConfig,
   onTriggerUpload,
   onOpenCropModal,
-  onExport: externalOnExport,
-  isExporting: externalIsExporting,
-  exportProgressText: externalExportProgressText,
-  exportPercent: externalExportPercent,
 }) => {
-  const [internalIsExporting, setInternalIsExporting] = useState<boolean>(false);
-  const [internalExportProgressText, setInternalExportProgressText] = useState<string>('');
-  const [internalExportPercent, setInternalExportPercent] = useState<number>(0);
   const colorPickerRef = useRef<HTMLInputElement>(null);
-
-  const isExporting = externalIsExporting !== undefined ? externalIsExporting : internalIsExporting;
-  const exportProgressText = externalExportProgressText !== undefined ? externalExportProgressText : internalExportProgressText;
-  const exportPercent = externalExportPercent !== undefined ? externalExportPercent : internalExportPercent;
 
   const selectedSpecs = ALL_ICON_SIZES.filter((spec) => {
     if (spec.platform === 'ios' && config.selectedPlatforms.ios) return true;
@@ -61,60 +43,6 @@ export const IconInspectorPanel: React.FC<IconInspectorPanelProps> = ({
     if (spec.platform === 'web' && config.selectedPlatforms.web) return true;
     return false;
   });
-
-  const handleExport = async (platformFilter?: 'ios' | 'android' | 'web') => {
-    if (externalOnExport) {
-      externalOnExport(platformFilter);
-      return;
-    }
-
-    if (!config.sourceImageUrl) return;
-
-    const specsToExport = platformFilter
-      ? ALL_ICON_SIZES.filter((s) => s.platform === platformFilter)
-      : selectedSpecs;
-
-    if (specsToExport.length === 0) {
-      alert('Lütfen en az bir platform seçin.');
-      return;
-    }
-
-    setInternalIsExporting(true);
-    setInternalExportPercent(5);
-    setInternalExportProgressText('Görsel yükleniyor...');
-
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.src = config.sourceImageUrl;
-
-    img.onload = async () => {
-      try {
-        await exportIconZipBundle(
-          img,
-          specsToExport,
-          {
-            bgColor: config.bgColor,
-            isTransparentBg: config.isTransparentBg,
-            paddingPercent: config.paddingPercent,
-            appName: config.appName,
-          },
-          (pct, statusText) => {
-            setInternalExportPercent(pct);
-            setInternalExportProgressText(statusText);
-          }
-        );
-      } catch (err) {
-        console.error('Export error:', err);
-        alert('Dışa aktarma sırasında bir hata oluştu.');
-      } finally {
-        setTimeout(() => {
-          setInternalIsExporting(false);
-          setInternalExportProgressText('');
-          setInternalExportPercent(0);
-        }, 1000);
-      }
-    };
-  };
 
   return (
     <aside className="devtoo-inspector">
@@ -459,96 +387,6 @@ export const IconInspectorPanel: React.FC<IconInspectorPanelProps> = ({
               </div>
               <span className="badge-preview">{WEB_ICON_SIZES.length}</span>
             </label>
-          </div>
-        </div>
-
-        {/* Section 5: Dışa Aktarma Butonları */}
-        <div className="inspector-section" style={{ borderBottom: 'none' }}>
-          <div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Download size={13} color="#D90429" />
-            <span>Dışa Aktar</span>
-          </div>
-
-          {/* Progress Box during Export */}
-          {isExporting && (
-            <div style={{ marginBottom: '10px', padding: '10px', borderRadius: '8px', backgroundColor: '#FFF0F3', border: '1px solid #FCA5A5' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 600, color: '#D90429', marginBottom: '4px' }}>
-                <span>{exportProgressText || 'Paketleniyor...'}</span>
-                <span>%{exportPercent}</span>
-              </div>
-              <div style={{ width: '100%', height: '6px', backgroundColor: '#FECDD3', borderRadius: '3px', overflow: 'hidden' }}>
-                <div style={{ width: `${exportPercent}%`, height: '100%', backgroundColor: '#D90429', transition: 'width 0.2s ease' }} />
-              </div>
-            </div>
-          )}
-
-          {/* Master Export Button */}
-          <button
-            type="button"
-            className="btn-chili"
-            style={{ width: '100%', justifyContent: 'center', padding: '10px 16px', fontSize: '13px', fontWeight: 700 }}
-            onClick={() => handleExport()}
-            disabled={isExporting || !config.sourceImageUrl || selectedSpecs.length === 0}
-          >
-            <FolderArchive size={16} />
-            <span>{isExporting ? 'Arşiv Hazırlanıyor...' : `Tüm Paketleri İndir (.ZIP) [${selectedSpecs.length}]`}</span>
-          </button>
-
-          {/* Quick Individual Platform Zip Buttons */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', marginTop: '8px' }}>
-            <button
-              type="button"
-              className="btn-secondary"
-              style={{ fontSize: '11px', padding: '6px 4px', justifyContent: 'center', gap: '5px' }}
-              onClick={() => handleExport('ios')}
-              disabled={isExporting || !config.sourceImageUrl}
-              title="Yalnızca iOS Xcode simgelerini zip olarak indir"
-            >
-              <img src={appleSvg} alt="Apple" style={{ width: '12px', height: '12px', objectFit: 'contain' }} />
-              <span>iOS</span>
-            </button>
-            <button
-              type="button"
-              className="btn-secondary"
-              style={{ fontSize: '11px', padding: '6px 4px', justifyContent: 'center', gap: '5px' }}
-              onClick={() => handleExport('android')}
-              disabled={isExporting || !config.sourceImageUrl}
-              title="Yalnızca Android mipmap simgelerini zip olarak indir"
-            >
-              <img src={androidSvg} alt="Android" style={{ width: '13px', height: '12px', objectFit: 'contain' }} />
-              <span>Android</span>
-            </button>
-            <button
-              type="button"
-              className="btn-secondary"
-              style={{ fontSize: '11px', padding: '6px 4px', justifyContent: 'center', gap: '5px' }}
-              onClick={() => handleExport('web')}
-              disabled={isExporting || !config.sourceImageUrl}
-              title="Yalnızca Web favicon setini zip olarak indir"
-            >
-              <Globe size={12} />
-              <span>Web</span>
-            </button>
-          </div>
-
-          {/* Info callout */}
-          <div
-            style={{
-              marginTop: '12px',
-              padding: '10px',
-              borderRadius: '6px',
-              backgroundColor: '#F8FAFC',
-              border: '1px solid #E2E8F0',
-              fontSize: '11px',
-              color: '#64748B',
-              lineHeight: 1.45,
-            }}
-          >
-            <div style={{ fontWeight: 600, color: '#334155', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Info size={13} color="#3B82F6" />
-              <span>Geliştirici İpucu:</span>
-            </div>
-            İndirilen zip dosyasındaki <code>ios/AppIcon.appiconset</code> klasörünü doğrudan Xcode Assets alanına, <code>android/res/</code> içeriğini Android Studio <code>res/</code> dizinine bırakabilirsiniz.
           </div>
         </div>
       </div>

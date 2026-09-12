@@ -4,6 +4,7 @@ import { ALL_ICON_SIZES } from '../../constants/iconSizes';
 import { exportIconZipBundle } from '../../utils/iconGenerator';
 import { IconCanvasPreview } from './IconCanvasPreview';
 import { IconInspectorPanel } from './IconInspectorPanel';
+import { IconExportModal } from './IconExportModal';
 import { ImageCropModal } from '../MockupEditor/ImageCropModal';
 
 const DEFAULT_ICON_CONFIG: IconResizerConfig = {
@@ -29,6 +30,7 @@ interface AppIconResizerProps {
   isVisible?: boolean;
   onRegisterExport?: (exportFn: () => void) => void;
   onRegisterUpload?: (uploadFn: () => void) => void;
+  onRegisterCrop?: (cropFn: () => void) => void;
   onExportStateChange?: (isExporting: boolean) => void;
   onHasImageChange?: (hasImage: boolean) => void;
 }
@@ -37,12 +39,14 @@ export const AppIconResizer: React.FC<AppIconResizerProps> = ({
   isVisible = true,
   onRegisterExport,
   onRegisterUpload,
+  onRegisterCrop,
   onExportStateChange,
   onHasImageChange,
 }) => {
   const [config, setConfig] = useState<IconResizerConfig>(DEFAULT_ICON_CONFIG);
   const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
   const [isCropModalOpen, setIsCropModalOpen] = useState<boolean>(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [exportProgressText, setExportProgressText] = useState<string>('');
   const [exportPercent, setExportPercent] = useState<number>(0);
@@ -90,7 +94,7 @@ export const AppIconResizer: React.FC<AppIconResizerProps> = ({
     return false;
   });
 
-  const handleExport = useCallback(async (platformFilter?: 'ios' | 'android' | 'web') => {
+  const handleExport = useCallback(async (platformFilter?: 'ios' | 'android' | 'web', customZipName?: string) => {
     if (!config.sourceImageUrl) {
       handleTriggerUpload();
       return;
@@ -123,6 +127,7 @@ export const AppIconResizer: React.FC<AppIconResizerProps> = ({
             isTransparentBg: config.isTransparentBg,
             paddingPercent: config.paddingPercent,
             appName: config.appName,
+            customZipName,
           },
           (pct, statusText) => {
             setExportPercent(pct);
@@ -144,12 +149,26 @@ export const AppIconResizer: React.FC<AppIconResizerProps> = ({
 
   // Synchronize export & upload triggers with Header / parent
   useEffect(() => {
-    onRegisterExport?.(() => handleExport());
-  }, [onRegisterExport, handleExport]);
+    onRegisterExport?.(() => {
+      if (!config.sourceImageUrl) {
+        handleTriggerUpload();
+        return;
+      }
+      setIsExportModalOpen(true);
+    });
+  }, [onRegisterExport, config.sourceImageUrl, handleTriggerUpload]);
 
   useEffect(() => {
     onRegisterUpload?.(handleTriggerUpload);
   }, [onRegisterUpload, handleTriggerUpload]);
+
+  useEffect(() => {
+    onRegisterCrop?.(() => {
+      if (config.sourceImageUrl) {
+        setIsCropModalOpen(true);
+      }
+    });
+  }, [onRegisterCrop, config.sourceImageUrl]);
 
   useEffect(() => {
     onExportStateChange?.(isExporting);
@@ -166,21 +185,14 @@ export const AppIconResizer: React.FC<AppIconResizerProps> = ({
         config={config}
         onChangeConfig={handleUpdateConfig}
         onFileSelect={handleFileSelect}
-        onOpenCropModal={() => setIsCropModalOpen(true)}
-        onTriggerExport={() => handleExport()}
-        isExporting={isExporting}
       />
 
-      {/* Sağ Ayarlar & Dışa Aktarma Paneli */}
+      {/* Sağ Ayarlar Paneli */}
       <IconInspectorPanel
         config={config}
         onChangeConfig={handleUpdateConfig}
         onTriggerUpload={handleTriggerUpload}
         onOpenCropModal={() => setIsCropModalOpen(true)}
-        onExport={handleExport}
-        isExporting={isExporting}
-        exportProgressText={exportProgressText}
-        exportPercent={exportPercent}
       />
 
       {/* 1:1 Kare Kırpma Modalı */}
@@ -203,6 +215,18 @@ export const AppIconResizer: React.FC<AppIconResizerProps> = ({
           onCancel={() => setIsCropModalOpen(false)}
         />
       )}
+
+      {/* Dışa Aktarma Seçenekleri Modalı */}
+      <IconExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        config={config}
+        onChangeConfig={handleUpdateConfig}
+        onExport={handleExport}
+        isExporting={isExporting}
+        exportProgressText={exportProgressText}
+        exportPercent={exportPercent}
+      />
     </div>
   );
 };
