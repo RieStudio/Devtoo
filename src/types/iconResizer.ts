@@ -33,6 +33,6 @@ export interface IconResizerConfig {
     android: boolean;
     web: boolean;
   };
-  previewDevice: 'iphone' | 'android' | 'web';
+  previewDevice: 'iphone' | 'android';
   previewDarkMode: boolean;
 }

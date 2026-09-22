@@ -5,10 +5,8 @@ import {
   Download, 
   Layers, 
   Globe, 
-  Laptop, 
   Sun, 
-  Moon, 
-  Lock
+  Moon
 } from 'lucide-react';
 import appleSvg from '../../assets/apple.svg';
 import androidSvg from '../../assets/android.svg';
@@ -216,14 +214,6 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
                   >
                     <img src={androidSvg} alt="Android" style={{ width: '14px', height: '13px', objectFit: 'contain' }} />
                     <span>Galaxy S26 Ultra</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`device-pill ${config.previewDevice === 'web' ? 'active' : ''}`}
-                    onClick={() => onChangeConfig({ previewDevice: 'web' })}
-                  >
-                    <Laptop size={13} />
-                    <span>Studio Display (Web & Dock)</span>
                   </button>
                 </div>
 
@@ -435,127 +425,6 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
                     <img
                       src="/devices/phone/samsung/galaxy-s26-ultra.png"
                       alt="Galaxy S26 Ultra"
-                      style={{
-                        position: 'relative',
-                        width: '100%',
-                        height: 'auto',
-                        pointerEvents: 'none',
-                        zIndex: 10,
-                        display: 'block',
-                      }}
-                    />
-                  </div>
-                )}
-
-                {/* 3. Studio Display Mockup (Web & Mac Dock) */}
-                {config.previewDevice === 'web' && (
-                  <div
-                    className="realistic-device-mockup"
-                    style={{
-                      position: 'relative',
-                      width: '680px',
-                      maxWidth: '100%',
-                      filter: 'drop-shadow(0 30px 60px rgba(0, 0, 0, 0.28))',
-                      display: 'inline-block',
-                    }}
-                  >
-                    {/* Screen Content Layer */}
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '2.69%',
-                        left: '2.07%',
-                        width: '95.85%',
-                        height: '70.58%',
-                        zIndex: 1,
-                        borderRadius: '0px',
-                        overflow: 'hidden',
-                        backgroundColor: '#000000',
-                      }}
-                    >
-                      <div className={`studio-display-screen ${config.previewDarkMode ? 'dark-macos' : 'light-macos'}`}>
-                        {/* macOS Top Menu Bar */}
-                        <div className="macos-menu-bar">
-                          <div className="menu-bar-left">
-                            <img src={appleSvg} alt="Apple" className="macos-apple-logo" />
-                            <span className="menu-item app-title">{config.appName || 'Uygulama'}</span>
-                            <span className="menu-item">Dosya</span>
-                            <span className="menu-item">Düzen</span>
-                            <span className="menu-item">Görünüm</span>
-                            <span className="menu-item">Pencere</span>
-                            <span className="menu-item">Yardım</span>
-                          </div>
-                          <div className="menu-bar-right">
-                            <span className="menu-time">9:41</span>
-                          </div>
-                        </div>
-
-                        {/* Desktop Window: Browser with Web App & Favicon */}
-                        <div className="studio-desktop-center">
-                          <div className="browser-window-frame">
-                            <div className="browser-window-header">
-                              <div className="window-dots">
-                                <span className="dot red" />
-                                <span className="dot yellow" />
-                                <span className="dot green" />
-                              </div>
-                              <div className="browser-active-tab">
-                                {previewDataUrl ? (
-                                  <img src={previewDataUrl} alt="Favicon" className="tab-favicon-img" />
-                                ) : (
-                                  <Globe size={13} />
-                                )}
-                                <span className="tab-title">{config.appName || 'Uygulama'} - Web App</span>
-                                <span className="tab-close">×</span>
-                              </div>
-                            </div>
-                            <div className="browser-url-bar">
-                              <span className="url-lock" style={{ display: 'inline-flex', alignItems: 'center' }}>
-                                <Lock size={11} color="#10B981" />
-                              </span>
-                              <span className="url-text">https://{config.appName?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'app'}.com</span>
-                            </div>
-                            <div className="browser-content-mock">
-                              <div className="browser-content-hero">
-                                <div
-                                  className="hero-logo-box"
-                                  style={getMaskStyle(config.previewCornerRadius)}
-                                >
-                                  {previewDataUrl && <img src={previewDataUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />}
-                                </div>
-                                <h3>{config.appName || 'Uygulama'} Web & PWA</h3>
-                                <p>Favicon, Apple Touch Icon ve Web Manifest simgeleri Studio Display'de optimize edildi.</p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* macOS Dock with Custom App Icon */}
-                        <div className="studio-dock-container">
-                          <div className="macos-dock-glass">
-                            <div className="dock-icon-item finder-mock" title="Finder" />
-                            <div className="dock-icon-item safari-mock" title="Safari" />
-                            {/* Active User App Icon in Dock */}
-                            <div className="dock-icon-item active-user-dock" title={config.appName || 'Uygulama'}>
-                              <div
-                                className="dock-user-icon"
-                                style={getMaskStyle('squircle')}
-                              >
-                                {previewDataUrl && <img src={previewDataUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />}
-                              </div>
-                              <div className="dock-dot" />
-                            </div>
-                            <div className="dock-icon-item terminal-mock" title="Terminal" />
-                            <div className="dock-icon-item trash-mock" title="Çöp Sepeti" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Apple Studio Display Hardware Stand & Bezel Overlay */}
-                    <img
-                      src="/devices/pc/apple/studio display/Studio Display 2026 On Light Background.png"
-                      alt="Studio Display"
                       style={{
                         position: 'relative',
                         width: '100%',

@@ -231,8 +231,8 @@ export const IconInspectorPanel: React.FC<IconInspectorPanelProps> = ({
             />
           </div>
 
-          {/* Önizleme Maske Biçimi (Corner Radius) - iPhone ve Studio Display (web) seçildiğinde gizlenir */}
-          {config.previewDevice !== 'iphone' && config.previewDevice !== 'web' && (
+          {/* Önizleme Maske Biçimi (Corner Radius) - Galaxy S26 Ultra (Android) seçildiğinde gösterilir */}
+          {config.previewDevice === 'android' && (
             <div className="control-group">
               <div className="control-label">
                 <span>Önizleme Maske Tipi</span>
