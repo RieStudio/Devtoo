@@ -10,6 +10,25 @@ import {
 } from 'lucide-react';
 import appleSvg from '../../assets/apple.svg';
 import androidSvg from '../../assets/android.svg';
+
+// iOS Companion App Icons (Light & Dark)
+import iosPhotosLight from '../../assets/ios-photos-light.svg';
+import iosPhotosDark from '../../assets/ios-photos-dark.svg';
+import iosCameraLight from '../../assets/ios-camera-light.webp';
+import iosCameraDark from '../../assets/ios-camera-dark.webp';
+import iosMapsLight from '../../assets/ios-maps-light.webp';
+import iosMapsDark from '../../assets/ios-maps-dark.webp';
+
+// Device Wallpapers (Light & Dark)
+import iphoneLightWallpaper from '../../assets/iPhone-17-White-wallpaper.jpg';
+import iphoneDarkWallpaper from '../../assets/iPhone-17-Black.jpg';
+import androidLightWallpaper from '../../assets/android-light.webp';
+import androidDarkWallpaper from '../../assets/android-dark.webp';
+
+// Android Companion App Icons
+import googlePlaySvg from '../../assets/googleplay.svg';
+import chromeSvg from '../../assets/chrome.svg';
+import gmailSvg from '../../assets/google-gmail.svg';
 import type { IconResizerConfig, IconSizeSpec, PreviewTab, CornerRadiusType } from '../../types/iconResizer';
 import { ALL_ICON_SIZES, IOS_ICON_SIZES, ANDROID_ICON_SIZES, WEB_ICON_SIZES } from '../../constants/iconSizes';
 import { exportSingleIcon, renderIconToCanvas } from '../../utils/iconGenerator';
@@ -33,6 +52,15 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
   const [previewDataUrl, setPreviewDataUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Dynamic iOS companion icons matching light / dark mode
+  const photosIcon = config.previewDarkMode ? iosPhotosDark : iosPhotosLight;
+  const cameraIcon = config.previewDarkMode ? iosCameraDark : iosCameraLight;
+  const mapsIcon = config.previewDarkMode ? iosMapsDark : iosMapsLight;
+
+  // Dynamic device wallpapers matching light / dark mode
+  const iphoneWallpaper = config.previewDarkMode ? iphoneDarkWallpaper : iphoneLightWallpaper;
+  const androidWallpaper = config.previewDarkMode ? androidDarkWallpaper : androidLightWallpaper;
 
   // Re-render preview canvas whenever image, background, padding or mask changes
   useEffect(() => {
@@ -257,68 +285,77 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
                         backgroundColor: '#000000',
                       }}
                     >
-                      <div className={`iphone-screen-content ${config.previewDarkMode ? 'dark-wallpaper' : 'light-wallpaper'}`}>
+                      <div
+                        className={`iphone-screen-content ${config.previewDarkMode ? 'dark-wallpaper' : 'light-wallpaper'}`}
+                        style={{
+                          backgroundImage: `url(${iphoneWallpaper})`,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                          backgroundRepeat: 'no-repeat',
+                        }}
+                      >
                         {/* Status Bar */}
                         <div className="iphone-status-bar">
-                          <span className="status-time">9:41</span>
-                          <div className="iphone-dynamic-island" />
-                          <div className="status-icons">
-                            <span style={{ fontSize: '10px', fontWeight: 600 }}>5G</span>
-                            <div className="battery-pill" />
-                          </div>
-                        </div>
-
-                        {/* App Grid */}
-                        <div className="iphone-app-grid">
-                          {/* Custom User App Icon */}
-                          <div className="iphone-app-item highlighted">
-                            <div
-                              className="iphone-app-icon-wrapper"
-                              style={getMaskStyle('squircle')}
-                            >
-                              {previewDataUrl && (
-                                <img src={previewDataUrl} alt={config.appName} className="iphone-icon-img" />
-                              )}
-                            </div>
-                            <span className="iphone-app-label active-app-label">{config.appName || 'Uygulama'}</span>
-                          </div>
-
-                          {/* Companion Apps */}
-                          <div className="iphone-app-item mock">
-                            <div className="iphone-app-icon-wrapper photos-mock" style={getMaskStyle('squircle')}>
-                              <div className="photo-emblem" />
-                            </div>
-                            <span className="iphone-app-label">Fotoğraflar</span>
-                          </div>
-
-                          <div className="iphone-app-item mock">
-                            <div className="iphone-app-icon-wrapper camera-mock" style={getMaskStyle('squircle')}>
-                              <div className="camera-lens" />
-                            </div>
-                            <span className="iphone-app-label">Kamera</span>
-                          </div>
-
-                          <div className="iphone-app-item mock">
-                            <div className="iphone-app-icon-wrapper maps-mock" style={getMaskStyle('squircle')}>
-                              <div className="maps-pin" />
-                            </div>
-                            <span className="iphone-app-label">Harita</span>
+                          <span className="iphone-status-time">9:41</span>
+                          <div className="iphone-status-icons">
+                            {/* Cellular 4 bars */}
+                            <svg width="15" height="10" viewBox="0 0 17 11" fill="currentColor" aria-hidden="true">
+                              <rect x="0" y="8" width="2.5" height="3" rx="0.7" />
+                              <rect x="4.5" y="5.5" width="2.5" height="5.5" rx="0.7" />
+                              <rect x="9" y="3" width="2.5" height="8" rx="0.7" />
+                              <rect x="13.5" y="0" width="2.5" height="11" rx="0.7" />
+                            </svg>
+                            {/* Wi-Fi */}
+                            <svg width="13" height="10" viewBox="0 0 16 12" fill="currentColor" aria-hidden="true">
+                              <path d="M8 9.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm-3.8-3a5.5 5.5 0 0 1 7.6 0 .8.8 0 1 1-1.1 1.1 4 4 0 0 0-5.4 0 .8.8 0 0 1-1.1-1.1Zm-3-3a9.8 9.8 0 0 1 13.6 0 .8.8 0 0 1-1.1 1.1 8.3 8.3 0 0 0-11.4 0 .8.8 0 0 1-1.1-1.1Z" />
+                            </svg>
+                            {/* Battery */}
+                            <svg width="22" height="11" viewBox="0 0 25 12" fill="none" aria-hidden="true">
+                              <rect x="0.75" y="0.75" width="20.5" height="10.5" rx="3.25" stroke="currentColor" strokeWidth="1.5" />
+                              <rect x="2.5" y="2.5" width="14" height="7" rx="1.5" fill="currentColor" />
+                              <path d="M23 4.2c.6 0 1 .4 1 1v1.6c0 .6-.4 1-1 1v-3.6Z" fill="currentColor" />
+                            </svg>
                           </div>
                         </div>
 
                         {/* Dock Container */}
                         <div className="iphone-dock-glass">
-                          <div className="iphone-app-item dock-item">
-                            <div className="iphone-app-icon-wrapper phone-mock" style={getMaskStyle('squircle')} />
+                          {/* Custom User App Icon */}
+                          <div className="iphone-app-item dock-item highlighted" title={config.appName || 'Uygulama'}>
+                            <div
+                              className="iphone-app-icon-wrapper"
+                              style={{
+                                ...getMaskStyle('squircle'),
+                                backgroundColor: previewDataUrl ? 'transparent' : (config.isTransparentBg ? 'transparent' : config.bgColor || '#1E293B'),
+                              }}
+                            >
+                              {previewDataUrl ? (
+                                <img src={previewDataUrl} alt={config.appName} className="iphone-icon-img" />
+                              ) : (
+                                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  <Smartphone size={22} color="#FFFFFF" />
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          <div className="iphone-app-item dock-item">
-                            <div className="iphone-app-icon-wrapper safari-mock" style={getMaskStyle('squircle')} />
+
+                          {/* Companion Apps */}
+                          <div className="iphone-app-item dock-item mock" title="Fotoğraflar">
+                            <div className="iphone-app-icon-wrapper">
+                              <img src={photosIcon} alt="Fotoğraflar" className="iphone-icon-img" />
+                            </div>
                           </div>
-                          <div className="iphone-app-item dock-item">
-                            <div className="iphone-app-icon-wrapper messages-mock" style={getMaskStyle('squircle')} />
+
+                          <div className="iphone-app-item dock-item mock" title="Kamera">
+                            <div className="iphone-app-icon-wrapper">
+                              <img src={cameraIcon} alt="Kamera" className="iphone-icon-img" />
+                            </div>
                           </div>
-                          <div className="iphone-app-item dock-item">
-                            <div className="iphone-app-icon-wrapper music-mock" style={getMaskStyle('squircle')} />
+
+                          <div className="iphone-app-item dock-item mock" title="Harita">
+                            <div className="iphone-app-icon-wrapper">
+                              <img src={mapsIcon} alt="Harita" className="iphone-icon-img" />
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -365,14 +402,38 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
                         backgroundColor: '#000000',
                       }}
                     >
-                      <div className={`android-screen-content ${config.previewDarkMode ? 'dark-wallpaper' : 'light-wallpaper'}`}>
+                      <div
+                        className={`android-screen-content ${config.previewDarkMode ? 'dark-wallpaper' : 'light-wallpaper'}`}
+                        style={{
+                          backgroundImage: `url(${androidWallpaper})`,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                          backgroundRepeat: 'no-repeat',
+                        }}
+                      >
                         {/* Status Bar */}
                         <div className="android-status-bar">
-                          <span>09:41</span>
-                          <div className="android-punch-hole" />
-                          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                            <span>5G</span>
-                            <div className="android-battery" />
+                          <span className="android-status-time">10:00</span>
+                          <div className="android-status-icons">
+                            <span className="android-network-badge">5G</span>
+                            {/* Signal */}
+                            <svg width="13" height="10" viewBox="0 0 16 12" fill="currentColor" aria-hidden="true">
+                              <rect x="0.5" y="8" width="2.2" height="4" rx="0.5" />
+                              <rect x="4.5" y="5.5" width="2.2" height="6.5" rx="0.5" />
+                              <rect x="8.5" y="3" width="2.2" height="9" rx="0.5" />
+                              <rect x="12.5" y="0" width="2.2" height="12" rx="0.5" />
+                            </svg>
+                            {/* Wi-Fi */}
+                            <svg width="13" height="10" viewBox="0 0 16 12" fill="currentColor" aria-hidden="true">
+                              <path d="M8 9.8a1.4 1.4 0 1 1 0 2.4 1.4 1.4 0 0 1 0-2.4Zm-3.5-3a5 5 0 0 1 7 0 .7.7 0 1 1-1 1 3.6 3.6 0 0 0-5 0 .7.7 0 0 1-1-1Zm-2.8-2.8a8.8 8.8 0 0 1 12.6 0 .7.7 0 1 1-1 1 7.4 7.4 0 0 0-10.6 0 .7.7 0 1 1-1-1Z" />
+                            </svg>
+                            <span className="android-battery-percent">95%</span>
+                            {/* Battery */}
+                            <svg width="19" height="10" viewBox="0 0 24 11" fill="none" aria-hidden="true">
+                              <rect x="0.6" y="0.6" width="20" height="9.8" rx="2.5" stroke="currentColor" strokeWidth="1.2" />
+                              <rect x="2" y="2" width="13" height="7" rx="1.2" fill="currentColor" />
+                              <path d="M22 3.8c.4 0 .8.3.8.7v2c0 .4-.4.7-.8.7v-3.4Z" fill="currentColor" />
+                            </svg>
                           </div>
                         </div>
 
@@ -399,17 +460,23 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
 
                           {/* Companion Apps */}
                           <div className="android-app-item mock">
-                            <div className="android-app-icon-wrapper play-mock" style={getMaskStyle(config.previewCornerRadius)} />
+                            <div className="android-app-icon-wrapper" style={getMaskStyle(config.previewCornerRadius)}>
+                              <img src={googlePlaySvg} alt="Play Store" style={{ width: '60%', height: '60%', objectFit: 'contain' }} />
+                            </div>
                             <span className="android-app-label">Play Store</span>
                           </div>
 
                           <div className="android-app-item mock">
-                            <div className="android-app-icon-wrapper chrome-mock" style={getMaskStyle(config.previewCornerRadius)} />
+                            <div className="android-app-icon-wrapper" style={getMaskStyle(config.previewCornerRadius)}>
+                              <img src={chromeSvg} alt="Chrome" style={{ width: '68%', height: '68%', objectFit: 'contain' }} />
+                            </div>
                             <span className="android-app-label">Chrome</span>
                           </div>
 
                           <div className="android-app-item mock">
-                            <div className="android-app-icon-wrapper gmail-mock" style={getMaskStyle(config.previewCornerRadius)} />
+                            <div className="android-app-icon-wrapper" style={getMaskStyle(config.previewCornerRadius)}>
+                              <img src={gmailSvg} alt="Gmail" style={{ width: '62%', height: '62%', objectFit: 'contain' }} />
+                            </div>
                             <span className="android-app-label">Gmail</span>
                           </div>
                         </div>

@@ -2174,62 +2174,88 @@ input[type="range"] {
 }
 
 .iphone-screen-content.light-wallpaper {
-  background: linear-gradient(135deg, #FF9A8B 0%, #FF6A88 55%, #FF99AC 100%);
+  background-color: #F8FAFC;
+  color: #0F172A;
+}
+
+.iphone-screen-content.light-wallpaper .iphone-status-bar {
+  color: #000000;
+}
+
+.iphone-screen-content.light-wallpaper .iphone-app-label {
+  color: #0F172A;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.85);
+}
+
+.iphone-screen-content.light-wallpaper .iphone-dock-glass {
+  background-color: rgba(255, 255, 255, 0.55);
 }
 
 .iphone-screen-content.dark-wallpaper {
-  background: linear-gradient(135deg, #182848 0%, #4B6CB7 100%);
+  background-color: #0F172A;
+  color: #FFFFFF;
+}
+
+.iphone-screen-content.dark-wallpaper .iphone-app-label {
+  color: #FFFFFF;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
 }
 
 .android-screen-content.light-wallpaper {
-  background: linear-gradient(180deg, #A1C4FD 0%, #C2E9FB 100%);
+  background-color: #F8FAFC;
+  color: #0F172A;
+}
+
+.android-screen-content.light-wallpaper .android-status-bar {
+  color: #000000;
+}
+
+.android-screen-content.light-wallpaper .android-app-label {
+  color: #0F172A;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.85);
 }
 
 .android-screen-content.dark-wallpaper {
-  background: linear-gradient(180deg, #09203F 0%, #537895 100%);
+  background-color: #0F172A;
+  color: #FFFFFF;
 }
 
+.android-screen-content.dark-wallpaper .android-search-pill {
+  background-color: rgba(15, 23, 42, 0.7);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.android-screen-content.dark-wallpaper .search-placeholder {
+  color: #94A3B8;
+}
+
+/* iPhone 17 Pro Max Status Bar */
 .iphone-status-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   color: #FFFFFF;
-  font-size: 11px;
+  padding: 2px 8px 0 8px;
+  height: 26px;
+  z-index: 5;
+}
+
+.iphone-status-time {
+  font-size: 12px;
   font-weight: 600;
-  padding: 0 4px;
+  letter-spacing: -0.2px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  min-width: 32px;
+  line-height: 1;
 }
 
-.iphone-dynamic-island {
-  width: 78px;
-  height: 20px;
-  background-color: #000000;
-  border-radius: 12px;
-}
 
-.battery-pill {
-  width: 18px;
-  height: 9px;
-  border: 1.5px solid #FFFFFF;
-  border-radius: 2.5px;
-  position: relative;
-}
-
-.battery-pill::after {
-  content: '';
-  position: absolute;
-  top: 1.5px;
-  left: 1.5px;
-  bottom: 1.5px;
-  right: 4px;
-  background-color: #FFFFFF;
-  border-radius: 1px;
-}
-
-.iphone-app-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px 10px;
-  margin-top: 14px;
+.iphone-status-icons {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 54px;
+  justify-content: flex-end;
 }
 
 .iphone-app-item {
@@ -2242,12 +2268,10 @@ input[type="range"] {
 .iphone-app-icon-wrapper {
   width: 52px;
   height: 52px;
-  background-color: #FFFFFF;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+  background-color: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
   position: relative;
   transition: transform 0.15s ease;
 }
@@ -2255,12 +2279,21 @@ input[type="range"] {
 .iphone-app-item.highlighted .iphone-app-icon-wrapper {
   transform: scale(1.05);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.iphone-app-item.mock .iphone-app-icon-wrapper {
+  background-color: transparent;
+  box-shadow: none;
+  overflow: visible;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.28));
 }
 
 .iphone-icon-img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
+  display: block;
 }
 
 .iphone-app-label {
@@ -2279,41 +2312,17 @@ input[type="range"] {
   font-weight: 700;
 }
 
-/* Mock iPhone Companion Icons */
-.photos-mock {
-  background: conic-gradient(#F59E0B, #EF4444, #EC4899, #8B5CF6, #3B82F6, #10B981, #F59E0B);
-}
-.camera-mock {
-  background-color: #94A3B8;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.camera-lens {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background-color: #1E293B;
-  border: 3px solid #E2E8F0;
-}
-.maps-mock {
-  background: linear-gradient(135deg, #60A5FA 0%, #34D399 100%);
-}
-.phone-mock { background-color: #10B981; }
-.safari-mock { background: radial-gradient(circle, #38BDF8, #1D4ED8); }
-.messages-mock { background-color: #22C55E; }
-.music-mock { background: linear-gradient(135deg, #F43F5E 0%, #E11D48 100%); }
-
 .iphone-dock-glass {
-  background-color: rgba(255, 255, 255, 0.28);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: 28px;
-  padding: 8px 10px;
+  background-color: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border-radius: 30px;
+  padding: 8px 12px;
   display: flex;
   align-items: center;
   justify-content: space-around;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  margin-bottom: 2px;
 }
 
 .dock-item .iphone-app-icon-wrapper {
@@ -2327,25 +2336,40 @@ input[type="range"] {
   align-items: center;
   justify-content: space-between;
   color: #FFFFFF;
+  padding: 3px 8px 0 8px;
+  height: 20px;
+  z-index: 5;
+}
+
+.android-status-time {
   font-size: 11px;
+  font-weight: 700;
+  letter-spacing: -0.1px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1;
+}
+
+
+.android-status-icons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.android-network-badge {
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  margin-right: 1px;
+  line-height: 1;
+}
+
+.android-battery-percent {
+  font-size: 9.5px;
   font-weight: 600;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-  padding: 0 4px;
-}
-
-.android-punch-hole {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background-color: #000000;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
-}
-
-.android-battery {
-  width: 14px;
-  height: 9px;
-  border: 1.5px solid #FFFFFF;
-  border-radius: 2px;
+  letter-spacing: -0.2px;
+  margin-left: 2px;
+  line-height: 1;
 }
 
 .android-search-pill {
