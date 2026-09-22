@@ -1,15 +1,10 @@
 import React, { useRef } from 'react';
 import { 
   Sliders, 
-  ShieldCheck, 
   Pipette, 
-  Smartphone, 
-  Globe
+  Smartphone
 } from 'lucide-react';
-import appleSvg from '../../assets/apple.svg';
-import androidSvg from '../../assets/android.svg';
 import type { IconResizerConfig, CornerRadiusType } from '../../types/iconResizer';
-import { IOS_ICON_SIZES, ANDROID_ICON_SIZES, WEB_ICON_SIZES, ALL_ICON_SIZES } from '../../constants/iconSizes';
 
 interface IconInspectorPanelProps {
   config: IconResizerConfig;
@@ -22,7 +17,6 @@ const COLOR_PRESETS = [
   '#FFFFFF', // Beyaz
   '#000000', // Siyah
   '#D90429', // Chili Kırmızı
-  '#0F172A', // Slate Koyu
   '#3B82F6', // Mavi
   '#10B981', // Yeşil
   '#8B5CF6', // Mor
@@ -36,13 +30,6 @@ export const IconInspectorPanel: React.FC<IconInspectorPanelProps> = ({
   onOpenCropModal,
 }) => {
   const colorPickerRef = useRef<HTMLInputElement>(null);
-
-  const selectedSpecs = ALL_ICON_SIZES.filter((spec) => {
-    if (spec.platform === 'ios' && config.selectedPlatforms.ios) return true;
-    if (spec.platform === 'android' && config.selectedPlatforms.android) return true;
-    if (spec.platform === 'web' && config.selectedPlatforms.web) return true;
-    return false;
-  });
 
   return (
     <aside className="devtoo-inspector">
@@ -103,9 +90,6 @@ export const IconInspectorPanel: React.FC<IconInspectorPanelProps> = ({
             onChange={(e) => onChangeConfig({ appName: e.target.value })}
             style={{ fontSize: '12px' }}
           />
-          <div style={{ fontSize: '10.5px', color: '#64748B', marginTop: '4px' }}>
-            Cihaz önizlemelerinde ve ZIP arşiv adında kullanılır.
-          </div>
         </div>
 
         {/* Section 3: İkon Özelleştirme */}
@@ -166,14 +150,23 @@ export const IconInspectorPanel: React.FC<IconInspectorPanelProps> = ({
 
             {/* Solid Color Palette (if not transparent) */}
             {!config.isTransparentBg && (
-              <div className="color-picker-row" style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+              <div 
+                className="color-picker-row" 
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between', 
+                  flexWrap: 'nowrap', 
+                  gap: '5px' 
+                }}
+              >
                 {COLOR_PRESETS.map((color) => (
                   <button
                     key={color}
                     title={color}
                     type="button"
                     className={`color-swatch-btn ${config.bgColor.toLowerCase() === color.toLowerCase() ? 'selected' : ''}`}
-                    style={{ backgroundColor: color }}
+                    style={{ backgroundColor: color, flexShrink: 0 }}
                     onClick={() => onChangeConfig({ bgColor: color })}
                   />
                 ))}
@@ -195,6 +188,7 @@ export const IconInspectorPanel: React.FC<IconInspectorPanelProps> = ({
                     overflow: 'hidden',
                     cursor: 'pointer',
                     margin: 0,
+                    flexShrink: 0,
                   }}
                 >
                   <Pipette size={13} style={{ color: '#FFFFFF', filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.8))', pointerEvents: 'none' }} />
@@ -246,10 +240,10 @@ export const IconInspectorPanel: React.FC<IconInspectorPanelProps> = ({
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
                 {(
                   [
-                    { id: 'squircle', label: 'Squircle (iOS)' },
-                    { id: 'circle', label: 'Daire (Android)' },
+                    { id: 'squircle', label: 'Squircle' },
+                    { id: 'circle', label: 'Daire' },
                     { id: 'rounded', label: 'Yuvarlak' },
-                    { id: 'square', label: 'Kare (Ham)' },
+                    { id: 'square', label: 'Kare' },
                   ] as { id: CornerRadiusType; label: string }[]
                 ).map((item) => (
                   <button
@@ -275,119 +269,6 @@ export const IconInspectorPanel: React.FC<IconInspectorPanelProps> = ({
               </div>
             </div>
           )}
-        </div>
-
-        {/* Section 4: Platform Seçimi */}
-        <div className="inspector-section">
-          <div className="section-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', minWidth: 0, overflow: 'hidden' }}>
-              <ShieldCheck size={13} color="#D90429" style={{ flexShrink: 0 }} />
-              <span style={{ whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>Dışa Aktarılacak Platformlar</span>
-            </div>
-            <span style={{ fontSize: '10px', fontWeight: 700, color: '#D90429', whiteSpace: 'nowrap', flexShrink: 0, padding: '2px 6px', backgroundColor: 'rgba(217, 4, 41, 0.08)', borderRadius: '4px' }}>
-              {selectedSpecs.length} Simge
-            </span>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            {/* iOS */}
-            <label
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid #E2E8F0',
-                backgroundColor: config.selectedPlatforms.ios ? '#F8FAFC' : '#FFFFFF',
-                cursor: 'pointer',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <input
-                  type="checkbox"
-                  checked={config.selectedPlatforms.ios}
-                  onChange={(e) =>
-                    onChangeConfig({
-                      selectedPlatforms: { ...config.selectedPlatforms, ios: e.target.checked },
-                    })
-                  }
-                  style={{ accentColor: '#D90429', width: '15px', height: '15px' }}
-                />
-                <img src={appleSvg} alt="Apple" style={{ width: '14px', height: '14px', objectFit: 'contain' }} />
-                <div>
-                  <div style={{ fontSize: '12px', fontWeight: 600, color: '#0F172A' }}>iOS & Apple</div>
-                  <div style={{ fontSize: '10.5px', color: '#64748B' }}>Xcode AppIcon.appiconset + Contents.json</div>
-                </div>
-              </div>
-              <span className="badge-preview">{IOS_ICON_SIZES.length}</span>
-            </label>
-
-            {/* Android */}
-            <label
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid #E2E8F0',
-                backgroundColor: config.selectedPlatforms.android ? '#F8FAFC' : '#FFFFFF',
-                cursor: 'pointer',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <input
-                  type="checkbox"
-                  checked={config.selectedPlatforms.android}
-                  onChange={(e) =>
-                    onChangeConfig({
-                      selectedPlatforms: { ...config.selectedPlatforms, android: e.target.checked },
-                    })
-                  }
-                  style={{ accentColor: '#D90429', width: '15px', height: '15px' }}
-                />
-                <img src={androidSvg} alt="Android" style={{ width: '15px', height: '14px', objectFit: 'contain' }} />
-                <div>
-                  <div style={{ fontSize: '12px', fontWeight: 600, color: '#0F172A' }}>Android</div>
-                  <div style={{ fontSize: '10.5px', color: '#64748B' }}>res/mipmap-* + Play Store 512px</div>
-                </div>
-              </div>
-              <span className="badge-preview">{ANDROID_ICON_SIZES.length}</span>
-            </label>
-
-            {/* Web */}
-            <label
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid #E2E8F0',
-                backgroundColor: config.selectedPlatforms.web ? '#F8FAFC' : '#FFFFFF',
-                cursor: 'pointer',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <input
-                  type="checkbox"
-                  checked={config.selectedPlatforms.web}
-                  onChange={(e) =>
-                    onChangeConfig({
-                      selectedPlatforms: { ...config.selectedPlatforms, web: e.target.checked },
-                    })
-                  }
-                  style={{ accentColor: '#D90429', width: '15px', height: '15px' }}
-                />
-                <div>
-                  <div style={{ fontSize: '12px', fontWeight: 600, color: '#0F172A' }}>Web & Favicon</div>
-                  <div style={{ fontSize: '10.5px', color: '#64748B' }}>Favicons, PWA, Apple Touch Icon</div>
-                </div>
-              </div>
-              <span className="badge-preview">{WEB_ICON_SIZES.length}</span>
-            </label>
-          </div>
         </div>
       </div>
     </aside>

@@ -2,11 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   X, 
   Download, 
-  FolderArchive, 
   Globe, 
-  Check, 
-  FileArchive, 
-  Sparkles,
   Layers,
   Settings2
 } from 'lucide-react';
@@ -87,7 +83,9 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
         backdropFilter: 'blur(4px)',
         padding: '16px',
       }}
-      onClick={onClose}
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !isExporting) onClose();
+      }}
     >
       <div
         style={{
@@ -115,38 +113,35 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div
-              style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '10px',
-                backgroundColor: 'rgba(217, 4, 41, 0.08)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#D90429',
-              }}
-            >
-              <FolderArchive size={18} />
-            </div>
+            <Download size={20} color="#D90429" />
             <div>
-              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#0F172A' }}>
+              <div style={{ fontSize: '16px', fontWeight: 700, color: '#0F172A', lineHeight: 1.2 }}>
                 İkon Paketlerini Dışa Aktar
-              </h3>
-              <p style={{ margin: 0, fontSize: '12px', color: '#64748B', marginTop: '2px' }}>
+              </div>
+              <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>
                 iOS, Android ve Web için optimize edilmiş simge setleri
-              </p>
+              </div>
             </div>
           </div>
           <button
             type="button"
-            className="btn-secondary"
-            style={{ padding: '6px', border: 'none', background: 'transparent' }}
             onClick={onClose}
             disabled={isExporting}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: isExporting ? 'not-allowed' : 'pointer',
+              color: '#94A3B8',
+              padding: '6px',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.15s ease',
+            }}
             title="Kapat"
           >
-            <X size={18} color="#64748B" />
+            <X size={18} />
           </button>
         </div>
 
@@ -197,19 +192,16 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
               </div>
             </div>
 
-            <div
+            <span
               style={{
-                fontSize: '11.5px',
-                fontWeight: 700,
-                color: '#D90429',
-                backgroundColor: 'rgba(217, 4, 41, 0.08)',
-                padding: '4px 10px',
-                borderRadius: '6px',
+                fontSize: '12px',
+                fontWeight: 600,
+                color: '#64748B',
                 whiteSpace: 'nowrap',
               }}
             >
               {selectedSpecs.length} Simge Seçili
-            </div>
+            </span>
           </div>
 
           {/* Platform Selections */}
@@ -225,7 +217,7 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
                 style={{
                   padding: '12px 14px',
                   borderRadius: '10px',
-                  border: config.selectedPlatforms.ios ? '1px solid #D90429' : '1px solid #E2E8F0',
+                  border: '1px solid #E2E8F0',
                   backgroundColor: config.selectedPlatforms.ios ? '#FFFBFB' : '#FFFFFF',
                   display: 'flex',
                   alignItems: 'center',
@@ -285,7 +277,7 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
                 style={{
                   padding: '12px 14px',
                   borderRadius: '10px',
-                  border: config.selectedPlatforms.android ? '1px solid #D90429' : '1px solid #E2E8F0',
+                  border: '1px solid #E2E8F0',
                   backgroundColor: config.selectedPlatforms.android ? '#FFFBFB' : '#FFFFFF',
                   display: 'flex',
                   alignItems: 'center',
@@ -345,7 +337,7 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
                 style={{
                   padding: '12px 14px',
                   borderRadius: '10px',
-                  border: config.selectedPlatforms.web ? '1px solid #D90429' : '1px solid #E2E8F0',
+                  border: '1px solid #E2E8F0',
                   backgroundColor: config.selectedPlatforms.web ? '#FFFBFB' : '#FFFFFF',
                   display: 'flex',
                   alignItems: 'center',
@@ -417,7 +409,7 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
           <div>
             <div style={{ fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Settings2 size={13} color="#D90429" />
-              <span>Arşiv Dosya Adı</span>
+              <span>Dosya Adı</span>
             </div>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <input
@@ -496,7 +488,8 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
             borderTop: '1px solid #EDF2F7',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
+            justifyContent: 'flex-end',
+            gap: '10px',
             backgroundColor: '#FAFAFA',
           }}
         >
@@ -506,7 +499,7 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
             onClick={onClose}
             disabled={isExporting}
           >
-            Kapat
+            İptal
           </button>
 
           <button
@@ -514,9 +507,8 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
             className="btn-chili"
             onClick={handleStartExportAll}
             disabled={isExporting || !hasAnyPlatformSelected || !config.sourceImageUrl}
-            style={{ padding: '8px 20px', minWidth: '170px', justifyContent: 'center', gap: '8px' }}
+            style={{ padding: '8px 20px', minWidth: '130px', justifyContent: 'center' }}
           >
-            <FolderArchive size={15} />
             <span>
               {isExporting
                 ? 'Paketleniyor...'

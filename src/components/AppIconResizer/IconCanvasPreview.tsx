@@ -29,9 +29,6 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
   config,
   onChangeConfig,
   onFileSelect,
-  onOpenCropModal,
-  onTriggerExport,
-  isExporting = false,
 }) => {
   const [activeTab, setActiveTab] = useState<PreviewTab>('device-preview');
   const [selectedGalleryPlatform, setSelectedGalleryPlatform] = useState<'all' | 'ios' | 'android' | 'web'>('all');
@@ -355,117 +352,98 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
 
                 {/* 2. Galaxy S26 Ultra Mockup */}
                 {config.previewDevice === 'android' && (
-                  <div className="samsung-preview-stage">
+                  <div
+                    className="realistic-device-mockup"
+                    style={{
+                      position: 'relative',
+                      width: '300px',
+                      filter: 'drop-shadow(0 25px 50px rgba(0, 0, 0, 0.28))',
+                      display: 'inline-block',
+                    }}
+                  >
+                    {/* Screen Content Layer */}
                     <div
-                      className="realistic-device-mockup"
                       style={{
-                        position: 'relative',
-                        width: '300px',
-                        filter: 'drop-shadow(0 25px 50px rgba(0, 0, 0, 0.28))',
-                        display: 'inline-block',
+                        position: 'absolute',
+                        top: '0.88%',
+                        left: '2.08%',
+                        width: '95.32%',
+                        height: '98.12%',
+                        zIndex: 1,
+                        borderRadius: '19px',
+                        overflow: 'hidden',
+                        backgroundColor: '#000000',
                       }}
                     >
-                      {/* Screen Content Layer */}
-                      <div
-                        style={{
-                          position: 'absolute',
-                          top: '0.88%',
-                          left: '2.08%',
-                          width: '95.32%',
-                          height: '98.12%',
-                          zIndex: 1,
-                          borderRadius: '19px',
-                          overflow: 'hidden',
-                          backgroundColor: '#000000',
-                        }}
-                      >
-                        <div className={`android-screen-content ${config.previewDarkMode ? 'dark-wallpaper' : 'light-wallpaper'}`}>
-                          {/* Status Bar */}
-                          <div className="android-status-bar">
-                            <span>09:41</span>
-                            <div className="android-punch-hole" />
-                            <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                              <span>5G</span>
-                              <div className="android-battery" />
-                            </div>
-                          </div>
-
-                          {/* Google Search Pill */}
-                          <div className="android-search-pill">
-                            <span className="g-logo">G</span>
-                            <span className="search-placeholder">Uygulama ve internette ara</span>
-                          </div>
-
-                          {/* App Grid */}
-                          <div className="android-app-grid">
-                            {/* Active User App Icon */}
-                            <div className="android-app-item highlighted">
-                              <div
-                                className="android-app-icon-wrapper"
-                                style={getMaskStyle(config.previewCornerRadius)}
-                              >
-                                {previewDataUrl && (
-                                  <img src={previewDataUrl} alt={config.appName} className="android-icon-img" />
-                                )}
-                              </div>
-                              <span className="android-app-label active-app-label">{config.appName || 'Uygulama'}</span>
-                            </div>
-
-                            {/* Companion Apps */}
-                            <div className="android-app-item mock">
-                              <div className="android-app-icon-wrapper play-mock" style={getMaskStyle(config.previewCornerRadius)} />
-                              <span className="android-app-label">Play Store</span>
-                            </div>
-
-                            <div className="android-app-item mock">
-                              <div className="android-app-icon-wrapper chrome-mock" style={getMaskStyle(config.previewCornerRadius)} />
-                              <span className="android-app-label">Chrome</span>
-                            </div>
-
-                            <div className="android-app-item mock">
-                              <div className="android-app-icon-wrapper gmail-mock" style={getMaskStyle(config.previewCornerRadius)} />
-                              <span className="android-app-label">Gmail</span>
-                            </div>
-                          </div>
-
-                          {/* Android Navigation Bar */}
-                          <div className="android-nav-bar">
-                            <div className="android-home-pill" />
+                      <div className={`android-screen-content ${config.previewDarkMode ? 'dark-wallpaper' : 'light-wallpaper'}`}>
+                        {/* Status Bar */}
+                        <div className="android-status-bar">
+                          <span>09:41</span>
+                          <div className="android-punch-hole" />
+                          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                            <span>5G</span>
+                            <div className="android-battery" />
                           </div>
                         </div>
+
+                        {/* Google Search Pill */}
+                        <div className="android-search-pill">
+                          <span className="g-logo">G</span>
+                          <span className="search-placeholder">Uygulama ve internette ara</span>
+                        </div>
+
+                        {/* App Grid */}
+                        <div className="android-app-grid">
+                          {/* Active User App Icon */}
+                          <div className="android-app-item highlighted">
+                            <div
+                              className="android-app-icon-wrapper"
+                              style={getMaskStyle(config.previewCornerRadius)}
+                            >
+                              {previewDataUrl && (
+                                <img src={previewDataUrl} alt={config.appName} className="android-icon-img" />
+                              )}
+                            </div>
+                            <span className="android-app-label active-app-label">{config.appName || 'Uygulama'}</span>
+                          </div>
+
+                          {/* Companion Apps */}
+                          <div className="android-app-item mock">
+                            <div className="android-app-icon-wrapper play-mock" style={getMaskStyle(config.previewCornerRadius)} />
+                            <span className="android-app-label">Play Store</span>
+                          </div>
+
+                          <div className="android-app-item mock">
+                            <div className="android-app-icon-wrapper chrome-mock" style={getMaskStyle(config.previewCornerRadius)} />
+                            <span className="android-app-label">Chrome</span>
+                          </div>
+
+                          <div className="android-app-item mock">
+                            <div className="android-app-icon-wrapper gmail-mock" style={getMaskStyle(config.previewCornerRadius)} />
+                            <span className="android-app-label">Gmail</span>
+                          </div>
+                        </div>
+
+                        {/* Android Navigation Bar */}
+                        <div className="android-nav-bar">
+                          <div className="android-home-pill" />
+                        </div>
                       </div>
-
-                      {/* Galaxy S26 Ultra Hardware Frame Overlay */}
-                      <img
-                        src="/devices/phone/samsung/galaxy-s26-ultra.png"
-                        alt="Galaxy S26 Ultra"
-                        style={{
-                          position: 'relative',
-                          width: '100%',
-                          height: 'auto',
-                          pointerEvents: 'none',
-                          zIndex: 10,
-                          display: 'block',
-                        }}
-                      />
                     </div>
 
-                    {/* Samsung Mask Selector Vertically Stacked on Phone's Right Side */}
-                    <div className="samsung-vertical-mask-picker">
-                      <div className="samsung-mask-title">Maske Tipi</div>
-                      {(['circle', 'squircle', 'rounded', 'square'] as CornerRadiusType[]).map((shape) => (
-                        <button
-                          key={shape}
-                          type="button"
-                          className={`samsung-mask-pill-btn ${config.previewCornerRadius === shape ? 'active' : ''}`}
-                          onClick={() => onChangeConfig({ previewCornerRadius: shape })}
-                          title={`${shape} maskesi`}
-                        >
-                          <div className={`mask-mini-shape shape-${shape}`} />
-                          <span>{shape === 'circle' ? 'Dairesel' : shape === 'squircle' ? 'Squircle' : shape === 'rounded' ? 'Yuvarlak' : 'Kare'}</span>
-                        </button>
-                      ))}
-                    </div>
+                    {/* Galaxy S26 Ultra Hardware Frame Overlay */}
+                    <img
+                      src="/devices/phone/samsung/galaxy-s26-ultra.png"
+                      alt="Galaxy S26 Ultra"
+                      style={{
+                        position: 'relative',
+                        width: '100%',
+                        height: 'auto',
+                        pointerEvents: 'none',
+                        zIndex: 10,
+                        display: 'block',
+                      }}
+                    />
                   </div>
                 )}
 

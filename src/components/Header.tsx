@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, Upload, Smartphone, Image as ImageIcon, Undo2, Redo2, Crop } from 'lucide-react';
+import { Download, Upload, Smartphone, Image as ImageIcon, Undo2, Redo2 } from 'lucide-react';
 
 interface HeaderProps {
   activeTool?: string;
@@ -22,7 +22,6 @@ export const Header: React.FC<HeaderProps> = ({
   onExportAll,
   screenCount = 1,
   onUploadClick, 
-  onCropClick,
   onUndo,
   onRedo,
   canUndo = true,
@@ -98,18 +97,6 @@ export const Header: React.FC<HeaderProps> = ({
 
       {activeTool === 'app-icon-resizer' && (
         <div className="header-actions">
-          {hasIconImage && onCropClick && (
-            <button
-              type="button"
-              className="btn-secondary"
-              onClick={onCropClick}
-              title="Görseli kare olarak kırp"
-            >
-              <Crop size={14} />
-              <span>Kırp</span>
-            </button>
-          )}
-
           <button className="btn-secondary" onClick={onUploadClick} title={hasIconImage ? 'Görseli değiştir' : 'İkon görseli yükle'}>
             <Upload size={14} />
             <span>{hasIconImage ? 'Görseli Değiştir' : 'İkon Yükle'}</span>
