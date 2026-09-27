@@ -45,6 +45,7 @@ export const AppIconResizer: React.FC<AppIconResizerProps> = ({
 }) => {
   const [config, setConfig] = useState<IconResizerConfig>(DEFAULT_ICON_CONFIG);
   const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
+  const [lastCropData, setLastCropData] = useState<any>(undefined);
   const [isCropModalOpen, setIsCropModalOpen] = useState<boolean>(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
   const [isExporting, setIsExporting] = useState<boolean>(false);
@@ -63,6 +64,7 @@ export const AppIconResizer: React.FC<AppIconResizerProps> = ({
       img.src = result;
       img.onload = () => {
         setOriginalImageUrl(result);
+        setLastCropData(undefined);
         handleUpdateConfig({
           sourceImageUrl: result,
           sourceImageName: file.name,
@@ -202,13 +204,16 @@ export const AppIconResizer: React.FC<AppIconResizerProps> = ({
         <ImageCropModal
           imageSrc={originalImageUrl || config.sourceImageUrl!}
           aspectRatio={1}
-          onCropComplete={(croppedBase64) => {
+          initialCrop={lastCropData}
+          onCropComplete={(croppedBase64, cropDetails) => {
+            setLastCropData(cropDetails);
             handleUpdateConfig({
               sourceImageUrl: croppedBase64,
             });
             setIsCropModalOpen(false);
           }}
           onResetToOriginal={() => {
+            setLastCropData(undefined);
             if (originalImageUrl) {
               handleUpdateConfig({ sourceImageUrl: originalImageUrl });
             }

@@ -3080,5 +3080,46 @@ input[type="range"] {
   margin-top: 2px;
 }
 
+/* ==========================================================================
+   Image Crop Modal & ReactCrop Handle Enhancements
+   ========================================================================== */
+
+.ReactCrop__drag-handle {
+  width: 12px;
+  height: 12px;
+  background-color: #FFFFFF !important;
+  border: 1.5px solid #64748B !important;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  opacity: 0.95;
+  transition: transform 0.1s ease, background-color 0.1s ease, border-color 0.1s ease;
+}
+
+.ReactCrop__drag-handle:hover {
+  background-color: #F8FAFC !important;
+  border-color: #334155 !important;
+  transform: translate(-50%, -50%) scale(1.15);
+}
+
+/* Side handles: Top & Bottom horizontal pills */
+.ReactCrop__drag-handle.ord-n,
+.ReactCrop__drag-handle.ord-s {
+  width: 22px !important;
+  height: 8px !important;
+  border-radius: 4px;
+}
+
+/* Side handles: Left & Right vertical pills */
+.ReactCrop__drag-handle.ord-e,
+.ReactCrop__drag-handle.ord-w {
+  width: 8px !important;
+  height: 22px !important;
+  border-radius: 4px;
+}
+
+.ReactCrop__drag-bar {
+  opacity: 0.6;
+}
+
 
 
