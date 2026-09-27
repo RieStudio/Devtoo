@@ -2794,39 +2794,42 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                               <span>{devRotation}°</span>
                             </div>
 
-                            {/* Quick Delete Pill on Canvas */}
-                            <div
-                              className="device-delete-pill"
-                              style={isTopEdgeNearTop ? { top: 'auto', bottom: '-34px' } : undefined}
-                              title="Bu cihazı tuvalden sil (Delete tuşuyla da silebilirsiniz)"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const remainingDevs = activeDevices.filter((d) => d.id !== screenDev.id);
-                                const nextSelectedDevId = remainingDevs[0]?.id || null;
-                                onChangeConfig({
-                                  devices: remainingDevs,
-                                  selectedDeviceId: nextSelectedDevId,
-                                  ...(remainingDevs[0] ? {
-                                    deviceType: remainingDevs[0].deviceType,
-                                    deviceColor: remainingDevs[0].deviceColor,
-                                    screenshotUrl: remainingDevs[0].screenshotUrl,
-                                    screenshotScale: remainingDevs[0].screenshotScale,
-                                    screenshotOffsetX: remainingDevs[0].screenshotOffsetX,
-                                    screenshotOffsetY: remainingDevs[0].screenshotOffsetY,
-                                    deviceScale: remainingDevs[0].deviceScale,
-                                    deviceOffsetX: remainingDevs[0].deviceOffsetX,
-                                    deviceOffsetY: remainingDevs[0].deviceOffsetY,
-                                    deviceRotation: remainingDevs[0].deviceRotation,
-                                  } : {
-                                    screenshotUrl: null,
-                                    originalScreenshotUrl: null,
-                                    cropData: null,
-                                  }),
-                                });
-                              }}
-                            >
-                              <Trash2 size={11} />
-                            </div>
+                            {/* Quick Delete Pill on Canvas (Hidden and disabled in device-only mode) */}
+                            {!isDeviceOnly && (
+                              <div
+                                className="device-delete-pill"
+                                style={isTopEdgeNearTop ? { top: 'auto', bottom: '-34px' } : undefined}
+                                title="Bu cihazı tuvalden sil (Delete tuşuyla da silebilirsiniz)"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (isDeviceOnly) return;
+                                  const remainingDevs = activeDevices.filter((d) => d.id !== screenDev.id);
+                                  const nextSelectedDevId = remainingDevs[0]?.id || null;
+                                  onChangeConfig({
+                                    devices: remainingDevs,
+                                    selectedDeviceId: nextSelectedDevId,
+                                    ...(remainingDevs[0] ? {
+                                      deviceType: remainingDevs[0].deviceType,
+                                      deviceColor: remainingDevs[0].deviceColor,
+                                      screenshotUrl: remainingDevs[0].screenshotUrl,
+                                      screenshotScale: remainingDevs[0].screenshotScale,
+                                      screenshotOffsetX: remainingDevs[0].screenshotOffsetX,
+                                      screenshotOffsetY: remainingDevs[0].screenshotOffsetY,
+                                      deviceScale: remainingDevs[0].deviceScale,
+                                      deviceOffsetX: remainingDevs[0].deviceOffsetX,
+                                      deviceOffsetY: remainingDevs[0].deviceOffsetY,
+                                      deviceRotation: remainingDevs[0].deviceRotation,
+                                    } : {
+                                      screenshotUrl: null,
+                                      originalScreenshotUrl: null,
+                                      cropData: null,
+                                    }),
+                                  });
+                                }}
+                              >
+                                <Trash2 size={11} />
+                              </div>
+                            )}
 
                           <div
                             className="resize-handle handle-nw"

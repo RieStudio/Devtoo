@@ -369,6 +369,12 @@ export function App() {
       // Remaining devices in source screen
       const remainingSourceDevs = sourceDevs.filter((d) => d.id !== movingDev.id);
 
+      // Cannot transfer the only device away in device-only mode
+      if (source.exportMode === 'device-only' && remainingSourceDevs.length === 0) {
+        showToast('Sadece cihaz modundayken cihaz başka ekrana aktarılamaz.');
+        return prevScreens;
+      }
+
       // Devices in target screen + transferred device
       const targetDevs = getMockupDevices(target);
       if (targetDevs.length >= 6) {
@@ -659,7 +665,13 @@ export function App() {
             shapeLayers: remainingShapes,
             selectedShapeId: null,
           });
-        } else if (activeScreenConfig.selectedDeviceId) {
+        } else if (activeScreenConfig.selectedDeviceId || activeScreenConfig.exportMode === 'device-only') {
+          // In device-only mode, device cannot be deleted
+          if (activeScreenConfig.exportMode === 'device-only') {
+            e.preventDefault();
+            showToast('Sadece cihaz modundayken cihaz silinemez.');
+            return;
+          }
           // Delete selected device from screen
           e.preventDefault();
           const currentDevs = getMockupDevices(activeScreenConfig);

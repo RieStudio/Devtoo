@@ -238,8 +238,9 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
     });
   };
 
-  // Remove a device from current screen (can remove all devices)
+  // Remove a device from current screen (cannot remove in device-only mode)
   const handleDeleteDevice = (deviceId: string) => {
+    if (isDeviceOnly) return;
     const remaining = devices.filter((d) => d.id !== deviceId);
     const nextSelectedId = remaining[0]?.id || null;
     onChangeConfig({
@@ -493,7 +494,12 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
           <button
             type="button"
             className={`export-mode-tab ${isDeviceOnly ? 'active' : ''}`}
-            onClick={() => onChangeConfig({ exportMode: 'device-only' })}
+            onClick={() => {
+              if (devices.length === 0) {
+                handleAddDevice();
+              }
+              onChangeConfig({ exportMode: 'device-only' });
+            }}
           >
             <Smartphone size={13} />
             <span>Sadece Cihaz</span>
