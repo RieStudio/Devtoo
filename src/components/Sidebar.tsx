@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { 
   Smartphone, 
   Image as ImageIcon, 
+  Layout,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
@@ -29,6 +30,14 @@ const TOOLS: ToolItem[] = [
     isAvailable: true,
     description: 'iOS & Android simge seti boyutlandırma'
   },
+  {
+    id: 'store-banner-maker',
+    name: 'Store Banner Maker',
+    category: 'Geliştirici Araçları',
+    icon: 'Layout',
+    isAvailable: true,
+    description: 'Google Play Feature Graphic & Mağaza Bannerı'
+  },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeTool, onSelectTool }) => {
@@ -38,6 +47,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTool, onSelectTool }) =>
     switch (iconName) {
       case 'Smartphone':
         return <Smartphone className="nav-icon" />;
+      case 'Layout':
+        return <Layout className="nav-icon" />;
       case 'Image':
       default:
         return <ImageIcon className="nav-icon" />;

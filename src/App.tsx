@@ -12,6 +12,7 @@ import { InspectorPanel } from './components/MockupEditor/InspectorPanel';
 import { ImageCropModal } from './components/MockupEditor/ImageCropModal';
 import { ExportModal, type ExportFormat } from './components/MockupEditor/ExportModal';
 import { AppIconResizer } from './components/AppIconResizer/AppIconResizer';
+import { StoreBannerMaker } from './components/StoreBannerMaker/StoreBannerMaker';
 
 const INITIAL_CONFIG: MockupConfig = {
   id: 'screen-1',
@@ -109,6 +110,11 @@ export function App() {
   const iconCropRef = useRef<(() => void) | null>(null);
   const [isIconExporting, setIsIconExporting] = useState<boolean>(false);
   const [hasIconImage, setHasIconImage] = useState<boolean>(false);
+
+  // Store Banner Maker Header Integration
+  const bannerExportRef = useRef<(() => void) | null>(null);
+  const bannerUploadRef = useRef<(() => void) | null>(null);
+  const [isBannerExporting, setIsBannerExporting] = useState<boolean>(false);
 
   const toastTimeoutRef = useRef<any>(null);
   const showToast = (msg: string) => {
@@ -1011,6 +1017,8 @@ export function App() {
           onExport={
             activeTool === 'app-icon-resizer'
               ? () => iconExportRef.current?.()
+              : activeTool === 'store-banner-maker'
+              ? () => bannerExportRef.current?.()
               : () => setIsExportModalOpen(true)
           }
           onExportAll={() => setIsExportModalOpen(true)}
@@ -1018,6 +1026,8 @@ export function App() {
           onUploadClick={
             activeTool === 'app-icon-resizer'
               ? () => iconUploadRef.current?.()
+              : activeTool === 'store-banner-maker'
+              ? () => bannerUploadRef.current?.()
               : handleTriggerUpload
           }
           onCropClick={
@@ -1029,7 +1039,13 @@ export function App() {
           onRedo={handleRedo}
           canUndo={historyIndexRef.current > 0}
           canRedo={historyIndexRef.current < historyRef.current.length - 1}
-          isExporting={activeTool === 'app-icon-resizer' ? isIconExporting : isExporting}
+          isExporting={
+            activeTool === 'app-icon-resizer' 
+              ? isIconExporting 
+              : activeTool === 'store-banner-maker'
+              ? isBannerExporting
+              : isExporting
+          }
           hasIconImage={hasIconImage}
         />
 
@@ -1074,6 +1090,15 @@ export function App() {
           onRegisterCrop={(fn) => { iconCropRef.current = fn; }}
           onExportStateChange={setIsIconExporting}
           onHasImageChange={setHasIconImage}
+        />
+
+        {/* Store Banner Maker Çalışma Alanı */}
+        <StoreBannerMaker
+          isVisible={activeTool === 'store-banner-maker'}
+          onRegisterExport={(fn) => { bannerExportRef.current = fn; }}
+          onRegisterUpload={(fn) => { bannerUploadRef.current = fn; }}
+          onExportStateChange={setIsBannerExporting}
+          onShowToast={showToast}
         />
       </div>
 

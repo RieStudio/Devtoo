@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, Upload, Smartphone, Image as ImageIcon, Undo2, Redo2 } from 'lucide-react';
+import { Download, Upload, Smartphone, Image as ImageIcon, Layout, Undo2, Redo2 } from 'lucide-react';
 
 interface HeaderProps {
   activeTool?: string;
@@ -37,6 +37,11 @@ export const Header: React.FC<HeaderProps> = ({
             <>
               <ImageIcon size={18} color="#D90429" />
               <span>App Icon Resizer</span>
+            </>
+          ) : activeTool === 'store-banner-maker' ? (
+            <>
+              <Layout size={18} color="#D90429" />
+              <span>Store Banner Maker</span>
             </>
           ) : (
             <>
@@ -110,6 +115,25 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Download size={14} />
             <span>{isExporting ? 'Dışa Aktarılıyor...' : 'İndir'}</span>
+          </button>
+        </div>
+      )}
+
+      {activeTool === 'store-banner-maker' && (
+        <div className="header-actions">
+          <button className="btn-secondary" onClick={onUploadClick} title="Ekran görüntüsü yükle">
+            <Upload size={14} />
+            <span>Ekran Görüntüsü Yükle</span>
+          </button>
+
+          <button
+            className="btn-chili"
+            onClick={onExport}
+            disabled={isExporting}
+            title="Bannerı yüksek kalitede indir"
+          >
+            <Download size={14} />
+            <span>{isExporting ? 'Oluşturuluyor...' : 'Bannerı İndir'}</span>
           </button>
         </div>
       )}
