@@ -2,21 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { 
   X, 
   Download, 
-  Globe, 
   Layers,
   Settings2
 } from 'lucide-react';
 import appleSvg from '../../assets/apple.svg';
 import androidSvg from '../../assets/android.svg';
 import type { IconResizerConfig } from '../../types/iconResizer';
-import { ALL_ICON_SIZES, IOS_ICON_SIZES, ANDROID_ICON_SIZES, WEB_ICON_SIZES } from '../../constants/iconSizes';
+import { ALL_ICON_SIZES, IOS_ICON_SIZES, ANDROID_ICON_SIZES } from '../../constants/iconSizes';
 
 interface IconExportModalProps {
   isOpen: boolean;
   onClose: () => void;
   config: IconResizerConfig;
   onChangeConfig: (updated: Partial<IconResizerConfig>) => void;
-  onExport: (platformFilter?: 'ios' | 'android' | 'web', customZipName?: string) => Promise<void>;
+  onExport: (platformFilter?: 'ios' | 'android', customZipName?: string) => Promise<void>;
   isExporting: boolean;
   exportProgressText: string;
   exportPercent: number;
@@ -48,7 +47,6 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
   const selectedSpecs = ALL_ICON_SIZES.filter((spec) => {
     if (spec.platform === 'ios' && config.selectedPlatforms.ios) return true;
     if (spec.platform === 'android' && config.selectedPlatforms.android) return true;
-    if (spec.platform === 'web' && config.selectedPlatforms.web) return true;
     return false;
   });
 
@@ -60,15 +58,14 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
     onExport(undefined, customZipName);
   };
 
-  const handleStartExportSingle = (platform: 'ios' | 'android' | 'web') => {
-    const platformPrefix = platform === 'ios' ? 'ios' : platform === 'android' ? 'android' : 'web';
+  const handleStartExportSingle = (platform: 'ios' | 'android') => {
+    const platformPrefix = platform === 'ios' ? 'ios' : 'android';
     onExport(platform, `${customZipName}-${platformPrefix}`);
   };
 
   const hasAnyPlatformSelected =
     config.selectedPlatforms.ios ||
-    config.selectedPlatforms.android ||
-    config.selectedPlatforms.web;
+    config.selectedPlatforms.android;
 
   return (
     <div
@@ -119,7 +116,7 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
                 İkon Paketlerini Dışa Aktar
               </div>
               <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>
-                iOS, Android ve Web için optimize edilmiş simge setleri
+                iOS ve Android için optimize edilmiş simge setleri
               </div>
             </div>
           </div>
@@ -326,77 +323,6 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
                   onClick={() => handleStartExportSingle('android')}
                   disabled={isExporting || !config.sourceImageUrl}
                   title="Yalnızca Android mipmap paketini (.ZIP) indir"
-                >
-                  <Download size={12} />
-                  <span>Tekli İndir</span>
-                </button>
-              </div>
-
-              {/* 3. Web & Favicon Option Card */}
-              <div
-                style={{
-                  padding: '12px 14px',
-                  borderRadius: '10px',
-                  border: '1px solid #E2E8F0',
-                  backgroundColor: config.selectedPlatforms.web ? '#FFFBFB' : '#FFFFFF',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                <label
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    cursor: 'pointer',
-                    flex: 1,
-                    userSelect: 'none',
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={config.selectedPlatforms.web}
-                    onChange={(e) =>
-                      onChangeConfig({
-                        selectedPlatforms: { ...config.selectedPlatforms, web: e.target.checked },
-                      })
-                    }
-                    style={{ accentColor: '#D90429', width: '16px', height: '16px', cursor: 'pointer' }}
-                  />
-                  <div
-                    style={{
-                      width: '18px',
-                      height: '18px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: '#3B82F6',
-                    }}
-                  >
-                    <Globe size={18} />
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span>Web & PWA (Favicon Paketi)</span>
-                      <span style={{ fontSize: '10px', fontWeight: 700, color: '#64748B', backgroundColor: '#F1F5F9', padding: '1px 6px', borderRadius: '4px' }}>
-                        {WEB_ICON_SIZES.length} Boyut
-                      </span>
-                    </div>
-                    <div style={{ fontSize: '11px', color: '#64748B', marginTop: '1px' }}>
-                      favicon.ico, apple-touch-icon.png, Web Manifest (192, 512px)
-                    </div>
-                  </div>
-                </label>
-
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  style={{ fontSize: '11px', padding: '5px 10px', flexShrink: 0 }}
-                  onClick={() => handleStartExportSingle('web')}
-                  disabled={isExporting || !config.sourceImageUrl}
-                  title="Yalnızca Web Favicon paketini (.ZIP) indir"
                 >
                   <Download size={12} />
                   <span>Tekli İndir</span>

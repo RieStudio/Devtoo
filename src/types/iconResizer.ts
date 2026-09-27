@@ -1,4 +1,4 @@
-export type IconPlatform = 'ios' | 'android' | 'web';
+export type IconPlatform = 'ios' | 'android';
 
 export type CornerRadiusType = 'squircle' | 'circle' | 'rounded' | 'square';
 
@@ -12,8 +12,8 @@ export interface IconSizeSpec {
   height: number;
   scale?: string; // e.g. '1x', '2x', '3x'
   idiom?: string; // e.g. 'iphone', 'ipad', 'ios-marketing', 'universal', 'watch'
-  folder: string; // e.g. 'ios/AppIcon.appiconset', 'android/res/mipmap-xxxhdpi', 'web'
-  fileName: string; // e.g. 'AppIcon-60@3x.png', 'ic_launcher.png', 'favicon-32x32.png'
+  folder: string; // e.g. 'ios/AppIcon.appiconset', 'android/res/mipmap-xxxhdpi'
+  fileName: string; // e.g. 'AppIcon-60@3x.png', 'ic_launcher.png'
   description: string;
   isRound?: boolean;
 }
@@ -31,7 +31,6 @@ export interface IconResizerConfig {
   selectedPlatforms: {
     ios: boolean;
     android: boolean;
-    web: boolean;
   };
   previewDevice: 'iphone' | 'android';
   previewDarkMode: boolean;

@@ -350,73 +350,9 @@ export const ANDROID_ICON_SIZES: IconSizeSpec[] = [
   },
 ];
 
-export const WEB_ICON_SIZES: IconSizeSpec[] = [
-  {
-    id: 'web-512',
-    name: 'PWA Android Chrome (512px)',
-    platform: 'web',
-    width: 512,
-    height: 512,
-    folder: 'web',
-    fileName: 'android-chrome-512x512.png',
-    description: 'Web Manifest & PWA büyük açılış simgesi',
-  },
-  {
-    id: 'web-192',
-    name: 'PWA Android Chrome (192px)',
-    platform: 'web',
-    width: 192,
-    height: 192,
-    folder: 'web',
-    fileName: 'android-chrome-192x192.png',
-    description: 'Web Manifest ana ekran simgesi',
-  },
-  {
-    id: 'web-apple-touch',
-    name: 'Apple Touch Icon (180px)',
-    platform: 'web',
-    width: 180,
-    height: 180,
-    folder: 'web',
-    fileName: 'apple-touch-icon.png',
-    description: 'Safari ana ekrana ekle simgesi',
-  },
-  {
-    id: 'web-favicon-48',
-    name: 'Favicon (48px)',
-    platform: 'web',
-    width: 48,
-    height: 48,
-    folder: 'web',
-    fileName: 'favicon-48x48.png',
-    description: 'Yüksek çözünürlüklü tarayıcı sekme simgesi',
-  },
-  {
-    id: 'web-favicon-32',
-    name: 'Favicon (32px)',
-    platform: 'web',
-    width: 32,
-    height: 32,
-    folder: 'web',
-    fileName: 'favicon-32x32.png',
-    description: 'Standart masaüstü tarayıcı sekme simgesi',
-  },
-  {
-    id: 'web-favicon-16',
-    name: 'Favicon (16px)',
-    platform: 'web',
-    width: 16,
-    height: 16,
-    folder: 'web',
-    fileName: 'favicon-16x16.png',
-    description: 'Küçük tarayıcı sekme ve yer imi simgesi',
-  },
-];
-
 export const ALL_ICON_SIZES: IconSizeSpec[] = [
   ...IOS_ICON_SIZES,
   ...ANDROID_ICON_SIZES,
-  ...WEB_ICON_SIZES,
 ];
 
 /**
@@ -450,16 +386,4 @@ export function generateXcodeContentsJson(specs: IconSizeSpec[]): string {
   };
 
   return JSON.stringify(contents, null, 2);
-}
-
-/**
- * HTML head snippet generator for Web icons
- */
-export function generateWebHtmlSnippet(): string {
-  return `<!-- Devtoo App Icon Resizer - Web & Favicon Tags -->
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="manifest" href="/site.webmanifest">
-<meta name="theme-color" content="#FFFFFF">`;
 }

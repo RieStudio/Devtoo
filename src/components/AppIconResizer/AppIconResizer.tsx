@@ -20,7 +20,6 @@ const DEFAULT_ICON_CONFIG: IconResizerConfig = {
   selectedPlatforms: {
     ios: true,
     android: true,
-    web: true,
   },
   previewDevice: 'iphone',
   previewDarkMode: false,
@@ -92,11 +91,10 @@ export const AppIconResizer: React.FC<AppIconResizerProps> = ({
   const selectedSpecs = ALL_ICON_SIZES.filter((spec) => {
     if (spec.platform === 'ios' && config.selectedPlatforms.ios) return true;
     if (spec.platform === 'android' && config.selectedPlatforms.android) return true;
-    if (spec.platform === 'web' && config.selectedPlatforms.web) return true;
     return false;
   });
 
-  const handleExport = useCallback(async (platformFilter?: 'ios' | 'android' | 'web', customZipName?: string) => {
+  const handleExport = useCallback(async (platformFilter?: 'ios' | 'android', customZipName?: string) => {
     if (!config.sourceImageUrl) {
       handleTriggerUpload();
       return;

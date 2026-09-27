@@ -4,7 +4,6 @@ import {
   Smartphone, 
   Download, 
   Layers, 
-  Globe, 
   Sun, 
   Moon
 } from 'lucide-react';
@@ -30,7 +29,7 @@ import googlePlaySvg from '../../assets/googleplay.svg';
 import chromeSvg from '../../assets/chrome.svg';
 import gmailSvg from '../../assets/google-gmail.svg';
 import type { IconResizerConfig, IconSizeSpec, PreviewTab, CornerRadiusType } from '../../types/iconResizer';
-import { ALL_ICON_SIZES, IOS_ICON_SIZES, ANDROID_ICON_SIZES, WEB_ICON_SIZES } from '../../constants/iconSizes';
+import { ALL_ICON_SIZES, IOS_ICON_SIZES, ANDROID_ICON_SIZES } from '../../constants/iconSizes';
 import { exportSingleIcon, renderIconToCanvas } from '../../utils/iconGenerator';
 
 interface IconCanvasPreviewProps {
@@ -48,7 +47,7 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
   onFileSelect,
 }) => {
   const [activeTab, setActiveTab] = useState<PreviewTab>('device-preview');
-  const [selectedGalleryPlatform, setSelectedGalleryPlatform] = useState<'all' | 'ios' | 'android' | 'web'>('all');
+  const [selectedGalleryPlatform, setSelectedGalleryPlatform] = useState<'all' | 'ios' | 'android'>('all');
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
   const [previewDataUrl, setPreviewDataUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -170,7 +169,7 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
 
             <h2 className="icon-empty-title">Uygulama İkonunu Yükleyin veya Sürükleyin</h2>
             <p className="icon-empty-subtitle">
-              iOS, Android ve Web için tek tıkla eksiksiz simge paketleri oluşturun.
+              iOS ve Android için tek tıkla eksiksiz simge paketleri oluşturun.
             </p>
 
             <div className="icon-empty-actions" onClick={(e) => e.stopPropagation()}>
@@ -549,14 +548,6 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
                   <span>Android</span>
                   <span className="count-badge">{ANDROID_ICON_SIZES.length}</span>
                 </button>
-                <button
-                  type="button"
-                  className={`gallery-filter-btn ${selectedGalleryPlatform === 'web' ? 'active' : ''}`}
-                  onClick={() => setSelectedGalleryPlatform('web')}
-                >
-                  <span>Web & Favicon</span>
-                  <span className="count-badge">{WEB_ICON_SIZES.length}</span>
-                </button>
               </div>
 
               {/* Gallery Grid */}
@@ -571,15 +562,10 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
                             <img src={appleSvg} alt="Apple" style={{ width: '10px', height: '10px', objectFit: 'contain' }} />
                             <span>iOS</span>
                           </>
-                        ) : spec.platform === 'android' ? (
+                        ) : (
                           <>
                             <img src={androidSvg} alt="Android" style={{ width: '11px', height: '10px', objectFit: 'contain' }} />
                             <span>Android</span>
-                          </>
-                        ) : (
-                          <>
-                            <Globe size={10} />
-                            <span>Web</span>
                           </>
                         )}
                       </span>

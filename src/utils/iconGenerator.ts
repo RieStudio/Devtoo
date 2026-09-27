@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
 import type { IconSizeSpec } from '../types/iconResizer';
-import { generateXcodeContentsJson, generateWebHtmlSnippet } from '../constants/iconSizes';
+import { generateXcodeContentsJson } from '../constants/iconSizes';
 
 interface RenderOptions {
   bgColor: string;
@@ -161,32 +161,6 @@ export async function exportIconZipBundle(
     zip.file('ios/AppIcon.appiconset/Contents.json', contentsJson);
   }
 
-  // If Web icons were included, add HTML snippet and site.webmanifest
-  const hasWeb = specs.some((s) => s.platform === 'web');
-  if (hasWeb) {
-    zip.file('web/index-snippet.html', generateWebHtmlSnippet());
-    const webmanifest = {
-      name: options.appName || 'My App',
-      short_name: options.appName || 'App',
-      icons: [
-        {
-          src: '/android-chrome-192x192.png',
-          sizes: '192x192',
-          type: 'image/png',
-        },
-        {
-          src: '/android-chrome-512x512.png',
-          sizes: '512x512',
-          type: 'image/png',
-        },
-      ],
-      theme_color: options.bgColor || '#FFFFFF',
-      background_color: options.bgColor || '#FFFFFF',
-      display: 'standalone',
-    };
-    zip.file('web/site.webmanifest', JSON.stringify(webmanifest, null, 2));
-  }
-
   // Add README instruction file
   const readme = `# Devtoo App Icon Resizer Paketi
 
@@ -201,10 +175,6 @@ Bu arşiv Devtoo tarafından oluşturulmuştur.
 ### 2. Android / Android Studio:
 - \`android/res/\` klasörünün içindeki \`mipmap-*\` klasörlerini Android projenizin \`app/src/main/res/\` dizinine kopyalayın.
 - \`playstore-icon.png\` (512x512) dosyasını Google Play Console mağaza girişi için kullanın.
-
-### 3. Web & Favicon:
-- \`web/\` klasöründeki dosyaları web sitenizin ana dizinine yerleştirin.
-- \`web/index-snippet.html\` dosyasındaki etiketleri HTML \`<head>\` bölümünüze yapıştırın.
 
 Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}
 `;
