@@ -1,12 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Smartphone, 
-  Image, 
-  Layers, 
-  FileText, 
-  Gamepad2, 
-  Code2, 
-  Search,
+  Image as ImageIcon, 
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
@@ -34,42 +29,6 @@ const TOOLS: ToolItem[] = [
     isAvailable: true,
     description: 'iOS & Android simge seti boyutlandırma'
   },
-  {
-    id: 'asset-scaler',
-    name: 'Asset Scaler (1x 2x 3x)',
-    category: 'Geliştirici Araçları',
-    icon: 'Layers',
-    isAvailable: false,
-    badge: 'YAKINDA',
-    description: 'Oyun ve uygulama grafik ölçekleme'
-  },
-  {
-    id: 'store-text-gen',
-    name: 'Mağaza Metni Oluşturucu',
-    category: 'Mağaza & Tasarım',
-    icon: 'FileText',
-    isAvailable: false,
-    badge: 'YAKINDA',
-    description: 'iOS/Android mağaza açıklaması biçimlendirici'
-  },
-  {
-    id: 'game-aspect-calc',
-    name: 'Oyun Çözünürlük Hesabı',
-    category: 'Mağaza & Tasarım',
-    icon: 'Gamepad2',
-    isAvailable: false,
-    badge: 'YAKINDA',
-    description: 'Unity/Unreal aspect ratio ve viewport rehberi'
-  },
-  {
-    id: 'aso-keyword-tool',
-    name: 'ASO Kelime Analizcisi',
-    category: 'Kod & Yardımcılar',
-    icon: 'Search',
-    isAvailable: false,
-    badge: 'YAKINDA',
-    description: 'App Store Optimization anahtar kelime sayacı'
-  },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeTool, onSelectTool }) => {
@@ -80,21 +39,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTool, onSelectTool }) =>
       case 'Smartphone':
         return <Smartphone className="nav-icon" />;
       case 'Image':
-        return <Image className="nav-icon" />;
-      case 'Layers':
-        return <Layers className="nav-icon" />;
-      case 'FileText':
-        return <FileText className="nav-icon" />;
-      case 'Gamepad2':
-        return <Gamepad2 className="nav-icon" />;
-      case 'Search':
-        return <Search className="nav-icon" />;
       default:
-        return <Code2 className="nav-icon" />;
+        return <ImageIcon className="nav-icon" />;
     }
   };
 
-  const categories = ['Geliştirici Araçları', 'Mağaza & Tasarım', 'Kod & Yardımcılar'] as const;
+  const categories = Array.from(new Set(TOOLS.map((t) => t.category)));
 
   return (
     <aside className={`devtoo-sidebar ${isCollapsed ? 'is-collapsed' : ''}`}>
