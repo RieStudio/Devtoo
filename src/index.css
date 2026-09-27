@@ -419,6 +419,16 @@ body {
   box-shadow: none;
 }
 
+.btn-chili:disabled,
+.btn-chili:disabled:hover {
+  background-color: #E2E8F0;
+  border-color: #E2E8F0;
+  color: #94A3B8;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 /* Secondary Button */
 .btn-secondary {
   background-color: var(--bg-card);
@@ -439,6 +449,16 @@ body {
   background-color: var(--bg-hover);
   color: var(--text-primary);
   border-color: var(--border-strong);
+}
+
+.btn-secondary:disabled,
+.btn-secondary:disabled:hover {
+  background-color: #F8FAFC;
+  border-color: #E2E8F0;
+  color: #94A3B8;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 /* Workspace Split Area */

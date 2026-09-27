@@ -187,13 +187,15 @@ export const AppIconResizer: React.FC<AppIconResizerProps> = ({
         onFileSelect={handleFileSelect}
       />
 
-      {/* Sağ Ayarlar Paneli */}
-      <IconInspectorPanel
-        config={config}
-        onChangeConfig={handleUpdateConfig}
-        onTriggerUpload={handleTriggerUpload}
-        onOpenCropModal={() => setIsCropModalOpen(true)}
-      />
+      {/* Sağ Ayarlar Paneli (Görsel import edildikten sonra açılır) */}
+      {config.sourceImageUrl && (
+        <IconInspectorPanel
+          config={config}
+          onChangeConfig={handleUpdateConfig}
+          onTriggerUpload={handleTriggerUpload}
+          onOpenCropModal={() => setIsCropModalOpen(true)}
+        />
+      )}
 
       {/* 1:1 Kare Kırpma Modalı */}
       {isCropModalOpen && (originalImageUrl || config.sourceImageUrl) && (

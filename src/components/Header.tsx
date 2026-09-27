@@ -105,7 +105,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             className="btn-chili"
             onClick={onExport}
-            disabled={isExporting}
+            disabled={isExporting || !hasIconImage}
             title={hasIconImage ? 'Tüm simge paketlerini (.ZIP) indir' : 'Lütfen önce bir ikon görseli yükleyin'}
           >
             <Download size={14} />
