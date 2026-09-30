@@ -2202,15 +2202,157 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
               </div>
 
               {config.showRating && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <input
-                    type="text"
-                    className="input-field"
-                    value={config.ratingText}
-                    onChange={(e) => onChangeConfig({ ratingText: e.target.value })}
-                    placeholder="Örn: 4.9 ★★★★★ (10K+ Oy)"
-                    style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px' }}
-                  />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div>
+                    <label style={{ fontSize: '10.5px', color: '#64748B', display: 'block', marginBottom: '4px' }}>Puan Metni</label>
+                    <input
+                      type="text"
+                      className="input-field"
+                      value={config.ratingText}
+                      onChange={(e) => onChangeConfig({ ratingText: e.target.value })}
+                      placeholder="Örn: 4.9 ★★★★★ (10K+ Oy)"
+                      style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px' }}
+                    />
+                  </div>
+
+                  {/* Renk Seçiciler: Yıldız, Metin, Kutucuk */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', paddingTop: '4px' }}>
+                    {/* Yıldız Rengi */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <span style={{ fontSize: '10.5px', color: '#64748B', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                        <Star size={10} fill={config.ratingStarColor || '#F59E0B'} color={config.ratingStarColor || '#F59E0B'} />
+                        Yıldız
+                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <input
+                          type="color"
+                          value={config.ratingStarColor || '#F59E0B'}
+                          onChange={(e) => onChangeConfig({ ratingStarColor: e.target.value })}
+                          style={{ width: '24px', height: '24px', padding: 0, borderRadius: '4px', border: '1px solid #CBD5E1', cursor: 'pointer', flexShrink: 0 }}
+                          title="Yıldız Rengi"
+                        />
+                        <span style={{ fontSize: '9.5px', fontFamily: 'monospace', color: '#64748B', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {config.ratingStarColor || '#F59E0B'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Metin Rengi */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <span style={{ fontSize: '10.5px', color: '#64748B' }}>Metin</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <input
+                          type="color"
+                          value={config.ratingTextColor || '#F8FAFC'}
+                          onChange={(e) => onChangeConfig({ ratingTextColor: e.target.value })}
+                          style={{ width: '24px', height: '24px', padding: 0, borderRadius: '4px', border: '1px solid #CBD5E1', cursor: 'pointer', flexShrink: 0 }}
+                          title="Metin Rengi"
+                        />
+                        <span style={{ fontSize: '9.5px', fontFamily: 'monospace', color: '#64748B', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {config.ratingTextColor || '#F8FAFC'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Kutucuk Rengi */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <span style={{ fontSize: '10.5px', color: '#64748B' }}>Kutucuk</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <input
+                          type="color"
+                          value={config.ratingBgColor?.startsWith('#') ? config.ratingBgColor : '#1E293B'}
+                          onChange={(e) => onChangeConfig({ ratingBgColor: e.target.value })}
+                          style={{ width: '24px', height: '24px', padding: 0, borderRadius: '4px', border: '1px solid #CBD5E1', cursor: 'pointer', flexShrink: 0 }}
+                          title="Kutucuk Rengi"
+                        />
+                        <span style={{ fontSize: '9.5px', fontFamily: 'monospace', color: '#64748B', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {config.ratingBgColor?.startsWith('#') ? config.ratingBgColor : 'Cam'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Hızlı Şablon Butonları */}
+                  <div style={{ display: 'flex', gap: '6px', marginTop: '2px' }}>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onChangeConfig({
+                          ratingBgColor: 'rgba(255, 255, 255, 0.12)',
+                          ratingTextColor: '#F8FAFC',
+                          ratingStarColor: '#F59E0B',
+                          ratingBorderColor: 'rgba(255, 255, 255, 0.18)',
+                        })
+                      }
+                      style={{
+                        flex: 1,
+                        padding: '4px 6px',
+                        fontSize: '10px',
+                        fontWeight: 600,
+                        borderRadius: '4px',
+                        border: '1px solid #CBD5E1',
+                        backgroundColor: '#F8FAFC',
+                        color: '#475569',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px',
+                      }}
+                      title="Şeffaf cam efektine sıfırla"
+                    >
+                      <RotateCcw size={10} />
+                      Şeffaf Cam
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onChangeConfig({
+                          ratingBgColor: '#0F172A',
+                          ratingTextColor: '#FFFFFF',
+                          ratingStarColor: '#F59E0B',
+                          ratingBorderColor: '#334155',
+                        })
+                      }
+                      style={{
+                        flex: 1,
+                        padding: '4px 6px',
+                        fontSize: '10px',
+                        fontWeight: 600,
+                        borderRadius: '4px',
+                        border: '1px solid #334155',
+                        backgroundColor: '#0F172A',
+                        color: '#FFFFFF',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Koyu Kutu
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onChangeConfig({
+                          ratingBgColor: '#FFFFFF',
+                          ratingTextColor: '#0F172A',
+                          ratingStarColor: '#F59E0B',
+                          ratingBorderColor: '#E2E8F0',
+                        })
+                      }
+                      style={{
+                        flex: 1,
+                        padding: '4px 6px',
+                        fontSize: '10px',
+                        fontWeight: 600,
+                        borderRadius: '4px',
+                        border: '1px solid #E2E8F0',
+                        backgroundColor: '#FFFFFF',
+                        color: '#0F172A',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Açık Kutu
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

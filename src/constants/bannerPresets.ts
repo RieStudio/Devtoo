@@ -147,6 +147,9 @@ export const INITIAL_BANNER_CONFIG: StoreBannerConfig = {
   showRating: true,
   ratingText: '4.9 ★★★★★ (10K+ Değerlendirme)',
   ratingScore: 4.9,
+  ratingStarColor: '#F59E0B',
+  ratingBgColor: 'rgba(255, 255, 255, 0.12)',
+  ratingTextColor: '#F8FAFC',
 
   deviceCount: 0,
   devices: [],

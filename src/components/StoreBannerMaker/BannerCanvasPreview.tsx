@@ -307,12 +307,16 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
     initialOffsetX: number;
     initialOffsetY: number;
     initialScale: number;
+    initialWidth?: number;
+    initialHeight?: number;
   }>({
     clientX: 0,
     clientY: 0,
     initialOffsetX: 0,
     initialOffsetY: 0,
     initialScale: 1,
+    initialWidth: 0,
+    initialHeight: 0,
   });
 
   const rotateCenterRef = useRef<{
@@ -601,13 +605,19 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
       selectedTextId: null,
     });
 
+    const layerEl = (e.currentTarget.closest('.banner-element-layer') as HTMLElement) || (e.currentTarget as HTMLElement);
     const pos = getElementPos(elementId);
+    const measuredW = layerEl ? layerEl.offsetWidth : 0;
+    const measuredH = layerEl ? layerEl.offsetHeight : 0;
+
     startPosRef.current = {
       clientX: e.clientX,
       clientY: e.clientY,
       initialOffsetX: pos.x,
       initialOffsetY: pos.y,
-      initialScale: 1,
+      initialScale: config.elementScales?.[elementId] || 1,
+      initialWidth: measuredW,
+      initialHeight: measuredH,
     };
   };
 
@@ -1002,23 +1012,27 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
       }
 
       if (dragMode === 'element-move' && activeDragElementId) {
-        let elemW = 140;
-        let elemH = 40;
-        if (activeDragElementId === 'app-icon') {
-          elemW = config.appIconSize ?? 72;
-          elemH = elemW;
-        } else if (activeDragElementId === 'store-badge') {
-          const s = config.elementScales?.['store-badge'] || 1;
-          elemW = (config.storeBadgeType === 'both' ? 260 : 130) * s;
-          elemH = 44 * s;
-        } else if (activeDragElementId === 'rating') {
-          const s = config.elementScales?.['rating'] || 1;
-          elemW = 110 * s;
-          elemH = 36 * s;
-        } else if (activeDragElementId === 'eyebrow') {
-          const s = config.elementScales?.['eyebrow'] || 1;
-          elemW = 120 * s;
-          elemH = 28 * s;
+        const s = config.elementScales?.[activeDragElementId] || 1;
+        let elemW = (startPosRef.current.initialWidth || 0) * s;
+        let elemH = (startPosRef.current.initialHeight || 0) * s;
+
+        if (elemW <= 0) {
+          if (activeDragElementId === 'app-icon') {
+            elemW = config.appIconSize ?? 72;
+            elemH = elemW;
+          } else if (activeDragElementId === 'store-badge') {
+            elemW = (config.storeBadgeType === 'both' ? 260 : 130) * s;
+            elemH = 44 * s;
+          } else if (activeDragElementId === 'rating') {
+            elemW = 240 * s;
+            elemH = 36 * s;
+          } else if (activeDragElementId === 'eyebrow') {
+            elemW = 120 * s;
+            elemH = 28 * s;
+          } else {
+            elemW = 140;
+            elemH = 40;
+          }
         }
         const rawX = Math.round(startPosRef.current.initialOffsetX + deltaX);
         const rawY = Math.round(startPosRef.current.initialOffsetY + deltaY);
@@ -3050,15 +3064,19 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                     borderRadius: '8px',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                    backgroundColor: config.ratingBgColor || 'rgba(255, 255, 255, 0.12)',
                     backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255, 255, 255, 0.18)',
+                    border: config.ratingBorderColor
+                      ? `1px solid ${config.ratingBorderColor}`
+                      : (config.ratingBgColor && config.ratingBgColor.startsWith('#'))
+                      ? `1px solid ${config.ratingBgColor}33`
+                      : '1px solid rgba(255, 255, 255, 0.18)',
                     paddingLeft: '10px',
                     paddingRight: '12px',
                     paddingTop: '6px',
                     paddingBottom: '6px',
                     gap: '6px',
-                    color: '#F8FAFC',
+                    color: config.ratingTextColor || '#F8FAFC',
                     fontSize: '12px',
                     fontWeight: 600,
                     transition: dragMode === 'element-move' ? 'none' : 'outline 0.15s ease',
@@ -3093,7 +3111,12 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                       />
                     </>
                   )}
-                  <Star size={14} fill="#F59E0B" color="#F59E0B" style={{ flexShrink: 0 }} />
+                  <Star
+                    size={14}
+                    fill={config.ratingStarColor || '#F59E0B'}
+                    color={config.ratingStarColor || '#F59E0B'}
+                    style={{ flexShrink: 0 }}
+                  />
                   <EditableCanvasText
                     as="span"
                     value={config.ratingText}
@@ -3102,7 +3125,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                     onChange={(val) => onChangeConfig({ ratingText: val })}
                     placeholder="4.9 ★★★★★"
                     style={{
-                      color: '#F8FAFC',
+                      color: config.ratingTextColor || '#F8FAFC',
                       fontSize: '12px',
                       fontWeight: 600,
                     }}

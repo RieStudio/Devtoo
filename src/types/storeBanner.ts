@@ -109,6 +109,10 @@ export interface StoreBannerConfig {
   showRating: boolean;
   ratingText: string;
   ratingScore: number;
+  ratingStarColor?: string;
+  ratingBgColor?: string;
+  ratingTextColor?: string;
+  ratingBorderColor?: string;
 
   // Devices (up to 5)
   deviceCount: number;
