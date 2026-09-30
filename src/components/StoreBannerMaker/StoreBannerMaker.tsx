@@ -68,7 +68,7 @@ export const StoreBannerMaker: React.FC<StoreBannerMakerProps> = ({
           };
         }
         return d;
-      }) as [BannerDeviceConfig, BannerDeviceConfig];
+      }) as BannerDeviceConfig[];
 
       handleUpdateConfig({
         devices: updatedDevices,
@@ -171,9 +171,10 @@ export const StoreBannerMaker: React.FC<StoreBannerMakerProps> = ({
 
   useEffect(() => {
     if (isVisible && onRegisterUpload) {
-      onRegisterUpload(() => handleUploadDeviceScreenshot(config.selectedDeviceId));
+      const targetDevId = config.selectedDeviceId || config.devices[0]?.id || 'device-1';
+      onRegisterUpload(() => handleUploadDeviceScreenshot(targetDevId));
     }
-  }, [isVisible, onRegisterUpload, handleUploadDeviceScreenshot, config.selectedDeviceId]);
+  }, [isVisible, onRegisterUpload, handleUploadDeviceScreenshot, config.selectedDeviceId, config.devices]);
 
   // Target device being cropped
   const cropTargetDevice = config.devices.find((d) => d.id === activeCropDeviceId) || config.devices[0];
@@ -188,6 +189,7 @@ export const StoreBannerMaker: React.FC<StoreBannerMakerProps> = ({
         onCropDeviceScreenshot={handleCropDeviceScreenshot}
         onUploadAppIcon={handleUploadAppIcon}
         canvasExportRef={canvasExportRef}
+        isVisible={isVisible}
       />
 
       {/* Right Inspector Panel */}
@@ -218,7 +220,7 @@ export const StoreBannerMaker: React.FC<StoreBannerMakerProps> = ({
                 };
               }
               return d;
-            }) as [BannerDeviceConfig, BannerDeviceConfig];
+            }) as BannerDeviceConfig[];
 
             handleUpdateConfig({ devices: updatedDevices });
             setIsCropModalOpen(false);
@@ -235,7 +237,7 @@ export const StoreBannerMaker: React.FC<StoreBannerMakerProps> = ({
                 };
               }
               return d;
-            }) as [BannerDeviceConfig, BannerDeviceConfig];
+            }) as BannerDeviceConfig[];
 
             handleUpdateConfig({ devices: updatedDevices });
             setIsCropModalOpen(false);

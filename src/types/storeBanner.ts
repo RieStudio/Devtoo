@@ -1,15 +1,16 @@
+import type { ShapeLayer, TextLayer } from './mockup';
+export type { ShapeLayer, TextLayer };
+
 export type BannerPresetId = 
   | 'google-play-feature' 
-  | 'google-play-promo'
   | 'appstore-promo' 
   | 'appstore-today' 
-  | 'social-card' 
   | 'custom';
 
 export interface BannerPreset {
   id: BannerPresetId;
   name: string;
-  store: 'google-play' | 'app-store' | 'social' | 'custom';
+  store: 'google-play' | 'app-store' | 'custom';
   width: number;
   height: number;
   description: string;
@@ -58,11 +59,15 @@ export interface StoreBannerConfig {
   bgImageBlur: number;
   bgImageDim: number;
 
+  // Background Shapes
+  shapeLayers?: ShapeLayer[];
+  selectedShapeId?: string | null;
+
   // Branding App Icon
   showAppIcon: boolean;
   appIconUrl: string | null;
   appIconSize: number;
-  appIconRadius: 'squircle' | 'round' | 'circle';
+  appIconRadius: number | 'squircle' | 'round' | 'circle';
 
   // Typography
   showEyebrow: boolean;
@@ -89,6 +94,14 @@ export interface StoreBannerConfig {
   textOffsetY: number;
   textMaxWidth: number;
 
+  // Dynamic Text Layers (Mockup Studio style)
+  textLayers?: TextLayer[];
+  selectedTextId?: string | null;
+
+  // Independent element positions & selection
+  elementPositions?: Record<string, { x: number; y: number }>;
+  selectedElementId?: string | null;
+
   // Trust Badges & Ratings
   showStoreBadge: boolean;
   storeBadgeType: 'google-play' | 'app-store' | 'both';
@@ -96,11 +109,8 @@ export interface StoreBannerConfig {
   ratingText: string;
   ratingScore: number;
 
-  // Devices (up to 2)
-  deviceCount: 0 | 1 | 2;
-  devices: [BannerDeviceConfig, BannerDeviceConfig];
-  selectedDeviceId: string;
-
-  // Layout template tag
-  templateId?: string;
+  // Devices (up to 5)
+  deviceCount: number;
+  devices: BannerDeviceConfig[];
+  selectedDeviceId?: string | null;
 }

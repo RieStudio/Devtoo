@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
-  Layout, 
   Palette, 
   Smartphone, 
   Type, 
@@ -8,9 +7,24 @@ import {
   Upload, 
   Crop, 
   Trash2, 
-  Check, 
-  Sparkles,
-  Download
+  Maximize2,
+  RotateCcw,
+  Plus,
+  Square,
+  Circle,
+  Triangle,
+  Star,
+  Heart,
+  Shield,
+  Shapes,
+  Bold,
+  Italic,
+  Underline,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Pipette,
+  Crosshair
 } from 'lucide-react';
 import type { 
   StoreBannerConfig, 
@@ -18,9 +32,16 @@ import type {
   BannerPattern,
   BannerDeviceConfig 
 } from '../../types/storeBanner';
-import { BANNER_PRESETS, BANNER_GRADIENTS } from '../../constants/bannerPresets';
-import { BANNER_TEMPLATES } from '../../constants/bannerTemplates';
+import type { ShapeLayer, ShapeType, TextLayer } from '../../types/mockup';
+import { BANNER_PRESETS, BANNER_GRADIENTS, getPresetLayoutPatch } from '../../constants/bannerPresets';
 import { DEVICE_MODELS } from '../../constants/devices';
+
+const PHONE_MODELS = DEVICE_MODELS.filter((m) => m.category === 'phone');
+
+const PALETTE_PRESETS = [
+  '#D90429', '#EF233C', '#2B2D42', '#8D99AE', '#EDF2F4',
+  '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#000000', '#FFFFFF'
+];
 
 interface BannerInspectorPanelProps {
   config: StoreBannerConfig;
@@ -29,11 +50,11 @@ interface BannerInspectorPanelProps {
   onCropDeviceScreenshot: (deviceId: string) => void;
   onUploadAppIcon: () => void;
   onUploadBgImage: () => void;
-  onExport: () => void;
-  isExporting: boolean;
+  onExport?: () => void;
+  isExporting?: boolean;
 }
 
-type TabType = 'templates' | 'background' | 'devices' | 'text' | 'branding';
+type TabType = 'presets' | 'background' | 'devices' | 'text' | 'branding';
 
 const FONTS = [
   { id: 'outfit', name: 'Outfit (Modern & Temiz)' },
@@ -54,36 +75,242 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
   onCropDeviceScreenshot,
   onUploadAppIcon,
   onUploadBgImage,
-  onExport,
-  isExporting,
 }) => {
-  const [activeTab, setActiveTab] = useState<TabType>('templates');
+  const [activeTab, setActiveTab] = useState<TabType>('presets');
 
-  const selectedDevice = config.devices.find((d) => d.id === config.selectedDeviceId) || config.devices[0];
+  // Custom Dimensions input state with strict 5-digit limit
+  const [customWidth, setCustomWidth] = useState<string>(config.width.toString());
+  const [customHeight, setCustomHeight] = useState<string>(config.height.toString());
+
+  useEffect(() => {
+    setCustomWidth(config.width.toString());
+    setCustomHeight(config.height.toString());
+  }, [config.width, config.height, config.preset]);
+
+  const handleCustomWidthChange = (val: string) => {
+    const clean = val.replace(/\D/g, '').slice(0, 5);
+    setCustomWidth(clean);
+    if (clean.length > 0) {
+      const num = parseInt(clean, 10);
+      if (num > 0) {
+        onChangeConfig({ width: num });
+      }
+    }
+  };
+
+  const handleCustomHeightChange = (val: string) => {
+    const clean = val.replace(/\D/g, '').slice(0, 5);
+    setCustomHeight(clean);
+    if (clean.length > 0) {
+      const num = parseInt(clean, 10);
+      if (num > 0) {
+        onChangeConfig({ height: num });
+      }
+    }
+  };
+
+  const handleWidthBlur = () => {
+    const num = parseInt(customWidth, 10);
+    if (!customWidth || isNaN(num) || num < 50) {
+      setCustomWidth('1200');
+      onChangeConfig({ width: 1200 });
+    }
+  };
+
+  const handleHeightBlur = () => {
+    const num = parseInt(customHeight, 10);
+    if (!customHeight || isNaN(num) || num < 50) {
+      setCustomHeight('600');
+      onChangeConfig({ height: 600 });
+    }
+  };
+
+  const handleResetCustomDimensions = () => {
+    setCustomWidth('1200');
+    setCustomHeight('600');
+    const layoutPatch = getPresetLayoutPatch('custom', config.devices, config.textLayers);
+    onChangeConfig({
+      ...layoutPatch,
+      width: 1200,
+      height: 600,
+    });
+  };
+
+  const enabledDevices = config.devices.filter((d) => d.enabled);
+  const selectedDevice = config.devices.find((d) => d.id === config.selectedDeviceId && d.enabled) || enabledDevices[0] || config.devices[0];
 
   const handleUpdateDevice = (deviceId: string, updated: Partial<BannerDeviceConfig>) => {
     const updatedDevices = config.devices.map((d) => 
       d.id === deviceId ? { ...d, ...updated } : d
-    ) as [BannerDeviceConfig, BannerDeviceConfig];
+    );
     onChangeConfig({ devices: updatedDevices });
   };
 
-  const handleApplyTemplate = (templateId: string) => {
-    const template = BANNER_TEMPLATES.find((t) => t.id === templateId);
-    if (!template) return;
+  const handleAddDevice = () => {
+    if (enabledDevices.length >= 5) return;
+
+    const disabledIndex = config.devices.findIndex((d) => !d.enabled);
+    if (disabledIndex !== -1) {
+      const updatedDevices = [...config.devices];
+      const count = enabledDevices.length + 1;
+      updatedDevices[disabledIndex] = {
+        ...updatedDevices[disabledIndex],
+        enabled: true,
+        offsetX: Math.round(500 + (count - 1) * 110),
+        offsetY: 280 + (count % 2 === 0 ? 30 : 0),
+        rotation: count % 2 === 0 ? 8 : -8,
+      };
+      onChangeConfig({
+        devices: updatedDevices,
+        deviceCount: updatedDevices.filter((d) => d.enabled).length,
+        selectedDeviceId: updatedDevices[disabledIndex].id,
+      });
+      return;
+    }
+
+    const count = enabledDevices.length + 1;
+    const newId = `banner-dev-${Date.now()}`;
+    const newDevice: BannerDeviceConfig = {
+      id: newId,
+      enabled: true,
+      deviceType: 'galaxy-s26-ultra',
+      deviceColor: 'default',
+      screenshotUrl: null,
+      originalScreenshotUrl: null,
+      cropData: null,
+      scale: count === 1 ? 0.86 : 0.82,
+      offsetX: count === 1 ? 860 : Math.round(Math.min(config.width - 160, 720 + (count - 1) * 95)),
+      offsetY: count === 1 ? 315 : 315 + (count % 2 === 0 ? 30 : -20),
+      rotation: count === 1 ? -5 : (count % 2 === 0 ? 8 : -8),
+      perspectiveY: 0,
+      shadowDepth: '3d-floating',
+    };
+
+    const newDevices = [...config.devices, newDevice];
     onChangeConfig({
-      ...template.configPatch,
-      templateId,
+      devices: newDevices,
+      deviceCount: newDevices.filter((d) => d.enabled).length,
+      selectedDeviceId: newId,
+    });
+  };
+
+  const handleRemoveDevice = (deviceId: string) => {
+    const updatedDevices = config.devices.map((d) => 
+      d.id === deviceId ? { ...d, enabled: false } : d
+    );
+    const remaining = updatedDevices.filter((d) => d.enabled);
+    onChangeConfig({
+      devices: updatedDevices,
+      deviceCount: remaining.length,
+      selectedDeviceId: remaining[0]?.id || 'banner-dev-1',
     });
   };
 
   const handleSelectPreset = (presetId: BannerPresetId) => {
-    const preset = BANNER_PRESETS.find((p) => p.id === presetId);
-    if (!preset) return;
+    const layoutPatch = getPresetLayoutPatch(presetId, config.devices, config.textLayers);
+    onChangeConfig(layoutPatch);
+  };
+
+  const [isShapePickerOpen, setIsShapePickerOpen] = useState(false);
+  const selectedShape = (config.shapeLayers || []).find((s) => s.id === config.selectedShapeId) || null;
+
+  const handleAddShape = (type: ShapeType) => {
+    const newId = `shape-${Date.now()}`;
+    const shapes = config.shapeLayers || [];
+    const lastShape = shapes[shapes.length - 1];
+
+    const baseOffsetX = lastShape ? (lastShape.x || 0) + 30 : Math.round(config.width * 0.2);
+    const baseOffsetY = lastShape ? (lastShape.y || 0) + 30 : Math.round(config.height * 0.3);
+
+    const newShape: ShapeLayer = {
+      id: newId,
+      type,
+      x: baseOffsetX,
+      y: baseOffsetY,
+      width: type === 'circle' ? 140 : type === 'star' || type === 'heart' || type === 'badge' ? 130 : 160,
+      height: type === 'circle' ? 140 : type === 'star' || type === 'heart' || type === 'badge' ? 130 : 160,
+      color: '#D90429',
+      opacity: 100,
+      rotation: 0,
+      borderRadius: type === 'rounded-rectangle' ? 16 : 0,
+    };
+
     onChangeConfig({
-      preset: presetId,
-      width: preset.width,
-      height: preset.height,
+      shapeLayers: [...shapes, newShape],
+      selectedShapeId: newId,
+      selectedDeviceId: null,
+      selectedElementId: null,
+    });
+    setIsShapePickerOpen(false);
+  };
+
+  const handleUpdateSelectedShape = (updated: Partial<ShapeLayer>) => {
+    if (!selectedShape) return;
+    onChangeConfig({
+      shapeLayers: (config.shapeLayers || []).map((s) =>
+        s.id === selectedShape.id ? { ...s, ...updated } : s
+      ),
+    });
+  };
+
+  const handleDeleteSelectedShape = (shapeId: string) => {
+    const remaining = (config.shapeLayers || []).filter((s) => s.id !== shapeId);
+    onChangeConfig({
+      shapeLayers: remaining,
+      selectedShapeId: remaining.length > 0 ? remaining[0].id : null,
+    });
+  };
+
+  const textLayers = config.textLayers || [];
+  const selectedTextLayer = textLayers.find((l) => l.id === config.selectedTextId) || textLayers[0] || null;
+
+  const handleAddTextLayer = () => {
+    const newId = `banner-text-${Date.now()}`;
+    const layers = config.textLayers || [];
+    const lastLayer = layers[layers.length - 1];
+
+    const baseX = lastLayer ? Math.min(config.width - 240, (lastLayer.x || 0) + 20) : 60;
+    const baseY = lastLayer ? Math.min(config.height - 100, (lastLayer.y || 0) + 50) : 200;
+
+    const newLayer: TextLayer = {
+      id: newId,
+      text: 'Yeni Metin',
+      x: baseX,
+      y: baseY,
+      fontSize: 28,
+      color: '#FFFFFF',
+      fontFamily: 'outfit',
+      isBold: true,
+      isItalic: false,
+      isUnderline: false,
+      textAlign: 'left',
+      width: 440,
+      rotation: 0,
+    };
+
+    onChangeConfig({
+      textLayers: [...layers, newLayer],
+      selectedTextId: newId,
+      selectedDeviceId: null,
+      selectedShapeId: null,
+      selectedElementId: null,
+    });
+  };
+
+  const handleUpdateTextLayer = (updated: Partial<TextLayer>) => {
+    if (!selectedTextLayer) return;
+    onChangeConfig({
+      textLayers: (config.textLayers || []).map((l) =>
+        l.id === selectedTextLayer.id ? { ...l, ...updated } : l
+      ),
+    });
+  };
+
+  const handleDeleteTextLayer = (layerId: string) => {
+    const remaining = (config.textLayers || []).filter((l) => l.id !== layerId);
+    onChangeConfig({
+      textLayers: remaining,
+      selectedTextId: remaining.length > 0 ? remaining[0].id : null,
     });
   };
 
@@ -93,27 +320,28 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
       <div className="inspector-tabs" style={{ display: 'flex', borderBottom: '1px solid #E2E8F0', padding: '6px 8px', gap: '4px', overflowX: 'auto' }}>
         <button
           type="button"
-          className={`tab-btn ${activeTab === 'templates' ? 'is-active' : ''}`}
-          onClick={() => setActiveTab('templates')}
-          title="Şablonlar & Boyut"
+          className={`tab-btn ${activeTab === 'presets' ? 'is-active' : ''}`}
+          onClick={() => setActiveTab('presets')}
+          title="Mağaza Boyutları"
           style={{
             flex: 1,
             padding: '7px 4px',
             fontSize: '11px',
             fontWeight: 600,
             borderRadius: '6px',
-            border: 'none',
+            border: activeTab === 'presets' ? '1.5px solid #0F172A' : '1.5px solid transparent',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             gap: '3px',
             cursor: 'pointer',
-            backgroundColor: activeTab === 'templates' ? '#FFF0F3' : 'transparent',
-            color: activeTab === 'templates' ? '#D90429' : '#64748B',
+            backgroundColor: activeTab === 'presets' ? '#FFFFFF' : 'transparent',
+            color: activeTab === 'presets' ? '#0F172A' : '#64748B',
+            transition: 'all 0.15s ease',
           }}
         >
-          <Layout size={15} />
-          <span>Şablon</span>
+          <Maximize2 size={15} />
+          <span>Boyut</span>
         </button>
 
         <button
@@ -127,14 +355,15 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             fontSize: '11px',
             fontWeight: 600,
             borderRadius: '6px',
-            border: 'none',
+            border: activeTab === 'background' ? '1.5px solid #0F172A' : '1.5px solid transparent',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             gap: '3px',
             cursor: 'pointer',
-            backgroundColor: activeTab === 'background' ? '#FFF0F3' : 'transparent',
-            color: activeTab === 'background' ? '#D90429' : '#64748B',
+            backgroundColor: activeTab === 'background' ? '#FFFFFF' : 'transparent',
+            color: activeTab === 'background' ? '#0F172A' : '#64748B',
+            transition: 'all 0.15s ease',
           }}
         >
           <Palette size={15} />
@@ -152,14 +381,15 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             fontSize: '11px',
             fontWeight: 600,
             borderRadius: '6px',
-            border: 'none',
+            border: activeTab === 'devices' ? '1.5px solid #0F172A' : '1.5px solid transparent',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             gap: '3px',
             cursor: 'pointer',
-            backgroundColor: activeTab === 'devices' ? '#FFF0F3' : 'transparent',
-            color: activeTab === 'devices' ? '#D90429' : '#64748B',
+            backgroundColor: activeTab === 'devices' ? '#FFFFFF' : 'transparent',
+            color: activeTab === 'devices' ? '#0F172A' : '#64748B',
+            transition: 'all 0.15s ease',
           }}
         >
           <Smartphone size={15} />
@@ -177,14 +407,15 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             fontSize: '11px',
             fontWeight: 600,
             borderRadius: '6px',
-            border: 'none',
+            border: activeTab === 'text' ? '1.5px solid #0F172A' : '1.5px solid transparent',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             gap: '3px',
             cursor: 'pointer',
-            backgroundColor: activeTab === 'text' ? '#FFF0F3' : 'transparent',
-            color: activeTab === 'text' ? '#D90429' : '#64748B',
+            backgroundColor: activeTab === 'text' ? '#FFFFFF' : 'transparent',
+            color: activeTab === 'text' ? '#0F172A' : '#64748B',
+            transition: 'all 0.15s ease',
           }}
         >
           <Type size={15} />
@@ -202,14 +433,15 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             fontSize: '11px',
             fontWeight: 600,
             borderRadius: '6px',
-            border: 'none',
+            border: activeTab === 'branding' ? '1.5px solid #0F172A' : '1.5px solid transparent',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             gap: '3px',
             cursor: 'pointer',
-            backgroundColor: activeTab === 'branding' ? '#FFF0F3' : 'transparent',
-            color: activeTab === 'branding' ? '#D90429' : '#64748B',
+            backgroundColor: activeTab === 'branding' ? '#FFFFFF' : 'transparent',
+            color: activeTab === 'branding' ? '#0F172A' : '#64748B',
+            transition: 'all 0.15s ease',
           }}
         >
           <Award size={15} />
@@ -219,51 +451,10 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
 
       <div className="inspector-content" style={{ padding: '16px', overflowY: 'auto', flex: 1 }}>
         {/* ========================================================================= */}
-        {/* TAB 1: ŞABLONLAR & BOYUT                                                  */}
+        {/* TAB 1: MAĞAZA BOYUTLARI                                                   */}
         {/* ========================================================================= */}
-        {activeTab === 'templates' && (
+        {activeTab === 'presets' && (
           <div className="inspector-tab-pane" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {/* Quick Templates */}
-            <div className="inspector-section">
-              <div className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px' }}>
-                <Sparkles size={14} color="#D90429" />
-                <span>Hazır Düzen Şablonları</span>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                {BANNER_TEMPLATES.map((tmpl) => {
-                  const isSelected = config.templateId === tmpl.id;
-                  return (
-                    <button
-                      key={tmpl.id}
-                      type="button"
-                      onClick={() => handleApplyTemplate(tmpl.id)}
-                      style={{
-                        padding: '10px 8px',
-                        borderRadius: '8px',
-                        border: isSelected ? '2px solid #D90429' : '1px solid #E2E8F0',
-                        backgroundColor: isSelected ? '#FFF0F3' : '#FFFFFF',
-                        color: isSelected ? '#D90429' : '#1E293B',
-                        textAlign: 'left',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '4px',
-                        transition: 'all 0.15s ease',
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                        <span style={{ fontSize: '11.5px', fontWeight: 700 }}>{tmpl.name}</span>
-                        {isSelected && <Check size={13} color="#D90429" />}
-                      </div>
-                      <span style={{ fontSize: '10px', color: '#64748B', lineHeight: 1.3 }}>
-                        {tmpl.description}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
             {/* Presets */}
             <div className="inspector-section">
               <div className="section-title" style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px' }}>
@@ -283,13 +474,13 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                         padding: '8px 12px',
                         borderRadius: '8px',
                         border: isSelected ? '1.5px solid #D90429' : '1px solid #E2E8F0',
-                        backgroundColor: isSelected ? '#FFF0F3' : '#FFFFFF',
+                        backgroundColor: '#FFFFFF',
                         cursor: 'pointer',
                         transition: 'all 0.15s ease',
                       }}
                     >
                       <div>
-                        <div style={{ fontSize: '12px', fontWeight: 600, color: isSelected ? '#D90429' : '#0F172A' }}>
+                        <div style={{ fontSize: '12px', fontWeight: 600, color: '#0F172A' }}>
                           {p.name}
                         </div>
                         <div style={{ fontSize: '10.5px', color: '#64748B', marginTop: '2px' }}>
@@ -302,8 +493,8 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                           fontWeight: 600,
                           padding: '3px 8px',
                           borderRadius: '4px',
-                          backgroundColor: isSelected ? '#D90429' : '#F1F5F9',
-                          color: isSelected ? '#FFFFFF' : '#475569',
+                          backgroundColor: '#F1F5F9',
+                          color: '#475569',
                           fontFamily: 'monospace',
                           whiteSpace: 'nowrap',
                         }}
@@ -317,50 +508,92 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
 
               {/* Custom Dimensions if selected */}
               {config.preset === 'custom' && (
-                <div style={{ marginTop: '12px', display: 'flex', gap: '10px' }}>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
-                      Genişlik (px)
-                    </label>
-                    <input
-                      type="number"
-                      className="input-field"
-                      value={config.width}
-                      onChange={(e) => onChangeConfig({ width: Math.max(100, Number(e.target.value) || 1024) })}
-                      style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px' }}
-                    />
+                <div 
+                  style={{ 
+                    marginTop: '12px', 
+                    padding: '12px', 
+                    backgroundColor: '#F8FAFC', 
+                    border: '1px solid #E2E8F0', 
+                    borderRadius: '8px' 
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#334155' }}>
+                      Özel Boyut Ayarı
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleResetCustomDimensions}
+                      title="Varsayılan boyuta sıfırla (1200×600)"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#64748B',
+                        backgroundColor: '#FFFFFF',
+                        border: '1px solid #CBD5E1',
+                        borderRadius: '5px',
+                        padding: '4px',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      <RotateCcw size={13} />
+                    </button>
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
-                      Yükseklik (px)
-                    </label>
-                    <input
-                      type="number"
-                      className="input-field"
-                      value={config.height}
-                      onChange={(e) => onChangeConfig({ height: Math.max(100, Number(e.target.value) || 500) })}
-                      style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px' }}
-                    />
+
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
+                        Genişlik (px)
+                      </label>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={5}
+                        className="input-field"
+                        value={customWidth}
+                        onChange={(e) => handleCustomWidthChange(e.target.value)}
+                        onBlur={handleWidthBlur}
+                        placeholder="1200"
+                        style={{ 
+                          width: '100%', 
+                          padding: '6px 8px', 
+                          borderRadius: '6px', 
+                          border: '1px solid #CBD5E1', 
+                          fontSize: '12px',
+                          fontFamily: 'monospace',
+                          boxSizing: 'border-box'
+                        }}
+                      />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
+                        Yükseklik (px)
+                      </label>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={5}
+                        className="input-field"
+                        value={customHeight}
+                        onChange={(e) => handleCustomHeightChange(e.target.value)}
+                        onBlur={handleHeightBlur}
+                        placeholder="600"
+                        style={{ 
+                          width: '100%', 
+                          padding: '6px 8px', 
+                          borderRadius: '6px', 
+                          border: '1px solid #CBD5E1', 
+                          fontSize: '12px',
+                          fontFamily: 'monospace',
+                          boxSizing: 'border-box'
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
               )}
-            </div>
-
-            {/* Quick Export Action */}
-            <div className="inspector-section" style={{ borderTop: '1px solid #E2E8F0', paddingTop: '16px' }}>
-              <div style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A', marginBottom: '10px' }}>
-                Hızlı Dışa Aktarma
-              </div>
-              <button
-                type="button"
-                className="btn-chili"
-                onClick={onExport}
-                disabled={isExporting}
-                style={{ width: '100%', padding: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '13px' }}
-              >
-                <Download size={15} />
-                <span>{isExporting ? 'Oluşturuluyor...' : 'Bannerı İndir (.PNG)'}</span>
-              </button>
             </div>
           </div>
         )}
@@ -424,13 +657,16 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                       style={{
                         padding: '6px',
                         borderRadius: '6px',
-                        border: config.bgGradient.from === g.from && config.bgGradient.to === g.to ? '2px solid #D90429' : '1px solid #E2E8F0',
+                        border: '2px solid',
+                        borderColor: config.bgGradient.from === g.from && config.bgGradient.to === g.to ? '#D90429' : '#E2E8F0',
+                        boxSizing: 'border-box',
                         cursor: 'pointer',
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
                         gap: '4px',
                         background: '#FFFFFF',
+                        transition: 'border-color 0.15s ease',
                       }}
                       title={g.name}
                     >
@@ -599,13 +835,14 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                       style={{
                         padding: '6px 8px',
                         borderRadius: '6px',
-                        border: isSelected ? '1.5px solid #D90429' : '1px solid #E2E8F0',
-                        backgroundColor: isSelected ? '#FFF0F3' : '#FFFFFF',
-                        color: isSelected ? '#D90429' : '#475569',
+                        border: isSelected ? '1px solid #D90429' : '1px solid #E2E8F0',
+                        backgroundColor: isSelected ? '#D90429' : '#FFFFFF',
+                        color: isSelected ? '#FFFFFF' : '#475569',
                         fontSize: '11px',
                         fontWeight: 600,
                         cursor: 'pointer',
                         textAlign: 'center',
+                        transition: 'all 0.15s ease',
                       }}
                     >
                       {p.label}
@@ -632,6 +869,349 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                 </div>
               )}
             </div>
+
+            {/* Background Shapes / Şekiller (Mockup Editor Özelliği) */}
+            <div className="inspector-section" style={{ borderTop: '1px solid #E2E8F0', paddingTop: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', position: 'relative' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase' }}>
+                  Arka Plan Şekilleri
+                </span>
+                <div style={{ position: 'relative' }}>
+                  <button
+                    type="button"
+                    onClick={() => setIsShapePickerOpen(!isShapePickerOpen)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      color: '#FFFFFF',
+                      backgroundColor: '#D90429',
+                      border: 'none',
+                      borderRadius: '6px',
+                      padding: '4px 10px',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      boxShadow: '0 2px 6px rgba(217, 4, 41, 0.25)',
+                    }}
+                  >
+                    <Plus size={12} color="#FFFFFF" />
+                    <span>Şekil Ekle</span>
+                  </button>
+
+                  {/* Şekil Seçim Menüsü Popover */}
+                  {isShapePickerOpen && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: 'calc(100% + 6px)',
+                        right: 0,
+                        width: '210px',
+                        backgroundColor: '#FFFFFF',
+                        border: '1px solid #E2E8F0',
+                        borderRadius: '8px',
+                        padding: '10px',
+                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
+                        zIndex: 100,
+                      }}
+                    >
+                      <div style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', marginBottom: '8px', paddingBottom: '4px', borderBottom: '1px solid #F1F5F9' }}>
+                        <span>Temel Şekiller</span>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+                        {[
+                          { type: 'rectangle' as ShapeType, label: 'Dikdörtgen', icon: <Square size={16} /> },
+                          { type: 'circle' as ShapeType, label: 'Daire', icon: <Circle size={16} /> },
+                          { type: 'triangle' as ShapeType, label: 'Üçgen', icon: <Triangle size={16} /> },
+                          { type: 'star' as ShapeType, label: 'Yıldız', icon: <Star size={16} /> },
+                          { type: 'heart' as ShapeType, label: 'Kalp', icon: <Heart size={16} /> },
+                          { type: 'badge' as ShapeType, label: 'Rozet', icon: <Shield size={16} /> },
+                        ].map((item) => (
+                          <button
+                            key={item.type}
+                            type="button"
+                            style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '4px',
+                              padding: '8px 4px',
+                              backgroundColor: '#F8FAFC',
+                              border: '1px solid #E2E8F0',
+                              borderRadius: '8px',
+                              color: '#334155',
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = '#F1F5F9';
+                              e.currentTarget.style.borderColor = '#0F172A';
+                              e.currentTarget.style.color = '#0F172A';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = '#F8FAFC';
+                              e.currentTarget.style.borderColor = '#E2E8F0';
+                              e.currentTarget.style.color = '#334155';
+                            }}
+                            onClick={() => handleAddShape(item.type)}
+                          >
+                            {item.icon}
+                            <span style={{ fontSize: '10px', fontWeight: 500, textAlign: 'center', whiteSpace: 'nowrap' }}>
+                              {item.label}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Eklenen Şekillerin Çipleri */}
+              {(config.shapeLayers || []).length > 0 && (
+                <div style={{ marginBottom: '12px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: '#64748B', marginBottom: '6px' }}>
+                    Eklenen Şekiller ({config.shapeLayers?.length})
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
+                    {(config.shapeLayers || []).map((shape, index) => {
+                      const isSelected = config.selectedShapeId === shape.id;
+                      const labelMap: Record<ShapeType, string> = {
+                        rectangle: 'Dikdörtgen',
+                        'rounded-rectangle': 'Yuvarlak Kutu',
+                        circle: 'Daire',
+                        triangle: 'Üçgen',
+                        star: 'Yıldız',
+                        heart: 'Kalp',
+                        badge: 'Rozet',
+                      };
+                      return (
+                        <button
+                          key={shape.id}
+                          type="button"
+                          className={`layer-chip-btn ${isSelected ? 'active' : ''}`}
+                          onClick={() => {
+                            onChangeConfig({
+                              selectedShapeId: shape.id,
+                              selectedDeviceId: null,
+                              selectedElementId: null,
+                            });
+                          }}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            padding: '4px 8px',
+                            borderRadius: '6px',
+                            border: isSelected ? '1.5px solid #0F172A' : '1px solid #CBD5E1',
+                            backgroundColor: isSelected ? '#F8FAFC' : '#FFFFFF',
+                            cursor: 'pointer',
+                            fontSize: '11px',
+                            flexShrink: 0,
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: '10px',
+                              height: '10px',
+                              borderRadius: shape.type === 'circle' ? '50%' : '2px',
+                              backgroundColor: shape.color || '#D90429',
+                              border: '1px solid rgba(0,0,0,0.15)',
+                            }}
+                          />
+                          <span style={{ fontWeight: isSelected ? 600 : 400, color: '#0F172A' }}>
+                            {labelMap[shape.type] || `Şekil ${index + 1}`}
+                          </span>
+                          <span
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteSelectedShape(shape.id);
+                            }}
+                            title="Bu şekli sil"
+                            style={{ color: '#EF4444', fontWeight: 'bold', marginLeft: '2px', padding: '0 2px' }}
+                          >
+                            &times;
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Seçili Şekil Ayarları */}
+              {selectedShape && (
+                <div
+                  style={{
+                    backgroundColor: '#F8FAFC',
+                    border: '1px solid #E2E8F0',
+                    borderRadius: '8px',
+                    padding: '10px',
+                    marginBottom: '12px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <Shapes size={12} color="#D90429" />
+                      <span>Seçili Şekil Ayarları</span>
+                    </span>
+                    <button
+                      type="button"
+                      style={{
+                        border: 'none',
+                        background: 'transparent',
+                        color: '#EF4444',
+                        cursor: 'pointer',
+                        fontSize: '11px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '2px 4px',
+                      }}
+                      onClick={() => handleDeleteSelectedShape(selectedShape.id)}
+                      title="Şekli Sil"
+                    >
+                      <Trash2 size={12} />
+                      <span>Sil</span>
+                    </button>
+                  </div>
+
+                  {/* Şekil Rengi */}
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B', marginBottom: '4px' }}>
+                      <span>Şekil Rengi</span>
+                      <span style={{ fontFamily: 'monospace' }}>{(selectedShape.color || '#D90429').toUpperCase()}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                      {PALETTE_PRESETS.map((color) => (
+                        <button
+                          key={color}
+                          type="button"
+                          title={color}
+                          style={{
+                            backgroundColor: color,
+                            width: '20px',
+                            height: '20px',
+                            borderRadius: '4px',
+                            border: (selectedShape.color || '').toLowerCase() === color.toLowerCase() ? '2px solid #0F172A' : '1px solid #CBD5E1',
+                            cursor: 'pointer',
+                            padding: 0,
+                          }}
+                          onClick={() => handleUpdateSelectedShape({ color })}
+                        />
+                      ))}
+                      <input
+                        type="color"
+                        value={selectedShape.color?.startsWith('#') && selectedShape.color.length === 7 ? selectedShape.color : '#D90429'}
+                        style={{ width: '22px', height: '22px', borderRadius: '4px', border: '1px solid #CBD5E1', padding: 0, cursor: 'pointer' }}
+                        onChange={(e) => handleUpdateSelectedShape({ color: e.target.value })}
+                        title="Özel Renk"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Genişlik & Yükseklik */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B', marginBottom: '2px' }}>
+                        <span>Genişlik</span>
+                        <span style={{ fontFamily: 'monospace' }}>{selectedShape.width}px</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={30}
+                        max={800}
+                        step={5}
+                        value={selectedShape.width}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          handleUpdateSelectedShape({
+                            width: val,
+                            ...(selectedShape.type === 'circle' ? { height: val } : {}),
+                          });
+                        }}
+                        style={{ width: '100%' }}
+                      />
+                    </div>
+                    {selectedShape.type !== 'circle' && (
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B', marginBottom: '2px' }}>
+                          <span>Yükseklik</span>
+                          <span style={{ fontFamily: 'monospace' }}>{selectedShape.height}px</span>
+                        </div>
+                        <input
+                          type="range"
+                          min={30}
+                          max={800}
+                          step={5}
+                          value={selectedShape.height}
+                          onChange={(e) => handleUpdateSelectedShape({ height: Number(e.target.value) })}
+                          style={{ width: '100%' }}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Opaklık & Döndürme */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B', marginBottom: '2px' }}>
+                        <span>Opaklık</span>
+                        <span style={{ fontFamily: 'monospace' }}>{selectedShape.opacity ?? 100}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={5}
+                        max={100}
+                        step={5}
+                        value={selectedShape.opacity ?? 100}
+                        onChange={(e) => handleUpdateSelectedShape({ opacity: Number(e.target.value) })}
+                        style={{ width: '100%' }}
+                      />
+                    </div>
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B', marginBottom: '2px' }}>
+                        <span>Döndürme</span>
+                        <span style={{ fontFamily: 'monospace' }}>{selectedShape.rotation ?? 0}°</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={-180}
+                        max={180}
+                        step={5}
+                        value={selectedShape.rotation ?? 0}
+                        onChange={(e) => handleUpdateSelectedShape({ rotation: Number(e.target.value) })}
+                        style={{ width: '100%' }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Köşe Yuvarlama (Dikdörtgen için) */}
+                  {(selectedShape.type === 'rectangle' || selectedShape.type === 'rounded-rectangle') && (
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B', marginBottom: '2px' }}>
+                        <span>Köşe Yuvarlama</span>
+                        <span style={{ fontFamily: 'monospace' }}>{selectedShape.borderRadius ?? 0}px</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        step={2}
+                        value={selectedShape.borderRadius ?? 0}
+                        onChange={(e) => handleUpdateSelectedShape({ borderRadius: Number(e.target.value) })}
+                        style={{ width: '100%' }}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -640,97 +1220,111 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
         {/* ========================================================================= */}
         {activeTab === 'devices' && (
           <div className="inspector-tab-pane" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {/* Device Count Selector */}
+            {/* Devices on Screen & Add Device Button */}
             <div className="inspector-section">
-              <label style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
-                Cihaz Sayısı
-              </label>
-              <div style={{ display: 'flex', backgroundColor: '#F1F5F9', padding: '3px', borderRadius: '8px', gap: '4px' }}>
-                {[
-                  { count: 0, label: 'Cihaz Yok' },
-                  { count: 1, label: '1 Cihaz' },
-                  { count: 2, label: '2 Cihaz' },
-                ].map((item) => (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase' }}>
+                  Ekrandaki Cihazlar ({enabledDevices.length})
+                </label>
+                {enabledDevices.length < 5 && (
                   <button
-                    key={item.count}
                     type="button"
-                    onClick={() => {
-                      const updatedDevs = [...config.devices] as [BannerDeviceConfig, BannerDeviceConfig];
-                      if (item.count === 0) {
-                        updatedDevs[0].enabled = false;
-                        updatedDevs[1].enabled = false;
-                      } else if (item.count === 1) {
-                        updatedDevs[0].enabled = true;
-                        updatedDevs[1].enabled = false;
-                      } else {
-                        updatedDevs[0].enabled = true;
-                        updatedDevs[1].enabled = true;
-                      }
-                      onChangeConfig({
-                        deviceCount: item.count as 0 | 1 | 2,
-                        devices: updatedDevs,
-                      });
-                    }}
+                    onClick={handleAddDevice}
                     style={{
-                      flex: 1,
-                      padding: '6px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
                       fontSize: '11px',
                       fontWeight: 600,
-                      borderRadius: '6px',
+                      color: '#FFFFFF',
+                      backgroundColor: '#D90429',
                       border: 'none',
+                      borderRadius: '6px',
+                      padding: '4px 10px',
                       cursor: 'pointer',
-                      backgroundColor: config.deviceCount === item.count ? '#FFFFFF' : 'transparent',
-                      color: config.deviceCount === item.count ? '#D90429' : '#64748B',
-                      boxShadow: config.deviceCount === item.count ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                      transition: 'all 0.15s ease',
+                      boxShadow: '0 2px 6px rgba(217, 4, 41, 0.25)',
                     }}
                   >
-                    {item.label}
+                    <Plus size={12} color="#FFFFFF" />
+                    <span>Cihaz Ekle</span>
                   </button>
-                ))}
+                )}
               </div>
+
+              {enabledDevices.length === 0 ? (
+                <div style={{ padding: '16px', textAlign: 'center', backgroundColor: '#F8FAFC', borderRadius: '8px', border: '1px dashed #CBD5E1' }}>
+                  <p style={{ fontSize: '12px', color: '#64748B', margin: 0 }}>
+                    Henüz bir cihaz bulunmuyor.
+                  </p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {enabledDevices.map((dev) => {
+                    const isSelected = selectedDevice?.id === dev.id;
+                    const modelInfo = DEVICE_MODELS.find((m) => m.id === dev.deviceType);
+                    return (
+                      <div
+                        key={dev.id}
+                        onClick={() => onChangeConfig({ selectedDeviceId: dev.id })}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          border: isSelected ? '1.5px solid #0F172A' : '1px solid #E2E8F0',
+                          backgroundColor: isSelected ? '#F8FAFC' : '#FFFFFF',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Smartphone size={16} color={isSelected ? '#0F172A' : '#64748B'} />
+                          <div>
+                            <div style={{ fontSize: '12px', fontWeight: 600, color: '#0F172A' }}>
+                              Cihaz {enabledDevices.findIndex((d) => d.id === dev.id) + 1}
+                            </div>
+                            <div style={{ fontSize: '10.5px', color: '#64748B' }}>
+                              {modelInfo?.name || dev.deviceType}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveDevice(dev.id);
+                            }}
+                            title="Cihazı Kaldır"
+                            style={{
+                              background: 'transparent',
+                              border: 'none',
+                              color: '#94A3B8',
+                              cursor: 'pointer',
+                              padding: '4px',
+                              borderRadius: '4px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.color = '#EF4444')}
+                            onMouseLeave={(e) => (e.currentTarget.style.color = '#94A3B8')}
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
-            {config.deviceCount > 0 && (
+            {enabledDevices.length > 0 && (
               <>
-                {/* Active Device Selector if 2 devices */}
-                {config.deviceCount === 2 && (
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button
-                      type="button"
-                      onClick={() => onChangeConfig({ selectedDeviceId: 'banner-dev-1' })}
-                      style={{
-                        flex: 1,
-                        padding: '8px',
-                        borderRadius: '6px',
-                        border: config.selectedDeviceId === 'banner-dev-1' ? '2px solid #D90429' : '1px solid #E2E8F0',
-                        backgroundColor: config.selectedDeviceId === 'banner-dev-1' ? '#FFF0F3' : '#FFFFFF',
-                        color: config.selectedDeviceId === 'banner-dev-1' ? '#D90429' : '#1E293B',
-                        fontSize: '11.5px',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Cihaz 1 (Ön)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onChangeConfig({ selectedDeviceId: 'banner-dev-2' })}
-                      style={{
-                        flex: 1,
-                        padding: '8px',
-                        borderRadius: '6px',
-                        border: config.selectedDeviceId === 'banner-dev-2' ? '2px solid #D90429' : '1px solid #E2E8F0',
-                        backgroundColor: config.selectedDeviceId === 'banner-dev-2' ? '#FFF0F3' : '#FFFFFF',
-                        color: config.selectedDeviceId === 'banner-dev-2' ? '#D90429' : '#1E293B',
-                        fontSize: '11.5px',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Cihaz 2 (Arka)
-                    </button>
-                  </div>
-                )}
 
                 {/* Device Model Selector */}
                 <div className="inspector-section">
@@ -742,7 +1336,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                     value={selectedDevice.deviceType}
                     onChange={(e) => {
                       const newType = e.target.value;
-                      const modelInfo = DEVICE_MODELS.find((m) => m.id === newType);
+                      const modelInfo = PHONE_MODELS.find((m) => m.id === newType);
                       handleUpdateDevice(selectedDevice.id, {
                         deviceType: newType,
                         deviceColor: modelInfo?.colors[0]?.id || 'default',
@@ -750,7 +1344,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                     }}
                     style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px' }}
                   >
-                    {DEVICE_MODELS.map((m) => (
+                    {PHONE_MODELS.map((m) => (
                       <option key={m.id} value={m.id}>
                         {m.name} ({m.brand.toUpperCase()})
                       </option>
@@ -800,85 +1394,23 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                   </div>
                 </div>
 
-                {/* Transform Sliders */}
-                <div className="inspector-section" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#64748B', marginBottom: '4px' }}>
-                      <span>Yatay Konum (X)</span>
-                      <span style={{ fontFamily: 'monospace' }}>{selectedDevice.offsetX}px</span>
-                    </div>
-                    <input
-                      type="range"
-                      min={0}
-                      max={config.width}
-                      value={selectedDevice.offsetX}
-                      onChange={(e) => handleUpdateDevice(selectedDevice.id, { offsetX: Number(e.target.value) })}
-                      style={{ width: '100%' }}
-                    />
-                  </div>
-
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#64748B', marginBottom: '4px' }}>
-                      <span>Dikey Konum (Y)</span>
-                      <span style={{ fontFamily: 'monospace' }}>{selectedDevice.offsetY}px</span>
-                    </div>
-                    <input
-                      type="range"
-                      min={0}
-                      max={config.height + 200}
-                      value={selectedDevice.offsetY}
-                      onChange={(e) => handleUpdateDevice(selectedDevice.id, { offsetY: Number(e.target.value) })}
-                      style={{ width: '100%' }}
-                    />
-                  </div>
-
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#64748B', marginBottom: '4px' }}>
-                      <span>Boyut (Ölçek)</span>
-                      <span style={{ fontFamily: 'monospace' }}>{Math.round(selectedDevice.scale * 100)}%</span>
-                    </div>
-                    <input
-                      type="range"
-                      min={0.4}
-                      max={1.4}
-                      step={0.02}
-                      value={selectedDevice.scale}
-                      onChange={(e) => handleUpdateDevice(selectedDevice.id, { scale: Number(e.target.value) })}
-                      style={{ width: '100%' }}
-                    />
-                  </div>
-
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#64748B', marginBottom: '4px' }}>
-                      <span>Döndürme Açısı</span>
-                      <span style={{ fontFamily: 'monospace' }}>{selectedDevice.rotation}°</span>
-                    </div>
-                    <input
-                      type="range"
-                      min={-45}
-                      max={45}
-                      value={selectedDevice.rotation}
-                      onChange={(e) => handleUpdateDevice(selectedDevice.id, { rotation: Number(e.target.value) })}
-                      style={{ width: '100%' }}
-                    />
-                  </div>
-
-                  {/* Shadow Depth */}
-                  <div>
-                    <label style={{ fontSize: '10.5px', color: '#64748B', display: 'block', marginBottom: '4px' }}>Gölge Derinliği</label>
-                    <select
-                      className="select-field"
-                      value={selectedDevice.shadowDepth}
-                      onChange={(e) => handleUpdateDevice(selectedDevice.id, { shadowDepth: e.target.value as any })}
-                      style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px' }}
-                    >
-                      <option value="none">Gölge Yok</option>
-                      <option value="soft">Hafif Yumuşak</option>
-                      <option value="medium">Orta Derinlik</option>
-                      <option value="deep">Derin Karartı</option>
-                      <option value="3d-floating">3D Havada Süzülen</option>
-                    </select>
-                  </div>
+                {/* Shadow Depth */}
+                <div className="inspector-section">
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+                    Gölge Derinliği
+                  </label>
+                  <select
+                    className="select-field"
+                    value={selectedDevice.shadowDepth}
+                    onChange={(e) => handleUpdateDevice(selectedDevice.id, { shadowDepth: e.target.value as any })}
+                    style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px' }}
+                  >
+                    <option value="none">Gölge Yok</option>
+                    <option value="soft">Hafif Yumuşak</option>
+                    <option value="medium">Orta Derinlik</option>
+                    <option value="deep">Derin Karartı</option>
+                    <option value="3d-floating">3D Havada Süzülen</option>
+                  </select>
                 </div>
               </>
             )}
@@ -889,211 +1421,519 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
         {/* TAB 4: METİN & TİPOGRAFİ                                                  */}
         {/* ========================================================================= */}
         {activeTab === 'text' && (
-          <div className="inspector-tab-pane" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {/* Alignment Buttons */}
-            <div className="inspector-section">
-              <label style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
-                Metin Hizalaması
-              </label>
-              <div style={{ display: 'flex', backgroundColor: '#F1F5F9', padding: '3px', borderRadius: '8px', gap: '4px' }}>
-                {[
-                  { id: 'left', label: 'Sola Hizalı' },
-                  { id: 'center', label: 'Ortala' },
-                  { id: 'right', label: 'Sağa Hizalı' },
-                ].map((align) => (
-                  <button
-                    key={align.id}
-                    type="button"
-                    onClick={() => onChangeConfig({ textAlignment: align.id as any })}
-                    style={{
-                      flex: 1,
-                      padding: '6px',
-                      fontSize: '11px',
-                      fontWeight: 600,
-                      borderRadius: '6px',
-                      border: 'none',
-                      cursor: 'pointer',
-                      backgroundColor: config.textAlignment === align.id ? '#FFFFFF' : 'transparent',
-                      color: config.textAlignment === align.id ? '#D90429' : '#64748B',
-                      boxShadow: config.textAlignment === align.id ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                    }}
-                  >
-                    {align.label}
-                  </button>
-                ))}
+          <div className="inspector-tab-pane" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* Header with "+ Metin Ekle" button */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid #E2E8F0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Metin Katmanları
+                </span>
+                <span style={{ fontSize: '10px', backgroundColor: '#F1F5F9', color: '#64748B', padding: '1px 6px', borderRadius: '10px', fontWeight: 700 }}>
+                  {textLayers.length}
+                </span>
               </div>
+              <button
+                type="button"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  color: '#FFFFFF',
+                  backgroundColor: '#D90429',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '5px 10px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  boxShadow: '0 2px 6px rgba(217, 4, 41, 0.25)',
+                  transition: 'background-color 0.15s ease',
+                }}
+                onClick={handleAddTextLayer}
+                title="Banner'a yeni metin katmanı ekle"
+              >
+                <Plus size={12} />
+                <span>Metin Ekle</span>
+              </button>
             </div>
 
-            {/* Title Controls */}
-            <div className="inspector-section" style={{ borderTop: '1px solid #E2E8F0', paddingTop: '14px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase' }}>Ana Başlık</span>
-                <input
-                  type="checkbox"
-                  checked={config.showTitle}
-                  onChange={(e) => onChangeConfig({ showTitle: e.target.checked })}
-                />
-              </div>
+            {/* Text Layers Selector Chips */}
+            {textLayers.length > 0 ? (
+              <>
+                <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
+                  {textLayers.map((layer, index) => {
+                    const isSelected = selectedTextLayer?.id === layer.id;
+                    return (
+                      <button
+                        key={layer.id}
+                        type="button"
+                        className={`layer-chip-btn ${isSelected ? 'active' : ''}`}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '5px 10px',
+                          borderRadius: '6px',
+                          border: isSelected ? '1.5px solid #D90429' : '1px solid #CBD5E1',
+                          backgroundColor: isSelected ? '#D90429' : '#FFFFFF',
+                          color: isSelected ? '#FFFFFF' : '#334155',
+                          fontSize: '11px',
+                          fontWeight: isSelected ? 700 : 500,
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                          transition: 'all 0.15s ease',
+                          boxShadow: isSelected ? '0 1px 4px rgba(217, 4, 41, 0.3)' : 'none',
+                          flexShrink: 0,
+                        }}
+                        onClick={() => {
+                          onChangeConfig({
+                            selectedTextId: layer.id,
+                            selectedDeviceId: null,
+                            selectedShapeId: null,
+                            selectedElementId: null,
+                          });
+                        }}
+                      >
+                        <Type size={11} color={isSelected ? '#FFFFFF' : '#64748B'} />
+                        <span style={{ maxWidth: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: isSelected ? '#FFFFFF' : '#334155' }}>
+                          {layer.text.trim() ? layer.text : `Metin ${index + 1}`}
+                        </span>
+                        {textLayers.length > 1 && (
+                          <span
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteTextLayer(layer.id);
+                            }}
+                            title="Bu metni sil"
+                            style={{
+                              marginLeft: '2px',
+                              color: isSelected ? 'rgba(255, 255, 255, 0.8)' : '#94A3B8',
+                              fontWeight: 700,
+                              fontSize: '13px',
+                              lineHeight: 1,
+                              cursor: 'pointer',
+                              padding: '0 2px',
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.color = '#FFFFFF')}
+                            onMouseLeave={(e) => (e.currentTarget.style.color = isSelected ? 'rgba(255, 255, 255, 0.8)' : '#94A3B8')}
+                          >
+                            ×
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
 
-              {config.showTitle && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <textarea
-                    rows={2}
-                    className="input-field"
-                    value={config.titleText}
-                    onChange={(e) => onChangeConfig({ titleText: e.target.value })}
-                    placeholder="Uygulamanızın Başlığı"
-                    style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', resize: 'vertical' }}
-                  />
-
-                  {/* Font Family */}
-                  <div>
-                    <label style={{ fontSize: '10.5px', color: '#64748B', display: 'block', marginBottom: '4px' }}>Yazı Tipi</label>
-                    <select
-                      className="select-field"
-                      value={config.titleFontFamily}
-                      onChange={(e) => onChangeConfig({ titleFontFamily: e.target.value })}
-                      style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px' }}
-                    >
-                      {FONTS.map((f) => (
-                        <option key={f.id} value={f.id}>{f.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Size & Color */}
-                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B', marginBottom: '2px' }}>
-                        <span>Punto</span>
-                        <span style={{ fontFamily: 'monospace' }}>{config.titleFontSize}px</span>
+                {selectedTextLayer ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    {/* Text Input */}
+                    <div className="control-group">
+                      <div className="control-label" style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
+                        Metin İçeriği
                       </div>
-                      <input
-                        type="range"
-                        min={24}
-                        max={72}
-                        value={config.titleFontSize}
-                        onChange={(e) => onChangeConfig({ titleFontSize: Number(e.target.value) })}
-                        style={{ width: '100%' }}
+                      <textarea
+                        rows={3}
+                        className="input-field"
+                        style={{
+                          width: '100%',
+                          padding: '8px 10px',
+                          borderRadius: '6px',
+                          border: '1px solid #CBD5E1',
+                          fontSize: '12px',
+                          resize: 'vertical',
+                          fontFamily: 'inherit',
+                          lineHeight: 1.4,
+                        }}
+                        value={selectedTextLayer.text}
+                        onChange={(e) => handleUpdateTextLayer({ text: e.target.value })}
+                        placeholder="Görselde görünecek metni yazın..."
                       />
                     </div>
-                    <div>
-                      <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block', marginBottom: '2px' }}>Renk</span>
-                      <input
-                        type="color"
-                        value={config.titleColor}
-                        onChange={(e) => onChangeConfig({ titleColor: e.target.value })}
-                        style={{ width: '36px', height: '32px', borderRadius: '6px', border: '1px solid #CBD5E1', cursor: 'pointer' }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
 
-            {/* Subtitle Controls */}
-            <div className="inspector-section" style={{ borderTop: '1px solid #E2E8F0', paddingTop: '14px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase' }}>Alt Başlık & Açıklama</span>
-                <input
-                  type="checkbox"
-                  checked={config.showSubtitle}
-                  onChange={(e) => onChangeConfig({ showSubtitle: e.target.checked })}
-                />
-              </div>
-
-              {config.showSubtitle && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <textarea
-                    rows={3}
-                    className="input-field"
-                    value={config.subtitleText}
-                    onChange={(e) => onChangeConfig({ subtitleText: e.target.value })}
-                    placeholder="Uygulamanızı anlatan kısa ve etkileyici açıklama..."
-                    style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', resize: 'vertical' }}
-                  />
-
-                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B', marginBottom: '2px' }}>
-                        <span>Punto</span>
-                        <span style={{ fontFamily: 'monospace' }}>{config.subtitleFontSize}px</span>
+                    {/* Word Format Ribbon */}
+                    <div className="control-group">
+                      <div className="control-label" style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
+                        Biçimlendirme
                       </div>
-                      <input
-                        type="range"
-                        min={12}
-                        max={32}
-                        value={config.subtitleFontSize}
-                        onChange={(e) => onChangeConfig({ subtitleFontSize: Number(e.target.value) })}
-                        style={{ width: '100%' }}
-                      />
+                      <div style={{ display: 'flex', gap: '4px', backgroundColor: '#F1F5F9', padding: '4px', borderRadius: '8px' }}>
+                        <button
+                          type="button"
+                          title="Kalın (Bold)"
+                          style={{
+                            flex: 1,
+                            padding: '6px 0',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: '6px',
+                            border: 'none',
+                            backgroundColor: selectedTextLayer.isBold ? '#D90429' : 'transparent',
+                            color: selectedTextLayer.isBold ? '#FFFFFF' : '#475569',
+                            boxShadow: selectedTextLayer.isBold ? '0 1px 3px rgba(217, 4, 41, 0.25)' : 'none',
+                            cursor: 'pointer',
+                          }}
+                          onClick={() => handleUpdateTextLayer({ isBold: !selectedTextLayer.isBold })}
+                        >
+                          <Bold size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          title="İtalik (Italic)"
+                          style={{
+                            flex: 1,
+                            padding: '6px 0',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: '6px',
+                            border: 'none',
+                            backgroundColor: selectedTextLayer.isItalic ? '#D90429' : 'transparent',
+                            color: selectedTextLayer.isItalic ? '#FFFFFF' : '#475569',
+                            boxShadow: selectedTextLayer.isItalic ? '0 1px 3px rgba(217, 4, 41, 0.25)' : 'none',
+                            cursor: 'pointer',
+                          }}
+                          onClick={() => handleUpdateTextLayer({ isItalic: !selectedTextLayer.isItalic })}
+                        >
+                          <Italic size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          title="Altı Çizili (Underline)"
+                          style={{
+                            flex: 1,
+                            padding: '6px 0',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: '6px',
+                            border: 'none',
+                            backgroundColor: selectedTextLayer.isUnderline ? '#D90429' : 'transparent',
+                            color: selectedTextLayer.isUnderline ? '#FFFFFF' : '#475569',
+                            boxShadow: selectedTextLayer.isUnderline ? '0 1px 3px rgba(217, 4, 41, 0.25)' : 'none',
+                            cursor: 'pointer',
+                          }}
+                          onClick={() => handleUpdateTextLayer({ isUnderline: !selectedTextLayer.isUnderline })}
+                        >
+                          <Underline size={14} />
+                        </button>
+
+                        <div style={{ width: '1px', backgroundColor: '#CBD5E1', margin: '2px 2px' }} />
+
+                        <button
+                          type="button"
+                          title="Sola Hizala"
+                          style={{
+                            flex: 1,
+                            padding: '6px 0',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: '6px',
+                            border: 'none',
+                            backgroundColor: selectedTextLayer.textAlign === 'left' ? '#D90429' : 'transparent',
+                            color: selectedTextLayer.textAlign === 'left' ? '#FFFFFF' : '#475569',
+                            boxShadow: selectedTextLayer.textAlign === 'left' ? '0 1px 3px rgba(217, 4, 41, 0.25)' : 'none',
+                            cursor: 'pointer',
+                          }}
+                          onClick={() => handleUpdateTextLayer({ textAlign: 'left' })}
+                        >
+                          <AlignLeft size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          title="Ortala"
+                          style={{
+                            flex: 1,
+                            padding: '6px 0',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: '6px',
+                            border: 'none',
+                            backgroundColor: (!selectedTextLayer.textAlign || selectedTextLayer.textAlign === 'center') ? '#D90429' : 'transparent',
+                            color: (!selectedTextLayer.textAlign || selectedTextLayer.textAlign === 'center') ? '#FFFFFF' : '#475569',
+                            boxShadow: (!selectedTextLayer.textAlign || selectedTextLayer.textAlign === 'center') ? '0 1px 3px rgba(217, 4, 41, 0.25)' : 'none',
+                            cursor: 'pointer',
+                          }}
+                          onClick={() => handleUpdateTextLayer({ textAlign: 'center' })}
+                        >
+                          <AlignCenter size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          title="Sağa Hizala"
+                          style={{
+                            flex: 1,
+                            padding: '6px 0',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: '6px',
+                            border: 'none',
+                            backgroundColor: selectedTextLayer.textAlign === 'right' ? '#D90429' : 'transparent',
+                            color: selectedTextLayer.textAlign === 'right' ? '#FFFFFF' : '#475569',
+                            boxShadow: selectedTextLayer.textAlign === 'right' ? '0 1px 3px rgba(217, 4, 41, 0.25)' : 'none',
+                            cursor: 'pointer',
+                          }}
+                          onClick={() => handleUpdateTextLayer({ textAlign: 'right' })}
+                        >
+                          <AlignRight size={14} />
+                        </button>
+                      </div>
                     </div>
-                    <div>
-                      <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block', marginBottom: '2px' }}>Renk</span>
-                      <input
-                        type="color"
-                        value={config.subtitleColor}
-                        onChange={(e) => onChangeConfig({ subtitleColor: e.target.value })}
-                        style={{ width: '36px', height: '32px', borderRadius: '6px', border: '1px solid #CBD5E1', cursor: 'pointer' }}
-                      />
+
+                    {/* Yazı Tipi Ailesi */}
+                    <div className="control-group">
+                      <div className="control-label" style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
+                        Yazı Tipi
+                      </div>
+                      <select
+                        className="select-field"
+                        value={selectedTextLayer.fontFamily || 'outfit'}
+                        onChange={(e) => handleUpdateTextLayer({ fontFamily: e.target.value })}
+                        style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px' }}
+                      >
+                        {FONTS.map((f) => (
+                          <option key={f.id} value={f.id}>{f.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Metin Boyutu (Punto) */}
+                    <div className="control-group">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
+                        <span>Metin Boyutu</span>
+                        <span style={{ fontFamily: 'monospace', color: '#D90429' }}>{selectedTextLayer.fontSize}px</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input
+                          type="range"
+                          min="12"
+                          max="96"
+                          value={selectedTextLayer.fontSize}
+                          onChange={(e) => handleUpdateTextLayer({ fontSize: Number(e.target.value) })}
+                          style={{ flex: 1 }}
+                        />
+                        <button
+                          type="button"
+                          className="stepper-mini-btn"
+                          title="Varsayılana Sıfırla (28px)"
+                          onClick={() => handleUpdateTextLayer({ fontSize: 28 })}
+                          style={{ padding: '2px 8px', fontSize: '11px', borderRadius: '4px', border: '1px solid #CBD5E1', backgroundColor: '#FFFFFF', cursor: 'pointer' }}
+                        >
+                          28
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Satır Aralığı */}
+                    <div className="control-group">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
+                        <span>Satır Aralığı</span>
+                        <span style={{ fontFamily: 'monospace', color: '#64748B' }}>
+                          {selectedTextLayer.lineHeight !== undefined ? selectedTextLayer.lineHeight : 1.2}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input
+                          type="range"
+                          min="0.8"
+                          max="3.0"
+                          step="0.05"
+                          value={selectedTextLayer.lineHeight !== undefined ? selectedTextLayer.lineHeight : 1.2}
+                          onChange={(e) => handleUpdateTextLayer({ lineHeight: Number(parseFloat(e.target.value).toFixed(2)) })}
+                          style={{ flex: 1 }}
+                        />
+                        <button
+                          type="button"
+                          className="stepper-mini-btn"
+                          title="Varsayılana Sıfırla (1.2)"
+                          onClick={() => handleUpdateTextLayer({ lineHeight: 1.2 })}
+                          style={{ padding: '2px 8px', fontSize: '11px', borderRadius: '4px', border: '1px solid #CBD5E1', backgroundColor: '#FFFFFF', cursor: 'pointer' }}
+                        >
+                          1.2
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Metin Rengi */}
+                    <div className="control-group">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
+                        <span>Metin Rengi</span>
+                        <span style={{ fontFamily: 'monospace', color: '#64748B' }}>{selectedTextLayer.color?.toUpperCase()}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'nowrap', overflowX: 'auto', paddingBottom: '4px', scrollbarWidth: 'none' }}>
+                        {PALETTE_PRESETS.map((color) => {
+                          const isColorSelected = selectedTextLayer.color?.toLowerCase() === color.toLowerCase();
+                          return (
+                            <button
+                              key={color}
+                              type="button"
+                              title={color}
+                              style={{
+                                width: '20px',
+                                height: '20px',
+                                borderRadius: '50%',
+                                backgroundColor: color,
+                                border: isColorSelected ? '2px solid #D90429' : '1px solid rgba(0,0,0,0.15)',
+                                boxShadow: isColorSelected ? '0 0 0 2px rgba(217, 4, 41, 0.25)' : 'none',
+                                cursor: 'pointer',
+                                padding: 0,
+                                flexShrink: 0,
+                              }}
+                              onClick={() => handleUpdateTextLayer({ color })}
+                            />
+                          );
+                        })}
+
+                        {/* Custom Color Pipette */}
+                        <div
+                          title="Özel Metin Rengi Seç"
+                          style={{
+                            position: 'relative',
+                            width: '20px',
+                            height: '20px',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backgroundColor: selectedTextLayer.color,
+                            border: '1px solid rgba(0,0,0,0.2)',
+                            cursor: 'pointer',
+                            overflow: 'hidden',
+                            flexShrink: 0,
+                          }}
+                        >
+                          <Pipette size={11} color="#FFFFFF" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.8))', pointerEvents: 'none' }} />
+                          <input
+                            type="color"
+                            value={selectedTextLayer.color?.startsWith('#') && selectedTextLayer.color.length === 7 ? selectedTextLayer.color : '#FFFFFF'}
+                            onChange={(e) => handleUpdateTextLayer({ color: e.target.value })}
+                            style={{
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              width: '100%',
+                              height: '100%',
+                              opacity: 0,
+                              cursor: 'pointer',
+                              border: 'none',
+                              padding: 0,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Döndürme Açısı */}
+                    <div className="control-group">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
+                        <span>Döndürme Açısı</span>
+                        <span style={{ fontFamily: 'monospace', color: '#64748B' }}>{selectedTextLayer.rotation || 0}°</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input
+                          type="range"
+                          min="-180"
+                          max="180"
+                          value={selectedTextLayer.rotation || 0}
+                          onChange={(e) => handleUpdateTextLayer({ rotation: Number(e.target.value) })}
+                          style={{ flex: 1 }}
+                        />
+                        <button
+                          type="button"
+                          className="stepper-mini-btn"
+                          title="Döndürmeyi Sıfırla (0°)"
+                          onClick={() => handleUpdateTextLayer({ rotation: 0 })}
+                          style={{ padding: '2px 8px', fontSize: '11px', borderRadius: '4px', border: '1px solid #CBD5E1', backgroundColor: '#FFFFFF', cursor: 'pointer' }}
+                        >
+                          0°
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Action buttons */}
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                      <button
+                        type="button"
+                        style={{
+                          flex: 1,
+                          fontSize: '11px',
+                          padding: '7px 10px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '5px',
+                          backgroundColor: '#F8FAFC',
+                          border: '1px solid #CBD5E1',
+                          borderRadius: '6px',
+                          color: '#334155',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                        }}
+                        onClick={() => handleUpdateTextLayer({ rotation: 0 })}
+                      >
+                        <Crosshair size={12} color="#D90429" />
+                        <span>Açıyı Sıfırla (0°)</span>
+                      </button>
+
+                      {textLayers.length > 1 && (
+                        <button
+                          type="button"
+                          style={{
+                            fontSize: '11px',
+                            padding: '7px 12px',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '5px',
+                            backgroundColor: '#D90429',
+                            border: '1px solid #D90429',
+                            borderRadius: '6px',
+                            color: '#FFFFFF',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                          }}
+                          onClick={() => handleDeleteTextLayer(selectedTextLayer.id)}
+                          title="Bu metni sil"
+                        >
+                          <Trash2 size={12} color="#FFFFFF" />
+                          <span style={{ color: '#FFFFFF' }}>Sil</span>
+                        </button>
+                      )}
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-
-            {/* Position Offsets */}
-            <div className="inspector-section" style={{ borderTop: '1px solid #E2E8F0', paddingTop: '14px' }}>
-              <label style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
-                Metin Grubu Konumu & Genişliği
-              </label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B', marginBottom: '2px' }}>
-                    <span>Yatay Konum (X)</span>
-                    <span style={{ fontFamily: 'monospace' }}>{config.textOffsetX}px</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={0}
-                    max={config.width - 200}
-                    value={config.textOffsetX}
-                    onChange={(e) => onChangeConfig({ textOffsetX: Number(e.target.value) })}
-                    style={{ width: '100%' }}
-                  />
-                </div>
-
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B', marginBottom: '2px' }}>
-                    <span>Dikey Kaydırma (Y)</span>
-                    <span style={{ fontFamily: 'monospace' }}>{config.textOffsetY}px</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={-200}
-                    max={200}
-                    value={config.textOffsetY}
-                    onChange={(e) => onChangeConfig({ textOffsetY: Number(e.target.value) })}
-                    style={{ width: '100%' }}
-                  />
-                </div>
-
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B', marginBottom: '2px' }}>
-                    <span>Maksimum Genişlik</span>
-                    <span style={{ fontFamily: 'monospace' }}>{config.textMaxWidth}px</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={260}
-                    max={config.width - 100}
-                    value={config.textMaxWidth}
-                    onChange={(e) => onChangeConfig({ textMaxWidth: Number(e.target.value) })}
-                    style={{ width: '100%' }}
-                  />
-                </div>
+                ) : null}
+              </>
+            ) : (
+              <div style={{ padding: '24px 16px', textAlign: 'center', backgroundColor: '#F8FAFC', borderRadius: '8px', border: '1px dashed #CBD5E1' }}>
+                <p style={{ fontSize: '12px', color: '#64748B', margin: '0 0 10px 0' }}>
+                  Henüz bir metin katmanı bulunmuyor.
+                </p>
+                <button
+                  type="button"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    color: '#FFFFFF',
+                    backgroundColor: '#D90429',
+                    border: 'none',
+                    borderRadius: '6px',
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                  onClick={handleAddTextLayer}
+                >
+                  <Plus size={13} />
+                  <span>İlk Metni Ekle</span>
+                </button>
               </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -1140,31 +1980,36 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                     />
                   </div>
 
-                  {/* Corner Shape */}
+                  {/* Corner Rounding Slider */}
                   <div>
-                    <label style={{ fontSize: '10.5px', color: '#64748B', display: 'block', marginBottom: '4px' }}>Köşe Şekli</label>
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                      {(['squircle', 'round', 'circle'] as const).map((r) => (
-                        <button
-                          key={r}
-                          type="button"
-                          onClick={() => onChangeConfig({ appIconRadius: r })}
-                          style={{
-                            flex: 1,
-                            padding: '5px',
-                            fontSize: '11px',
-                            fontWeight: 600,
-                            borderRadius: '6px',
-                            border: config.appIconRadius === r ? '1.5px solid #D90429' : '1px solid #CBD5E1',
-                            backgroundColor: config.appIconRadius === r ? '#FFF0F3' : '#FFFFFF',
-                            color: config.appIconRadius === r ? '#D90429' : '#475569',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          {r === 'squircle' ? 'iOS Squircle' : r === 'round' ? 'Yuvarlatılmış' : 'Daire'}
-                        </button>
-                      ))}
-                    </div>
+                    {(() => {
+                      const currentRadius =
+                        typeof config.appIconRadius === 'number'
+                          ? config.appIconRadius
+                          : config.appIconRadius === 'circle'
+                          ? 50
+                          : config.appIconRadius === 'round'
+                          ? 22
+                          : 22;
+
+                      return (
+                        <>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748B', marginBottom: '2px' }}>
+                            <span>Köşe Yuvarlaklığı</span>
+                            <span style={{ fontFamily: 'monospace', color: '#D90429', fontWeight: 600 }}>%{Math.round(currentRadius)}</span>
+                          </div>
+                          <input
+                            type="range"
+                            min={0}
+                            max={50}
+                            step={1}
+                            value={currentRadius}
+                            onChange={(e) => onChangeConfig({ appIconRadius: Number(e.target.value) })}
+                            style={{ width: '100%', accentColor: '#D90429' }}
+                          />
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               )}
@@ -1192,15 +2037,27 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                     style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px' }}
                   />
 
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <div style={{ flex: 1 }}>
-                      <span style={{ fontSize: '10.5px', color: '#64748B', display: 'block', marginBottom: '2px' }}>Yazı Rengi</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '10.5px', color: '#64748B' }}>Yazı:</span>
                       <input
                         type="color"
                         value={config.eyebrowColor}
                         onChange={(e) => onChangeConfig({ eyebrowColor: e.target.value })}
-                        style={{ width: '100%', height: '30px', borderRadius: '6px', border: '1px solid #CBD5E1', cursor: 'pointer' }}
+                        style={{ width: '22px', height: '22px', padding: 0, borderRadius: '4px', border: '1px solid #CBD5E1', cursor: 'pointer' }}
                       />
+                      <span style={{ fontSize: '10px', fontFamily: 'monospace', color: '#64748B' }}>{config.eyebrowColor}</span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '10.5px', color: '#64748B' }}>Etiket:</span>
+                      <input
+                        type="color"
+                        value={config.eyebrowBgColor?.startsWith('#') ? config.eyebrowBgColor : '#D90429'}
+                        onChange={(e) => onChangeConfig({ eyebrowBgColor: e.target.value })}
+                        style={{ width: '22px', height: '22px', padding: 0, borderRadius: '4px', border: '1px solid #CBD5E1', cursor: 'pointer' }}
+                      />
+                      <span style={{ fontSize: '10px', fontFamily: 'monospace', color: '#64748B' }}>{config.eyebrowBgColor}</span>
                     </div>
                   </div>
                 </div>
@@ -1209,44 +2066,109 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
 
             {/* Store Badges */}
             <div className="inspector-section" style={{ borderTop: '1px solid #E2E8F0', paddingTop: '14px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <div style={{ marginBottom: '8px' }}>
                 <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase' }}>Mağaza Rozetleri</span>
-                <input
-                  type="checkbox"
-                  checked={config.showStoreBadge}
-                  onChange={(e) => onChangeConfig({ showStoreBadge: e.target.checked })}
-                />
               </div>
 
-              {config.showStoreBadge && (
-                <div style={{ display: 'flex', gap: '4px' }}>
-                  {[
-                    { id: 'google-play', label: 'Google Play' },
-                    { id: 'app-store', label: 'App Store' },
-                    { id: 'both', label: 'Her İkisi' },
-                  ].map((s) => (
-                    <button
-                      key={s.id}
-                      type="button"
-                      onClick={() => onChangeConfig({ storeBadgeType: s.id as any })}
-                      style={{
-                        flex: 1,
-                        padding: '6px 4px',
-                        fontSize: '11px',
-                        fontWeight: 600,
-                        borderRadius: '6px',
-                        border: config.storeBadgeType === s.id ? '1.5px solid #D90429' : '1px solid #CBD5E1',
-                        backgroundColor: config.storeBadgeType === s.id ? '#FFF0F3' : '#FFFFFF',
-                        color: config.storeBadgeType === s.id ? '#D90429' : '#475569',
-                        cursor: 'pointer',
-                        textAlign: 'center',
-                      }}
-                    >
-                      {s.label}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {(() => {
+                  const isGooglePlayActive = config.showStoreBadge && (config.storeBadgeType === 'google-play' || config.storeBadgeType === 'both');
+                  const isAppStoreActive = config.showStoreBadge && (config.storeBadgeType === 'app-store' || config.storeBadgeType === 'both');
+
+                  const handleToggle = (type: 'google-play' | 'app-store') => {
+                    if (type === 'google-play') {
+                      if (isGooglePlayActive) {
+                        if (isAppStoreActive) {
+                          onChangeConfig({ storeBadgeType: 'app-store', showStoreBadge: true });
+                        } else {
+                          onChangeConfig({ showStoreBadge: false });
+                        }
+                      } else {
+                        onChangeConfig({
+                          storeBadgeType: isAppStoreActive ? 'both' : 'google-play',
+                          showStoreBadge: true,
+                        });
+                      }
+                    } else {
+                      if (isAppStoreActive) {
+                        if (isGooglePlayActive) {
+                          onChangeConfig({ storeBadgeType: 'google-play', showStoreBadge: true });
+                        } else {
+                          onChangeConfig({ showStoreBadge: false });
+                        }
+                      } else {
+                        onChangeConfig({
+                          storeBadgeType: isGooglePlayActive ? 'both' : 'app-store',
+                          showStoreBadge: true,
+                        });
+                      }
+                    }
+                  };
+
+                  return (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => handleToggle('google-play')}
+                        style={{
+                          flex: 1,
+                          padding: '7px 8px',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          borderRadius: '6px',
+                          border: isGooglePlayActive ? '1.5px solid #D90429' : '1px solid #CBD5E1',
+                          backgroundColor: isGooglePlayActive ? '#D90429' : '#FFFFFF',
+                          color: isGooglePlayActive ? '#FFFFFF' : '#475569',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                          transition: 'all 0.15s ease',
+                          boxShadow: isGooglePlayActive ? '0 1px 3px rgba(217, 4, 41, 0.25)' : 'none',
+                        }}
+                        title={isGooglePlayActive ? 'Google Play rozetini gizle' : 'Google Play rozetini göster'}
+                      >
+                        <svg width="13" height="14" viewBox="0 0 466 511.98" fillRule="evenodd" clipRule="evenodd" style={{ flexShrink: 0 }}>
+                          <path fill={isGooglePlayActive ? '#FFFFFF' : '#EA4335'} d="M199.9 237.8 1.4 470.17c7.22 24.57 30.16 41.81 55.8 41.81 11.16 0 20.93-2.79 29.3-8.37l244.16-139.46L199.9 237.8z"/>
+                          <path fill={isGooglePlayActive ? '#FFFFFF' : '#FBBC04'} d="m433.91 205.1-104.65-60-111.61 110.22 113.01 108.83 104.64-58.6c18.14-9.77 30.7-29.3 30.7-50.23-1.4-20.93-13.95-40.46-32.09-50.22z"/>
+                          <path fill={isGooglePlayActive ? '#FFFFFF' : '#34A853'} d="M199.42 273.45 329.27 145.1 87.9 8.37C79.53 2.79 68.36 0 57.2 0 30.7 0 6.98 18.14 1.4 41.86l198.02 231.59z"/>
+                          <path fill={isGooglePlayActive ? '#FFFFFF' : '#4285F4'} d="M1.39 41.86C0 46.04 0 51.63 0 57.2v397.64c0 5.57 0 9.76 1.4 15.34l216.27-214.86L1.39 41.86z"/>
+                        </svg>
+                        <span>Google Play</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleToggle('app-store')}
+                        style={{
+                          flex: 1,
+                          padding: '7px 8px',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          borderRadius: '6px',
+                          border: isAppStoreActive ? '1.5px solid #D90429' : '1px solid #CBD5E1',
+                          backgroundColor: isAppStoreActive ? '#D90429' : '#FFFFFF',
+                          color: isAppStoreActive ? '#FFFFFF' : '#475569',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                          transition: 'all 0.15s ease',
+                          boxShadow: isAppStoreActive ? '0 1px 3px rgba(217, 4, 41, 0.25)' : 'none',
+                        }}
+                        title={isAppStoreActive ? 'App Store rozetini gizle' : 'App Store rozetini göster'}
+                      >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.74 1.02-1.77.9-2.8-.88.04-1.94.59-2.57 1.33-.56.64-.99 1.68-.86 2.69.97.08 1.93-.49 2.53-1.22z"/>
+                        </svg>
+                        <span>App Store</span>
+                      </button>
+                    </>
+                  );
+                })()}
+              </div>
             </div>
 
             {/* Rating Badge */}

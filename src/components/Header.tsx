@@ -133,7 +133,7 @@ export const Header: React.FC<HeaderProps> = ({
             title="Bannerı yüksek kalitede indir"
           >
             <Download size={14} />
-            <span>{isExporting ? 'Oluşturuluyor...' : 'Bannerı İndir'}</span>
+            <span>{isExporting ? 'Oluşturuluyor...' : 'İndir'}</span>
           </button>
         </div>
       )}
