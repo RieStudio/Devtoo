@@ -156,7 +156,7 @@ const EditableCanvasText: React.FC<EditableCanvasTextProps> = ({
 
 interface BannerCanvasPreviewProps {
   config: StoreBannerConfig;
-  onChangeConfig: (updated: Partial<StoreBannerConfig>) => void;
+  onChangeConfig: (updated: Partial<StoreBannerConfig>, recordHistory?: boolean) => void;
   onUploadDeviceScreenshot: (deviceId: string) => void;
   onCropDeviceScreenshot: (deviceId: string) => void;
   onUploadAppIcon: () => void;
@@ -1036,6 +1036,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
         }
         const rawX = Math.round(startPosRef.current.initialOffsetX + deltaX);
         const rawY = Math.round(startPosRef.current.initialOffsetY + deltaY);
+        dragMovedRef.current = true;
         const snap = calculateSmartSnap(rawX, rawY, elemW, elemH);
 
         onChangeConfig({
@@ -1043,7 +1044,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
             ...(config.elementPositions || {}),
             [activeDragElementId]: { x: snap.snappedX, y: snap.snappedY },
           },
-        });
+        }, false);
         setAlignmentGuides({ showVertical: snap.showVertical, showHorizontal: snap.showHorizontal });
         return;
       }
@@ -1088,7 +1089,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
               ...(config.elementPositions || {}),
               ['app-icon']: { x: newX, y: newY },
             },
-          });
+          }, false);
           return;
         } else {
           // For store-badge, rating, eyebrow
@@ -1119,12 +1120,13 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
               ...(config.elementPositions || {}),
               [activeDragElementId]: { x: newX, y: newY },
             },
-          });
+          }, false);
           return;
         }
       }
 
       if (dragMode === 'text-move' && activeDragTextId) {
+        dragMovedRef.current = true;
         const targetLayer = (config.textLayers || []).find((l) => l.id === activeDragTextId);
         const tW = targetLayer?.width || 360;
         const tH = (targetLayer?.fontSize || 28) * 1.35;
@@ -1136,12 +1138,13 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
           textLayers: (config.textLayers || []).map((l) =>
             l.id === activeDragTextId ? { ...l, x: snap.snappedX, y: snap.snappedY } : l
           ),
-        });
+        }, false);
         setAlignmentGuides({ showVertical: snap.showVertical, showHorizontal: snap.showHorizontal });
         return;
       }
 
       if (dragMode === 'text-rotate' && activeDragTextId) {
+        dragMovedRef.current = true;
         const { centerX, centerY, startRotation, startPointerAngle } = rotateCenterRef.current;
         const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
         const deltaAngle = currentAngle - startPointerAngle;
@@ -1153,7 +1156,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
           textLayers: (config.textLayers || []).map((l) =>
             l.id === activeDragTextId ? { ...l, rotation: newRot } : l
           ),
-        });
+        }, false);
         return;
       }
 
@@ -1176,7 +1179,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
           textLayers: (config.textLayers || []).map((l) =>
             l.id === activeDragTextId ? { ...l, width: newW } : l
           ),
-        });
+        }, false);
         return;
       }
 
@@ -1220,11 +1223,12 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
           textLayers: (config.textLayers || []).map((l) =>
             l.id === activeDragTextId ? { ...l, fontSize: newFontSize, width: newWidth, x: newX, y: newY } : l
           ),
-        });
+        }, false);
         return;
       }
 
       if (dragMode === 'shape-move' && activeDragShapeId) {
+        dragMovedRef.current = true;
         const shape = (config.shapeLayers || []).find((s) => s.id === activeDragShapeId);
         const sW = shape?.width || 100;
         const sH = shape?.height || 100;
@@ -1236,12 +1240,13 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
           shapeLayers: (config.shapeLayers || []).map((s) =>
             s.id === activeDragShapeId ? { ...s, x: snap.snappedX, y: snap.snappedY } : s
           ),
-        });
+        }, false);
         setAlignmentGuides({ showVertical: snap.showVertical, showHorizontal: snap.showHorizontal });
         return;
       }
 
       if (dragMode === 'shape-rotate' && activeDragShapeId) {
+        dragMovedRef.current = true;
         const { centerX, centerY, startRotation, startPointerAngle } = rotateCenterRef.current;
         const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
         const deltaAngle = currentAngle - startPointerAngle;
@@ -1253,11 +1258,12 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
           shapeLayers: (config.shapeLayers || []).map((s) =>
             s.id === activeDragShapeId ? { ...s, rotation: newRot } : s
           ),
-        });
+        }, false);
         return;
       }
 
       if (dragMode.startsWith('shape-resize-') && activeDragShapeId && shapeResizeRef.current) {
+        dragMovedRef.current = true;
         const info = shapeResizeRef.current;
         const rad = (info.startRot * Math.PI) / 180;
         const cos = Math.cos(rad);
@@ -1296,7 +1302,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
           shapeLayers: (config.shapeLayers || []).map((s) =>
             s.id === activeDragShapeId ? { ...s, width: newW, height: newH } : s
           ),
-        });
+        }, false);
         return;
       }
 
@@ -1305,6 +1311,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
       if (!targetDev) return;
 
       if (dragMode === 'move') {
+        dragMovedRef.current = true;
         const candOffsetX = Math.round(startPosRef.current.initialOffsetX + deltaX);
         const candOffsetY = Math.round(startPosRef.current.initialOffsetY + deltaY);
 
@@ -1319,9 +1326,10 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
             ? { ...d, offsetX: Math.round(snappedOffsetX), offsetY: Math.round(snappedOffsetY) }
             : d
         );
-        onChangeConfig({ devices: updated });
+        onChangeConfig({ devices: updated }, false);
         setAlignmentGuides({ showVertical: snapX, showHorizontal: snapY });
       } else if (dragMode === 'device-rotate') {
+        dragMovedRef.current = true;
         const { centerX, centerY, startRotation, startPointerAngle } = rotateCenterRef.current;
         const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
         const deltaAngle = currentAngle - startPointerAngle;
@@ -1340,8 +1348,9 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
         const updated = config.devices.map((d) =>
           d.id === activeDragDeviceId ? { ...d, rotation: newRot } : d
         );
-        onChangeConfig({ devices: updated });
+        onChangeConfig({ devices: updated }, false);
       } else if (dragMode.startsWith('resize-')) {
+        dragMovedRef.current = true;
         let scaleDelta = 0;
         const sensitivity = 0.0035;
 
@@ -1363,7 +1372,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
         const updated = config.devices.map((d) =>
           d.id === activeDragDeviceId ? { ...d, scale: newScale } : d
         );
-        onChangeConfig({ devices: updated });
+        onChangeConfig({ devices: updated }, false);
       }
     };
 
@@ -1376,6 +1385,10 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
       shapeResizeRef.current = null;
       elementResizeRef.current = null;
       setAlignmentGuides({ showVertical: false, showHorizontal: false });
+      if (dragMovedRef.current) {
+        onChangeConfig({}, true);
+        dragMovedRef.current = false;
+      }
     };
 
     window.addEventListener('pointermove', handlePointerMove);
@@ -1601,7 +1614,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
           filter: getShadowStyle(device.shadowDepth),
           cursor: dragMode === 'move' && isCurrentDragging ? 'grabbing' : 'grab',
           zIndex: isSelected ? 35 : 20 + index,
-          transition: isCurrentDragging ? 'none' : 'outline 0.15s ease, filter 0.2s ease',
+          transition: isCurrentDragging ? 'none' : 'left 0.15s ease-out, top 0.15s ease-out, transform 0.15s ease-out, outline 0.15s ease, filter 0.2s ease',
           pointerEvents: 'auto',
           touchAction: 'none',
         }}
@@ -2006,6 +2019,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
               boxShadow: '0 12px 36px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08)',
               border: '1px solid var(--border-default)',
               borderRadius: '8px',
+              transition: isPanning ? 'none' : 'width 0.15s ease-out, height 0.15s ease-out, background-color 0.15s ease-out, background 0.15s ease-out',
               ...getCanvasBackground(),
             }}
           >
@@ -2112,7 +2126,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                     top: `${shape.y}px`,
                     width: `${shape.width}px`,
                     height: `${shape.height}px`,
-                    transition: dragMode.startsWith('shape-') ? 'none' : 'transform 0.1s ease-out',
+                    transition: dragMode.startsWith('shape-') ? 'none' : 'left 0.15s ease-out, top 0.15s ease-out, width 0.15s ease-out, height 0.15s ease-out, transform 0.15s ease-out, opacity 0.15s ease-out',
                     zIndex: isSelected ? 35 : 12,
                     opacity: (shape.opacity ?? 100) / 100,
                   }}
@@ -2322,7 +2336,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                     outlineOffset: '4px',
                     borderRadius: '8px',
                     padding: '2px',
-                    transition: dragMode === 'element-move' ? 'none' : 'outline 0.15s ease',
+                    transition: dragMode === 'element-move' ? 'none' : 'left 0.15s ease-out, top 0.15s ease-out, outline 0.15s ease',
                   }}
                   title="Uygulama İkonu - Taşımak için sürükleyin, köşelerinden boyutlandırın, değiştirmek için çift tıklayın"
                 >
@@ -2441,7 +2455,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                     borderRadius: '999px',
                     padding: '2px',
                     display: 'inline-flex',
-                    transition: dragMode === 'element-move' ? 'none' : 'outline 0.15s ease',
+                    transition: dragMode === 'element-move' ? 'none' : 'left 0.15s ease-out, top 0.15s ease-out, transform 0.15s ease-out, outline 0.15s ease',
                   }}
                   title="Vurgu Etiketi - Taşımak için sürükleyin, köşelerinden boyutlandırın, düzenlemek için tıklayın"
                 >
@@ -2515,7 +2529,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                       zIndex: isSelected ? 48 : 36,
                       fontFamily: getFontFamilyCss(layer.fontFamily),
                       cursor: editingTextId === layer.id ? 'text' : dragMode === 'text-move' && activeDragTextId === layer.id ? 'grabbing' : 'grab',
-                      transition: dragMode.startsWith('text-') ? 'none' : 'outline 0.1s ease',
+                      transition: dragMode.startsWith('text-') ? 'none' : 'left 0.15s ease-out, top 0.15s ease-out, outline 0.1s ease',
                     }}
                     onPointerDown={(e) => {
                       if (editingTextId === layer.id) return;
@@ -2686,6 +2700,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                         display: 'flex',
                         justifyContent: layer.textAlign === 'center' ? 'center' : layer.textAlign === 'right' ? 'flex-end' : 'flex-start',
                         alignItems: 'flex-start',
+                        transition: dragMode.startsWith('text-') ? 'none' : 'transform 0.15s ease-out, width 0.15s ease-out, outline 0.15s ease',
                       }}
                     >
                       {isSelected && (
@@ -2812,7 +2827,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                       borderRadius: '6px',
                       padding: '2px',
                       textAlign: config.textAlignment,
-                      transition: dragMode === 'element-move' ? 'none' : 'outline 0.15s ease',
+                      transition: dragMode === 'element-move' ? 'none' : 'left 0.15s ease-out, top 0.15s ease-out, outline 0.15s ease',
                     }}
                     title="Başlık - Taşımak için sürükleyin, düzenlemek için tıklayın"
                   >
@@ -2873,7 +2888,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                       borderRadius: '6px',
                       padding: '2px',
                       textAlign: config.textAlignment,
-                      transition: dragMode === 'element-move' ? 'none' : 'outline 0.15s ease',
+                      transition: dragMode === 'element-move' ? 'none' : 'left 0.15s ease-out, top 0.15s ease-out, outline 0.15s ease',
                     }}
                     title="Alt Başlık - Taşımak için sürükleyin, düzenlemek için tıklayın"
                   >
@@ -2937,7 +2952,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                     display: 'inline-flex',
                     gap: '8px',
                     alignItems: 'center',
-                    transition: dragMode === 'element-move' ? 'none' : 'outline 0.15s ease',
+                    transition: dragMode === 'element-move' ? 'none' : 'left 0.15s ease-out, top 0.15s ease-out, transform 0.15s ease-out, outline 0.15s ease',
                   }}
                   title="Mağaza Rozetleri - Taşımak için sürükleyin, köşelerinden boyutlandırın"
                 >
@@ -3079,7 +3094,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                     color: config.ratingTextColor || '#F8FAFC',
                     fontSize: '12px',
                     fontWeight: 600,
-                    transition: dragMode === 'element-move' ? 'none' : 'outline 0.15s ease',
+                    transition: dragMode === 'element-move' ? 'none' : 'left 0.15s ease-out, top 0.15s ease-out, transform 0.15s ease-out, outline 0.15s ease',
                   }}
                   title="Kullanıcı Puanı Rozeti - Taşımak için sürükleyin, köşelerinden boyutlandırın, düzenlemek için metne tıklayın"
                 >

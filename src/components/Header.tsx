@@ -121,6 +121,31 @@ export const Header: React.FC<HeaderProps> = ({
 
       {activeTool === 'store-banner-maker' && (
         <div className="header-actions">
+          {onUndo && onRedo && (
+            <div style={{ display: 'flex', gap: '2px', backgroundColor: '#F1F3F5', padding: '2px', borderRadius: '8px', marginRight: '4px' }}>
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{ padding: '6px 8px', border: 'none', background: 'transparent' }}
+                onClick={onUndo}
+                disabled={!canUndo}
+                title="Geri Al (Ctrl + Z)"
+              >
+                <Undo2 size={15} />
+              </button>
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{ padding: '6px 8px', border: 'none', background: 'transparent' }}
+                onClick={onRedo}
+                disabled={!canRedo}
+                title="İleri Al (Ctrl + Y / Ctrl + Shift + Z)"
+              >
+                <Redo2 size={15} />
+              </button>
+            </div>
+          )}
+
           <button className="btn-secondary" onClick={onUploadClick} title="Ekran görüntüsü yükle">
             <Upload size={14} />
             <span>Ekran Görüntüsü Yükle</span>

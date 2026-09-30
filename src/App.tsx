@@ -137,6 +137,12 @@ export function App() {
   const historyIndexRef = useRef<number>(0);
   const clipboardRef = useRef<{ type: 'layers'; data: typeof INITIAL_CONFIG.textLayers } | null>(null);
 
+  // Store Banner Maker Undo / Redo refs & state
+  const bannerUndoRef = useRef<() => void>(() => {});
+  const bannerRedoRef = useRef<() => void>(() => {});
+  const [canBannerUndo, setCanBannerUndo] = useState(false);
+  const [canBannerRedo, setCanBannerRedo] = useState(false);
+
   // Helper to extract content-relevant state
   const getScreensSnapshot = (screensList: MockupConfig[]) => {
     return JSON.stringify(screensList.map((cfg) => ({
@@ -555,7 +561,11 @@ export function App() {
       if (isCtrl && e.key.toLowerCase() === 'z' && !e.shiftKey) {
         if (!isTyping) {
           e.preventDefault();
-          handleUndo();
+          if (activeTool === 'store-banner-maker') {
+            bannerUndoRef.current?.();
+          } else if (activeTool === 'mockup-editor') {
+            handleUndo();
+          }
         }
       } else if (
         (isCtrl && e.key.toLowerCase() === 'y') ||
@@ -563,7 +573,11 @@ export function App() {
       ) {
         if (!isTyping) {
           e.preventDefault();
-          handleRedo();
+          if (activeTool === 'store-banner-maker') {
+            bannerRedoRef.current?.();
+          } else if (activeTool === 'mockup-editor') {
+            handleRedo();
+          }
         }
       }
 
@@ -1047,10 +1061,10 @@ export function App() {
               ? () => iconCropRef.current?.()
               : () => setIsCropModalOpen(true)
           }
-          onUndo={handleUndo}
-          onRedo={handleRedo}
-          canUndo={historyIndexRef.current > 0}
-          canRedo={historyIndexRef.current < historyRef.current.length - 1}
+          onUndo={activeTool === 'store-banner-maker' ? () => bannerUndoRef.current?.() : handleUndo}
+          onRedo={activeTool === 'store-banner-maker' ? () => bannerRedoRef.current?.() : handleRedo}
+          canUndo={activeTool === 'store-banner-maker' ? canBannerUndo : historyIndexRef.current > 0}
+          canRedo={activeTool === 'store-banner-maker' ? canBannerRedo : historyIndexRef.current < historyRef.current.length - 1}
           isExporting={
             activeTool === 'app-icon-resizer' 
               ? isIconExporting 
@@ -1110,6 +1124,12 @@ export function App() {
           isVisible={activeTool === 'store-banner-maker'}
           onRegisterExport={(fn) => { bannerExportRef.current = fn; }}
           onRegisterUpload={(fn) => { bannerUploadRef.current = fn; }}
+          onRegisterUndo={(fn) => { bannerUndoRef.current = fn; }}
+          onRegisterRedo={(fn) => { bannerRedoRef.current = fn; }}
+          onHistoryStateChange={(undoable, redoable) => {
+            setCanBannerUndo(undoable);
+            setCanBannerRedo(redoable);
+          }}
           onExportStateChange={setIsBannerExporting}
           onShowToast={showToast}
         />

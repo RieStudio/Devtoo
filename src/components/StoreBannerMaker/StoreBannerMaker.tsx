@@ -10,6 +10,9 @@ interface StoreBannerMakerProps {
   isVisible?: boolean;
   onRegisterExport?: (exportFn: () => void) => void;
   onRegisterUpload?: (uploadFn: () => void) => void;
+  onRegisterUndo?: (undoFn: () => void) => void;
+  onRegisterRedo?: (redoFn: () => void) => void;
+  onHistoryStateChange?: (canUndo: boolean, canRedo: boolean) => void;
   onExportStateChange?: (isExporting: boolean) => void;
   onShowToast?: (message: string) => void;
 }
@@ -18,6 +21,9 @@ export const StoreBannerMaker: React.FC<StoreBannerMakerProps> = ({
   isVisible = true,
   onRegisterExport,
   onRegisterUpload,
+  onRegisterUndo,
+  onRegisterRedo,
+  onHistoryStateChange,
   onExportStateChange,
   onShowToast,
 }) => {
@@ -31,9 +37,62 @@ export const StoreBannerMaker: React.FC<StoreBannerMakerProps> = ({
   // Surface export ref for html-to-image
   const canvasExportRef = useRef<HTMLDivElement>(null);
 
-  const handleUpdateConfig = (updated: Partial<StoreBannerConfig>) => {
-    setConfig((prev) => ({ ...prev, ...updated }));
+  // Undo / Redo History Stacks
+  const historyRef = useRef<StoreBannerConfig[]>([JSON.parse(JSON.stringify(INITIAL_BANNER_CONFIG))]);
+  const historyIndexRef = useRef<number>(0);
+  const [, setHistoryTick] = useState<number>(0);
+
+  // Helper to extract content-relevant state (ignores selection-only IDs)
+  const getBannerSnapshot = (cfg: StoreBannerConfig) => {
+    const { selectedShapeId, selectedTextId, selectedDeviceId, selectedElementId, ...rest } = cfg;
+    return JSON.stringify(rest);
   };
+
+  const notifyHistoryState = useCallback(() => {
+    const undoable = historyIndexRef.current > 0;
+    const redoable = historyIndexRef.current < historyRef.current.length - 1;
+    setHistoryTick((t) => t + 1);
+    onHistoryStateChange?.(undoable, redoable);
+  }, [onHistoryStateChange]);
+
+  const handleUpdateConfig = useCallback((updated: Partial<StoreBannerConfig>, recordHistory = true) => {
+    setConfig((prev) => {
+      const next = { ...prev, ...updated };
+
+      if (recordHistory) {
+        const prevSnap = getBannerSnapshot(historyRef.current[historyIndexRef.current] || prev);
+        const nextSnap = getBannerSnapshot(next);
+
+        if (prevSnap !== nextSnap) {
+          const newHist = historyRef.current.slice(0, historyIndexRef.current + 1);
+          newHist.push(JSON.parse(JSON.stringify(next)));
+          if (newHist.length > 60) newHist.shift();
+          historyRef.current = newHist;
+          historyIndexRef.current = newHist.length - 1;
+          setTimeout(() => notifyHistoryState(), 0);
+        }
+      }
+      return next;
+    });
+  }, [notifyHistoryState]);
+
+  const handleUndo = useCallback(() => {
+    if (historyIndexRef.current > 0) {
+      historyIndexRef.current -= 1;
+      const target = JSON.parse(JSON.stringify(historyRef.current[historyIndexRef.current]));
+      setConfig(target);
+      notifyHistoryState();
+    }
+  }, [notifyHistoryState]);
+
+  const handleRedo = useCallback(() => {
+    if (historyIndexRef.current < historyRef.current.length - 1) {
+      historyIndexRef.current += 1;
+      const target = JSON.parse(JSON.stringify(historyRef.current[historyIndexRef.current]));
+      setConfig(target);
+      notifyHistoryState();
+    }
+  }, [notifyHistoryState]);
 
   // Upload file helper
   const openFilePicker = (accept: string, onSelected: (base64: string, file: File) => void) => {
@@ -175,6 +234,48 @@ export const StoreBannerMaker: React.FC<StoreBannerMakerProps> = ({
       onRegisterUpload(() => handleUploadDeviceScreenshot(targetDevId));
     }
   }, [isVisible, onRegisterUpload, handleUploadDeviceScreenshot, config.selectedDeviceId, config.devices]);
+
+  useEffect(() => {
+    if (isVisible) {
+      onRegisterUndo?.(handleUndo);
+      onRegisterRedo?.(handleRedo);
+      notifyHistoryState();
+    }
+  }, [isVisible, onRegisterUndo, onRegisterRedo, notifyHistoryState, handleUndo, handleRedo]);
+
+  // Global Keyboard Shortcuts (Undo / Redo) for Store Banner Maker
+  useEffect(() => {
+    if (!isVisible) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const activeEl = document.activeElement;
+      const isTyping = activeEl && (
+        activeEl.tagName === 'INPUT' ||
+        activeEl.tagName === 'TEXTAREA' ||
+        activeEl.getAttribute('contenteditable') === 'true'
+      );
+
+      const isCtrl = e.ctrlKey || e.metaKey;
+
+      if (isCtrl && e.key.toLowerCase() === 'z' && !e.shiftKey) {
+        if (!isTyping) {
+          e.preventDefault();
+          handleUndo();
+        }
+      } else if (
+        (isCtrl && e.key.toLowerCase() === 'y') ||
+        (isCtrl && e.shiftKey && e.key.toLowerCase() === 'z')
+      ) {
+        if (!isTyping) {
+          e.preventDefault();
+          handleRedo();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isVisible, handleUndo, handleRedo]);
 
   // Target device being cropped
   const cropTargetDevice = config.devices.find((d) => d.id === activeCropDeviceId) || config.devices[0];

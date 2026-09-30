@@ -45,7 +45,7 @@ const PALETTE_PRESETS = [
 
 interface BannerInspectorPanelProps {
   config: StoreBannerConfig;
-  onChangeConfig: (updated: Partial<StoreBannerConfig>) => void;
+  onChangeConfig: (updated: Partial<StoreBannerConfig>, recordHistory?: boolean) => void;
   onUploadDeviceScreenshot: (deviceId: string) => void;
   onCropDeviceScreenshot: (deviceId: string) => void;
   onUploadAppIcon: () => void;

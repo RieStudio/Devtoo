@@ -492,27 +492,48 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
     setZoomLevel(newZoom);
   };
 
-  const handleZoomReset100 = (e: React.MouseEvent) => {
+  const handleZoomReset = (e: React.MouseEvent) => {
     e.stopPropagation();
     const viewportEl = viewportRef.current;
     const containerEl = containerRef.current;
     if (viewportEl && containerEl) {
       const vpW = viewportEl.clientWidth;
       const vpH = viewportEl.clientHeight;
-      // Content dimensions at zoom=1: use natural size divided by current zoom to get base size
-      const currentZ = zoomRef.current;
+      const currentZ = zoomRef.current || 1;
       const contentW = containerEl.getBoundingClientRect().width / currentZ;
       const contentH = containerEl.getBoundingClientRect().height / currentZ;
-      const initialX = Math.round((vpW - contentW) / 2);
-      const initialY = Math.round((vpH - contentH) / 2);
-      zoomRef.current = 1;
-      panRef.current = { x: initialX, y: initialY };
-      setZoomLevel(1);
-      setPanOffset({ x: initialX, y: initialY });
-    } else {
-      setZoomLevel(1);
-      setPanOffset({ x: 0, y: 0 });
+
+      if (contentW > 0 && contentH > 0 && vpW > 0 && vpH > 0) {
+        const padding = 80;
+        const availableW = Math.max(100, vpW - padding);
+        const availableH = Math.max(100, vpH - padding);
+
+        const scaleX = availableW / contentW;
+        const scaleY = availableH / contentH;
+        const fitZoom = Math.min(scaleX, scaleY, 1.0);
+        const roundedFitZoom = Math.max(0.2, Number(fitZoom.toFixed(2)));
+
+        let newZoom = roundedFitZoom;
+        // If already fitted and fitZoom is smaller than 1, toggle to 100% (original size)
+        if (Math.abs(zoomLevel - roundedFitZoom) < 0.03 && roundedFitZoom < 0.98) {
+          newZoom = 1;
+        }
+
+        const scaledW = contentW * newZoom;
+        const scaledH = contentH * newZoom;
+        const initialX = Math.round((vpW - scaledW) / 2);
+        const initialY = Math.round((vpH - scaledH) / 2);
+
+        zoomRef.current = newZoom;
+        panRef.current = { x: initialX, y: initialY };
+        setZoomLevel(newZoom);
+        setPanOffset({ x: initialX, y: initialY });
+        return;
+      }
     }
+
+    setZoomLevel(1);
+    setPanOffset({ x: 0, y: 0 });
   };
 
   // Multi-Device Setup for active screen
@@ -1768,8 +1789,8 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
           <button
             type="button"
             className="zoom-btn zoom-percentage-text"
-            title="Varsayılan Boyuta Dön (%100)"
-            onClick={handleZoomReset100}
+            title="Otomatik Sığdır / Varsayılan Boyut"
+            onClick={handleZoomReset}
           >
             %{Math.round(effectiveZoom * 100)}
           </button>
@@ -1781,6 +1802,17 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
             onClick={handleZoomIn}
           >
             <ZoomIn size={14} />
+          </button>
+
+          <div className="zoom-divider" />
+
+          <button
+            type="button"
+            className="zoom-btn"
+            title="Ekrana Sığdır"
+            onClick={handleZoomReset}
+          >
+            <Maximize2 size={13} />
           </button>
         </div>
       )}
