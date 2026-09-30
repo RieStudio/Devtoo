@@ -629,14 +629,26 @@ export function App() {
       if (isCtrl && e.key.toLowerCase() === 'v' && !isTyping) {
         if (clipboardRef.current && clipboardRef.current.type === 'layers') {
           e.preventDefault();
-          const clonedLayers = clipboardRef.current.data.map((l) => ({
+          const currentLayers = activeScreenConfig.textLayers || [];
+          if (currentLayers.length >= 20) {
+            showToast('En fazla 20 metin katmanı ekleyebilirsiniz.');
+            return;
+          }
+
+          const availableSlots = 20 - currentLayers.length;
+          const layersToClone = clipboardRef.current.data.slice(0, availableSlots);
+          if (layersToClone.length < clipboardRef.current.data.length) {
+            showToast('Maksimum 20 metin katmanı sınırına ulaşıldı.');
+          }
+
+          const clonedLayers = layersToClone.map((l) => ({
             ...l,
             id: `layer-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
             x: l.x + 20,
             y: l.y + 20,
           }));
 
-          const updatedLayers = [...(activeScreenConfig.textLayers || []), ...clonedLayers];
+          const updatedLayers = [...currentLayers, ...clonedLayers];
           const newSelectedIds = clonedLayers.map((l) => l.id);
 
           handleUpdateConfig({
@@ -1079,6 +1091,7 @@ export function App() {
             onChangeConfig={handleUpdateConfig}
             onFileSelect={handleFileSelect}
             onOpenCropModal={() => setIsCropModalOpen(true)}
+            onShowToast={showToast}
           />
         </div>
 

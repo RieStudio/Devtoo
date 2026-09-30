@@ -52,6 +52,7 @@ interface BannerInspectorPanelProps {
   onUploadBgImage: () => void;
   onExport?: () => void;
   isExporting?: boolean;
+  onShowToast?: (message: string) => void;
 }
 
 type TabType = 'presets' | 'background' | 'devices' | 'text' | 'branding';
@@ -75,6 +76,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
   onCropDeviceScreenshot,
   onUploadAppIcon,
   onUploadBgImage,
+  onShowToast,
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>('presets');
 
@@ -265,8 +267,17 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
   const selectedTextLayer = textLayers.find((l) => l.id === config.selectedTextId) || textLayers[0] || null;
 
   const handleAddTextLayer = () => {
-    const newId = `banner-text-${Date.now()}`;
     const layers = config.textLayers || [];
+    if (layers.length >= 20) {
+      if (onShowToast) {
+        onShowToast('En fazla 20 metin katmanı ekleyebilirsiniz.');
+      } else {
+        alert('En fazla 20 metin katmanı ekleyebilirsiniz.');
+      }
+      return;
+    }
+
+    const newId = `banner-text-${Date.now()}`;
     const lastLayer = layers[layers.length - 1];
 
     const baseX = lastLayer ? Math.min(config.width - 240, (lastLayer.x || 0) + 20) : 60;

@@ -45,6 +45,7 @@ interface InspectorPanelProps {
   onChangeConfig: (updated: Partial<MockupConfig>) => void;
   onFileSelect: (file: File) => void;
   onOpenCropModal: () => void;
+  onShowToast?: (message: string) => void;
 }
 
 const PALETTE_PRESETS = [
@@ -164,6 +165,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   onChangeConfig,
   onFileSelect,
   onOpenCropModal,
+  onShowToast,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const colorPickerInputRef = useRef<HTMLInputElement>(null);
@@ -362,8 +364,17 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   const selectedLayer = (config.textLayers || []).find((l) => l.id === config.selectedTextId) || null;
 
   const handleAddTextLayer = () => {
-    const newId = `layer-${Date.now()}`;
     const layers = config.textLayers || [];
+    if (layers.length >= 20) {
+      if (onShowToast) {
+        onShowToast('En fazla 20 metin katmanı ekleyebilirsiniz.');
+      } else {
+        alert('En fazla 20 metin katmanı ekleyebilirsiniz.');
+      }
+      return;
+    }
+
+    const newId = `layer-${Date.now()}`;
     const lastLayer = layers[layers.length - 1];
 
     const baseOffsetX = lastLayer ? (lastLayer.x || 0) + 20 : 0;
@@ -1812,6 +1823,9 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             <div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', fontSize: '11.5px', margin: 0 }}>
               <Type size={13} color="#D90429" />
               <span>Metin Katmanları</span>
+              <span style={{ fontSize: '10px', backgroundColor: '#F1F5F9', color: '#64748B', padding: '1px 6px', borderRadius: '10px', fontWeight: 700 }}>
+                {(config.textLayers || []).length}
+              </span>
             </div>
             <button
               type="button"

@@ -202,6 +202,7 @@ export const StoreBannerMaker: React.FC<StoreBannerMakerProps> = ({
         onUploadBgImage={handleUploadBgImage}
         onExport={handlePerformExport}
         isExporting={isExporting}
+        onShowToast={onShowToast}
       />
 
       {/* Interactive Crop Modal for Device Screenshots */}
