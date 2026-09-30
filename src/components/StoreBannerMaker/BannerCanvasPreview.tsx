@@ -35,6 +35,10 @@ type CanvasDragMode =
   | 'text-corner-sw'
   | 'text-corner-se'
   | 'element-move'
+  | 'element-resize-nw'
+  | 'element-resize-ne'
+  | 'element-resize-sw'
+  | 'element-resize-se'
   | 'shape-move'
   | 'shape-rotate'
   | 'shape-resize-nw'
@@ -205,6 +209,19 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
     startShapeY: number;
     startRot: number;
     type: ShapeType;
+  } | null>(null);
+
+  const elementResizeRef = useRef<{
+    elementId: string;
+    corner: 'nw' | 'ne' | 'sw' | 'se';
+    startX: number;
+    startY: number;
+    initialX: number;
+    initialY: number;
+    initialW: number;
+    initialH: number;
+    initialScale: number;
+    initialSize: number;
   } | null>(null);
 
   const getElementPos = useCallback((elementId: string): { x: number; y: number } => {
@@ -541,9 +558,14 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
     setActiveDragDeviceId(deviceId);
     dragMovedRef.current = false;
 
-    if (config.selectedDeviceId !== deviceId) {
-      onChangeConfig({ selectedDeviceId: deviceId });
-    }
+    setEditingTextId(null);
+    setEditingElementId(null);
+    onChangeConfig({
+      selectedDeviceId: deviceId,
+      selectedElementId: null,
+      selectedShapeId: null,
+      selectedTextId: null,
+    });
 
     startPosRef.current = {
       clientX: e.clientX,
@@ -557,7 +579,12 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
   // Handle pointer down on an independent element layer (app-icon, eyebrow, title, subtitle, store-badge, rating)
   const handleElementPointerDown = (e: React.PointerEvent, elementId: string) => {
     const target = e.target as HTMLElement;
-    if (target.isContentEditable || target.closest('[contenteditable="true"]')) {
+    if (
+      target.isContentEditable ||
+      target.closest('[contenteditable="true"]') ||
+      target.closest('.resize-handle') ||
+      target.closest('.text-corner-handle')
+    ) {
       return;
     }
     e.stopPropagation();
@@ -566,10 +593,12 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
     setDragMode('element-move');
     setActiveDragElementId(elementId);
     dragMovedRef.current = false;
+    setEditingTextId(null);
     onChangeConfig({
       selectedElementId: elementId,
       selectedDeviceId: null,
       selectedShapeId: null,
+      selectedTextId: null,
     });
 
     const pos = getElementPos(elementId);
@@ -580,6 +609,46 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
       initialOffsetY: pos.y,
       initialScale: 1,
     };
+  };
+
+  // Handle pointer down on branding element corner resize (app-icon, store-badge, rating, eyebrow)
+  const handleElementCornerResizeStart = (
+    e: React.PointerEvent,
+    elementId: string,
+    corner: 'nw' | 'ne' | 'sw' | 'se'
+  ) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    const layerEl = (e.currentTarget.closest('.banner-element-layer') as HTMLElement) || (e.currentTarget.parentElement as HTMLElement);
+    const pos = getElementPos(elementId);
+    const initialW = layerEl ? layerEl.offsetWidth : 120;
+    const initialH = layerEl ? layerEl.offsetHeight : 44;
+    const initialScale = config.elementScales?.[elementId] || 1.0;
+    const initialSize = config.appIconSize ?? 72;
+
+    elementResizeRef.current = {
+      elementId,
+      corner,
+      startX: e.clientX,
+      startY: e.clientY,
+      initialX: pos.x,
+      initialY: pos.y,
+      initialW,
+      initialH,
+      initialScale,
+      initialSize,
+    };
+
+    setDragMode(`element-resize-${corner}` as CanvasDragMode);
+    setActiveDragElementId(elementId);
+    dragMovedRef.current = false;
+    onChangeConfig({
+      selectedElementId: elementId,
+      selectedDeviceId: null,
+      selectedShapeId: null,
+      selectedTextId: null,
+    });
   };
 
   // Handle pointer down on text layer
@@ -783,10 +852,13 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
     setDragMode('shape-move');
     setActiveDragShapeId(shapeId);
     dragMovedRef.current = false;
+    setEditingTextId(null);
+    setEditingElementId(null);
     onChangeConfig({
       selectedShapeId: shapeId,
       selectedDeviceId: null,
       selectedElementId: null,
+      selectedTextId: null,
     });
 
     startPosRef.current = {
@@ -825,10 +897,13 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
     setDragMode('shape-rotate');
     setActiveDragShapeId(shapeId);
     dragMovedRef.current = false;
+    setEditingTextId(null);
+    setEditingElementId(null);
     onChangeConfig({
       selectedShapeId: shapeId,
       selectedDeviceId: null,
       selectedElementId: null,
+      selectedTextId: null,
     });
   };
 
@@ -863,10 +938,13 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
     setDragMode(`shape-resize-${corner}` as CanvasDragMode);
     setActiveDragShapeId(shapeId);
     dragMovedRef.current = false;
+    setEditingTextId(null);
+    setEditingElementId(null);
     onChangeConfig({
       selectedShapeId: shapeId,
       selectedDeviceId: null,
       selectedElementId: null,
+      selectedTextId: null,
     });
   };
 
@@ -900,9 +978,14 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
     setActiveDragDeviceId(deviceId);
     dragMovedRef.current = false;
 
-    if (config.selectedDeviceId !== deviceId) {
-      onChangeConfig({ selectedDeviceId: deviceId });
-    }
+    setEditingTextId(null);
+    setEditingElementId(null);
+    onChangeConfig({
+      selectedDeviceId: deviceId,
+      selectedElementId: null,
+      selectedShapeId: null,
+      selectedTextId: null,
+    });
   };
 
   // Global pointer move & up for device move, rotate, resize, text & shape move
@@ -925,14 +1008,17 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
           elemW = config.appIconSize ?? 72;
           elemH = elemW;
         } else if (activeDragElementId === 'store-badge') {
-          elemW = config.storeBadgeType === 'both' ? 260 : 130;
-          elemH = 44;
+          const s = config.elementScales?.['store-badge'] || 1;
+          elemW = (config.storeBadgeType === 'both' ? 260 : 130) * s;
+          elemH = 44 * s;
         } else if (activeDragElementId === 'rating') {
-          elemW = 110;
-          elemH = 36;
+          const s = config.elementScales?.['rating'] || 1;
+          elemW = 110 * s;
+          elemH = 36 * s;
         } else if (activeDragElementId === 'eyebrow') {
-          elemW = 120;
-          elemH = 28;
+          const s = config.elementScales?.['eyebrow'] || 1;
+          elemW = 120 * s;
+          elemH = 28 * s;
         }
         const rawX = Math.round(startPosRef.current.initialOffsetX + deltaX);
         const rawY = Math.round(startPosRef.current.initialOffsetY + deltaY);
@@ -946,6 +1032,82 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
         });
         setAlignmentGuides({ showVertical: snap.showVertical, showHorizontal: snap.showHorizontal });
         return;
+      }
+
+      if (dragMode.startsWith('element-resize-') && activeDragElementId && elementResizeRef.current) {
+        dragMovedRef.current = true;
+        const info = elementResizeRef.current;
+        const deltaX = (e.clientX - info.startX) / currentZoom;
+        const deltaY = (e.clientY - info.startY) / currentZoom;
+
+        // Preserve aspect ratio by projecting along corner diagonal
+        let delta = 0;
+        if (info.corner === 'se') {
+          delta = (deltaX + deltaY) / 2;
+        } else if (info.corner === 'sw') {
+          delta = (-deltaX + deltaY) / 2;
+        } else if (info.corner === 'ne') {
+          delta = (deltaX - deltaY) / 2;
+        } else if (info.corner === 'nw') {
+          delta = (-deltaX - deltaY) / 2;
+        }
+
+        if (activeDragElementId === 'app-icon') {
+          const newSize = Math.max(32, Math.min(360, Math.round(info.initialSize + delta)));
+          const sizeDiff = newSize - info.initialSize;
+
+          let newX = info.initialX;
+          let newY = info.initialY;
+
+          if (info.corner === 'sw') {
+            newX = Math.round(info.initialX - sizeDiff);
+          } else if (info.corner === 'ne') {
+            newY = Math.round(info.initialY - sizeDiff);
+          } else if (info.corner === 'nw') {
+            newX = Math.round(info.initialX - sizeDiff);
+            newY = Math.round(info.initialY - sizeDiff);
+          }
+
+          onChangeConfig({
+            appIconSize: newSize,
+            elementPositions: {
+              ...(config.elementPositions || {}),
+              ['app-icon']: { x: newX, y: newY },
+            },
+          });
+          return;
+        } else {
+          // For store-badge, rating, eyebrow
+          const baseDim = Math.max(info.initialW, 60);
+          const newScale = Math.max(0.35, Math.min(3.5, Number((info.initialScale + delta / baseDim).toFixed(3))));
+          const scaleDiff = newScale - (info.initialScale || 1);
+          const wDiff = info.initialW * scaleDiff;
+          const hDiff = info.initialH * scaleDiff;
+
+          let newX = info.initialX;
+          let newY = info.initialY;
+
+          if (info.corner === 'sw') {
+            newX = Math.round(info.initialX - wDiff);
+          } else if (info.corner === 'ne') {
+            newY = Math.round(info.initialY - hDiff);
+          } else if (info.corner === 'nw') {
+            newX = Math.round(info.initialX - wDiff);
+            newY = Math.round(info.initialY - hDiff);
+          }
+
+          onChangeConfig({
+            elementScales: {
+              ...(config.elementScales || {}),
+              [activeDragElementId]: newScale,
+            },
+            elementPositions: {
+              ...(config.elementPositions || {}),
+              [activeDragElementId]: { x: newX, y: newY },
+            },
+          });
+          return;
+        }
       }
 
       if (dragMode === 'text-move' && activeDragTextId) {
@@ -1198,6 +1360,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
       setActiveDragShapeId(null);
       setActiveDragTextId(null);
       shapeResizeRef.current = null;
+      elementResizeRef.current = null;
       setAlignmentGuides({ showVertical: false, showHorizontal: false });
     };
 
@@ -1217,6 +1380,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
     config.shapeLayers,
     config.textLayers,
     config.elementPositions,
+    config.elementScales,
     config.width,
     config.height,
     config.storeBadgeType,
@@ -1401,9 +1565,14 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
         }}
         onClick={(e) => {
           e.stopPropagation();
-          if (config.selectedDeviceId !== device.id) {
-            onChangeConfig({ selectedDeviceId: device.id });
-          }
+          setEditingTextId(null);
+          setEditingElementId(null);
+          onChangeConfig({
+            selectedDeviceId: device.id,
+            selectedElementId: null,
+            selectedShapeId: null,
+            selectedTextId: null,
+          });
         }}
         style={{
           position: 'absolute',
@@ -1943,10 +2112,13 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                   onClick={(e) => {
                     e.stopPropagation();
                     if (dragMovedRef.current) return;
+                    setEditingTextId(null);
+                    setEditingElementId(null);
                     onChangeConfig({
                       selectedShapeId: shape.id,
                       selectedDeviceId: null,
                       selectedElementId: null,
+                      selectedTextId: null,
                     });
                   }}
                 >
@@ -2104,143 +2276,212 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
             {/* ========================================================================= */}
 
             {/* 1. App Icon Layer */}
-            {config.showAppIcon && (
-              <div
-                className={`banner-element-layer ${config.selectedElementId === 'app-icon' ? 'is-selected' : ''}`}
-                onPointerDown={(e) => handleElementPointerDown(e, 'app-icon')}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onChangeConfig({ selectedElementId: 'app-icon', selectedDeviceId: null, selectedShapeId: null });
-                }}
-                onDoubleClick={(e) => {
-                  e.stopPropagation();
-                  onUploadAppIcon();
-                }}
-                style={{
-                  position: 'absolute',
-                  left: `${getElementPos('app-icon').x}px`,
-                  top: `${getElementPos('app-icon').y}px`,
-                  zIndex: config.selectedElementId === 'app-icon' ? 50 : 35,
-                  cursor: dragMode === 'element-move' && activeDragElementId === 'app-icon' ? 'grabbing' : 'grab',
-                  outline: config.selectedElementId === 'app-icon' ? '1.5px dashed #D90429' : '1px dashed transparent',
-                  outlineOffset: '4px',
-                  borderRadius: '8px',
-                  padding: '2px',
-                  transition: dragMode === 'element-move' ? 'none' : 'outline 0.15s ease',
-                }}
-                title="Uygulama İkonu - Taşımak için sürükleyin, değiştirmek için çift tıklayın"
-              >
+            {config.showAppIcon && (() => {
+              const isAppIconSelected = !isExporting && config.selectedElementId === 'app-icon';
+              return (
                 <div
-                  style={{
-                    width: `${config.appIconSize}px`,
-                    height: `${config.appIconSize}px`,
-                    borderRadius:
-                      typeof config.appIconRadius === 'number'
-                        ? `${config.appIconRadius}%`
-                        : config.appIconRadius === 'circle'
-                        ? '50%'
-                        : config.appIconRadius === 'round'
-                        ? '22%'
-                        : '22.37%',
-                    backgroundColor: '#FFFFFF',
-                    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.35), 0 0 0 1.5px rgba(255, 255, 255, 0.2)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    overflow: 'hidden',
-                    pointerEvents: 'auto',
-                    flexShrink: 0,
-                    position: 'relative',
+                  className={`banner-element-layer ${isAppIconSelected ? 'is-selected' : ''}`}
+                  onPointerDown={(e) => handleElementPointerDown(e, 'app-icon')}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (dragMovedRef.current) return;
+                    setEditingTextId(null);
+                    setEditingElementId(null);
+                    onChangeConfig({
+                      selectedElementId: 'app-icon',
+                      selectedDeviceId: null,
+                      selectedShapeId: null,
+                      selectedTextId: null,
+                    });
                   }}
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    onUploadAppIcon();
+                  }}
+                  style={{
+                    position: 'absolute',
+                    left: `${getElementPos('app-icon').x}px`,
+                    top: `${getElementPos('app-icon').y}px`,
+                    zIndex: config.selectedElementId === 'app-icon' ? 50 : 35,
+                    cursor: dragMode === 'element-move' && activeDragElementId === 'app-icon' ? 'grabbing' : 'grab',
+                    outline: isAppIconSelected ? '1.5px dashed #D90429' : '1px dashed transparent',
+                    outlineOffset: '4px',
+                    borderRadius: '8px',
+                    padding: '2px',
+                    transition: dragMode === 'element-move' ? 'none' : 'outline 0.15s ease',
+                  }}
+                  title="Uygulama İkonu - Taşımak için sürükleyin, köşelerinden boyutlandırın, değiştirmek için çift tıklayın"
                 >
-                  {config.appIconUrl ? (
-                    <img
-                      src={config.appIconUrl}
-                      alt="App Icon"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }}
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        background: 'linear-gradient(135deg, #D90429 0%, #EF233C 100%)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#FFFFFF',
-                        fontSize: `${Math.round(config.appIconSize * 0.42)}px`,
-                        fontWeight: 800,
-                        userSelect: 'none',
-                      }}
-                    >
-                      🌶️
-                    </div>
+                  {isAppIconSelected && (
+                    <>
+                      <div
+                        className="text-corner-handle handle-nw"
+                        title="Köşeden boyutlandır"
+                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'app-icon', 'nw')}
+                      />
+                      <div
+                        className="text-corner-handle handle-ne"
+                        title="Köşeden boyutlandır"
+                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'app-icon', 'ne')}
+                      />
+                      <div
+                        className="text-corner-handle handle-sw"
+                        title="Köşeden boyutlandır"
+                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'app-icon', 'sw')}
+                      />
+                      <div
+                        className="text-corner-handle handle-se"
+                        title="Köşeden boyutlandır"
+                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'app-icon', 'se')}
+                      />
+                    </>
                   )}
+                  <div
+                    style={{
+                      width: `${config.appIconSize}px`,
+                      height: `${config.appIconSize}px`,
+                      borderRadius:
+                        typeof config.appIconRadius === 'number'
+                          ? `${config.appIconRadius}%`
+                          : config.appIconRadius === 'circle'
+                          ? '50%'
+                          : config.appIconRadius === 'round'
+                          ? '22%'
+                          : '22.37%',
+                      backgroundColor: '#FFFFFF',
+                      boxShadow: '0 10px 25px rgba(0, 0, 0, 0.35), 0 0 0 1.5px rgba(255, 255, 255, 0.2)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      overflow: 'hidden',
+                      pointerEvents: 'auto',
+                      flexShrink: 0,
+                      position: 'relative',
+                    }}
+                  >
+                    {config.appIconUrl ? (
+                      <img
+                        src={config.appIconUrl}
+                        alt="App Icon"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          background: 'linear-gradient(135deg, #D90429 0%, #EF233C 100%)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#FFFFFF',
+                          fontSize: `${Math.round(config.appIconSize * 0.42)}px`,
+                          fontWeight: 800,
+                          userSelect: 'none',
+                        }}
+                      >
+                        🌶️
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* 2. Eyebrow Pill Tag */}
-            {config.showEyebrow && (
-              <div
-                className={`banner-element-layer ${config.selectedElementId === 'eyebrow' ? 'is-selected' : ''}`}
-                onPointerDown={(e) => {
-                  if (editingElementId === 'eyebrow') return;
-                  handleElementPointerDown(e, 'eyebrow');
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (dragMovedRef.current) return;
-                  if (config.selectedElementId === 'eyebrow' && editingElementId !== 'eyebrow') {
-                    setEditingElementId('eyebrow');
-                  } else if (config.selectedElementId !== 'eyebrow') {
-                    setEditingElementId(null);
-                    onChangeConfig({ selectedElementId: 'eyebrow', selectedDeviceId: null, selectedShapeId: null, selectedTextId: null });
-                  }
-                }}
-                onDoubleClick={(e) => {
-                  e.stopPropagation();
-                  setEditingElementId('eyebrow');
-                  onChangeConfig({ selectedElementId: 'eyebrow', selectedDeviceId: null, selectedShapeId: null, selectedTextId: null });
-                }}
-                style={{
-                  position: 'absolute',
-                  left: `${getElementPos('eyebrow').x}px`,
-                  top: `${getElementPos('eyebrow').y}px`,
-                  zIndex: config.selectedElementId === 'eyebrow' ? 50 : 35,
-                  cursor: editingElementId === 'eyebrow' ? 'text' : dragMode === 'element-move' && activeDragElementId === 'eyebrow' ? 'grabbing' : 'grab',
-                  outline: config.selectedElementId === 'eyebrow' ? '1.5px dashed #D90429' : '1px dashed transparent',
-                  outlineOffset: '4px',
-                  borderRadius: '999px',
-                  padding: '2px',
-                  display: 'inline-flex',
-                  transition: dragMode === 'element-move' ? 'none' : 'outline 0.15s ease',
-                }}
-                title="Vurgu Etiketi - Taşımak için sürükleyin, düzenlemek için tıklayın"
-              >
-                <EditableCanvasText
-                  as="span"
-                  value={config.eyebrowText}
-                  isEditing={editingElementId === 'eyebrow'}
-                  onStopEditing={() => setEditingElementId(null)}
-                  onChange={(val) => onChangeConfig({ eyebrowText: val })}
-                  placeholder="VURGU ETİKETİ"
-                  style={{
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    letterSpacing: '1px',
-                    textTransform: 'uppercase',
-                    color: config.eyebrowColor,
-                    backgroundColor: config.eyebrowBgColor,
-                    padding: '5px 12px',
-                    borderRadius: '999px',
-                    border: `1px solid ${config.eyebrowColor}33`,
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            {config.showEyebrow && (() => {
+              const isEyebrowSelected = !isExporting && config.selectedElementId === 'eyebrow';
+              const eyebrowScale = config.elementScales?.['eyebrow'] || 1;
+              return (
+                <div
+                  className={`banner-element-layer ${isEyebrowSelected ? 'is-selected' : ''}`}
+                  onPointerDown={(e) => {
+                    if (editingElementId === 'eyebrow') return;
+                    handleElementPointerDown(e, 'eyebrow');
                   }}
-                />
-              </div>
-            )}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (dragMovedRef.current) return;
+                    if (config.selectedElementId === 'eyebrow' && editingElementId !== 'eyebrow') {
+                      setEditingElementId('eyebrow');
+                    } else if (config.selectedElementId !== 'eyebrow') {
+                      setEditingElementId(null);
+                      onChangeConfig({ selectedElementId: 'eyebrow', selectedDeviceId: null, selectedShapeId: null, selectedTextId: null });
+                    }
+                  }}
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    setEditingElementId('eyebrow');
+                    onChangeConfig({ selectedElementId: 'eyebrow', selectedDeviceId: null, selectedShapeId: null, selectedTextId: null });
+                  }}
+                  style={{
+                    position: 'absolute',
+                    left: `${getElementPos('eyebrow').x}px`,
+                    top: `${getElementPos('eyebrow').y}px`,
+                    transform: eyebrowScale !== 1 ? `scale(${eyebrowScale})` : undefined,
+                    transformOrigin: 'top left',
+                    zIndex: config.selectedElementId === 'eyebrow' ? 50 : 35,
+                    cursor: editingElementId === 'eyebrow' ? 'text' : dragMode === 'element-move' && activeDragElementId === 'eyebrow' ? 'grabbing' : 'grab',
+                    outline: isEyebrowSelected ? '1.5px dashed #D90429' : '1px dashed transparent',
+                    outlineOffset: '4px',
+                    borderRadius: '999px',
+                    padding: '2px',
+                    display: 'inline-flex',
+                    transition: dragMode === 'element-move' ? 'none' : 'outline 0.15s ease',
+                  }}
+                  title="Vurgu Etiketi - Taşımak için sürükleyin, köşelerinden boyutlandırın, düzenlemek için tıklayın"
+                >
+                  {isEyebrowSelected && (
+                    <>
+                      <div
+                        className="text-corner-handle handle-nw"
+                        title="Köşeden boyutlandır"
+                        style={{ transform: `scale(${1 / eyebrowScale})`, transformOrigin: 'center center' }}
+                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'eyebrow', 'nw')}
+                      />
+                      <div
+                        className="text-corner-handle handle-ne"
+                        title="Köşeden boyutlandır"
+                        style={{ transform: `scale(${1 / eyebrowScale})`, transformOrigin: 'center center' }}
+                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'eyebrow', 'ne')}
+                      />
+                      <div
+                        className="text-corner-handle handle-sw"
+                        title="Köşeden boyutlandır"
+                        style={{ transform: `scale(${1 / eyebrowScale})`, transformOrigin: 'center center' }}
+                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'eyebrow', 'sw')}
+                      />
+                      <div
+                        className="text-corner-handle handle-se"
+                        title="Köşeden boyutlandır"
+                        style={{ transform: `scale(${1 / eyebrowScale})`, transformOrigin: 'center center' }}
+                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'eyebrow', 'se')}
+                      />
+                    </>
+                  )}
+                  <EditableCanvasText
+                    as="span"
+                    value={config.eyebrowText}
+                    isEditing={editingElementId === 'eyebrow'}
+                    onStopEditing={() => setEditingElementId(null)}
+                    onChange={(val) => onChangeConfig({ eyebrowText: val })}
+                    placeholder="VURGU ETİKETİ"
+                    style={{
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      letterSpacing: '1px',
+                      textTransform: 'uppercase',
+                      color: config.eyebrowColor,
+                      backgroundColor: config.eyebrowBgColor,
+                      padding: '5px 12px',
+                      borderRadius: '999px',
+                      border: `1px solid ${config.eyebrowColor}33`,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    }}
+                  />
+                </div>
+              );
+            })()}
 
             {/* 3. DYNAMIC TEXT LAYERS (Mockup Studio Özelliği) */}
             {(config.textLayers || []).length > 0 ? (
@@ -2648,151 +2889,227 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
             )}
 
             {/* 5. Store Badges (Google Play & App Store) */}
-            {config.showStoreBadge && (
-              <div
-                className={`banner-element-layer ${config.selectedElementId === 'store-badge' ? 'is-selected' : ''}`}
-                onPointerDown={(e) => handleElementPointerDown(e, 'store-badge')}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onChangeConfig({ selectedElementId: 'store-badge', selectedDeviceId: null, selectedShapeId: null });
-                }}
-                style={{
-                  position: 'absolute',
-                  left: `${getElementPos('store-badge').x}px`,
-                  top: `${getElementPos('store-badge').y}px`,
-                  zIndex: config.selectedElementId === 'store-badge' ? 50 : 35,
-                  cursor: dragMode === 'element-move' && activeDragElementId === 'store-badge' ? 'grabbing' : 'grab',
-                  outline: config.selectedElementId === 'store-badge' ? '1.5px dashed #D90429' : '1px dashed transparent',
-                  outlineOffset: '4px',
-                  borderRadius: '8px',
-                  padding: '2px',
-                  display: 'inline-flex',
-                  gap: '8px',
-                  alignItems: 'center',
-                  transition: dragMode === 'element-move' ? 'none' : 'outline 0.15s ease',
-                }}
-                title="Mağaza Rozetleri - Taşımak için sürükleyin"
-              >
-                {(config.storeBadgeType === 'google-play' || config.storeBadgeType === 'both') && (
-                  <div
-                    style={{
-                      backgroundColor: '#000000',
-                      color: '#FFFFFF',
-                      border: '1px solid #334155',
-                      borderRadius: '8px',
-                      padding: '6px 14px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                      userSelect: 'none',
-                    }}
-                  >
-                    <svg width="18" height="20" viewBox="0 0 466 511.98" fillRule="evenodd" clipRule="evenodd" style={{ flexShrink: 0 }}>
-                      <path fill="#EA4335" d="M199.9 237.8 1.4 470.17c7.22 24.57 30.16 41.81 55.8 41.81 11.16 0 20.93-2.79 29.3-8.37l244.16-139.46L199.9 237.8z"/>
-                      <path fill="#FBBC04" d="m433.91 205.1-104.65-60-111.61 110.22 113.01 108.83 104.64-58.6c18.14-9.77 30.7-29.3 30.7-50.23-1.4-20.93-13.95-40.46-32.09-50.22z"/>
-                      <path fill="#34A853" d="M199.42 273.45 329.27 145.1 87.9 8.37C79.53 2.79 68.36 0 57.2 0 30.7 0 6.98 18.14 1.4 41.86l198.02 231.59z"/>
-                      <path fill="#4285F4" d="M1.39 41.86C0 46.04 0 51.63 0 57.2v397.64c0 5.57 0 9.76 1.4 15.34l216.27-214.86L1.39 41.86z"/>
-                    </svg>
-                    <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
-                      <span style={{ fontSize: '8px', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>İNDİRİN</span>
-                      <span style={{ fontSize: '12px', fontWeight: 700, marginTop: '2px' }}>Google Play</span>
+            {config.showStoreBadge && (() => {
+              const isBadgeSelected = !isExporting && config.selectedElementId === 'store-badge';
+              const badgeScale = config.elementScales?.['store-badge'] || 1;
+              return (
+                <div
+                  className={`banner-element-layer ${isBadgeSelected ? 'is-selected' : ''}`}
+                  onPointerDown={(e) => handleElementPointerDown(e, 'store-badge')}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (dragMovedRef.current) return;
+                    setEditingTextId(null);
+                    setEditingElementId(null);
+                    onChangeConfig({
+                      selectedElementId: 'store-badge',
+                      selectedDeviceId: null,
+                      selectedShapeId: null,
+                      selectedTextId: null,
+                    });
+                  }}
+                  style={{
+                    position: 'absolute',
+                    left: `${getElementPos('store-badge').x}px`,
+                    top: `${getElementPos('store-badge').y}px`,
+                    transform: badgeScale !== 1 ? `scale(${badgeScale})` : undefined,
+                    transformOrigin: 'top left',
+                    zIndex: config.selectedElementId === 'store-badge' ? 50 : 35,
+                    cursor: dragMode === 'element-move' && activeDragElementId === 'store-badge' ? 'grabbing' : 'grab',
+                    outline: isBadgeSelected ? '1.5px dashed #D90429' : '1px dashed transparent',
+                    outlineOffset: '4px',
+                    borderRadius: '8px',
+                    padding: '2px',
+                    display: 'inline-flex',
+                    gap: '8px',
+                    alignItems: 'center',
+                    transition: dragMode === 'element-move' ? 'none' : 'outline 0.15s ease',
+                  }}
+                  title="Mağaza Rozetleri - Taşımak için sürükleyin, köşelerinden boyutlandırın"
+                >
+                  {isBadgeSelected && (
+                    <>
+                      <div
+                        className="text-corner-handle handle-nw"
+                        title="Köşeden boyutlandır"
+                        style={{ transform: `scale(${1 / badgeScale})`, transformOrigin: 'center center' }}
+                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'store-badge', 'nw')}
+                      />
+                      <div
+                        className="text-corner-handle handle-ne"
+                        title="Köşeden boyutlandır"
+                        style={{ transform: `scale(${1 / badgeScale})`, transformOrigin: 'center center' }}
+                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'store-badge', 'ne')}
+                      />
+                      <div
+                        className="text-corner-handle handle-sw"
+                        title="Köşeden boyutlandır"
+                        style={{ transform: `scale(${1 / badgeScale})`, transformOrigin: 'center center' }}
+                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'store-badge', 'sw')}
+                      />
+                      <div
+                        className="text-corner-handle handle-se"
+                        title="Köşeden boyutlandır"
+                        style={{ transform: `scale(${1 / badgeScale})`, transformOrigin: 'center center' }}
+                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'store-badge', 'se')}
+                      />
+                    </>
+                  )}
+                  {(config.storeBadgeType === 'google-play' || config.storeBadgeType === 'both') && (
+                    <div
+                      style={{
+                        backgroundColor: '#000000',
+                        color: '#FFFFFF',
+                        border: '1px solid #334155',
+                        borderRadius: '8px',
+                        padding: '6px 14px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                        userSelect: 'none',
+                      }}
+                    >
+                      <svg width="18" height="20" viewBox="0 0 466 511.98" fillRule="evenodd" clipRule="evenodd" style={{ flexShrink: 0 }}>
+                        <path fill="#EA4335" d="M199.9 237.8 1.4 470.17c7.22 24.57 30.16 41.81 55.8 41.81 11.16 0 20.93-2.79 29.3-8.37l244.16-139.46L199.9 237.8z"/>
+                        <path fill="#FBBC04" d="m433.91 205.1-104.65-60-111.61 110.22 113.01 108.83 104.64-58.6c18.14-9.77 30.7-29.3 30.7-50.23-1.4-20.93-13.95-40.46-32.09-50.22z"/>
+                        <path fill="#34A853" d="M199.42 273.45 329.27 145.1 87.9 8.37C79.53 2.79 68.36 0 57.2 0 30.7 0 6.98 18.14 1.4 41.86l198.02 231.59z"/>
+                        <path fill="#4285F4" d="M1.39 41.86C0 46.04 0 51.63 0 57.2v397.64c0 5.57 0 9.76 1.4 15.34l216.27-214.86L1.39 41.86z"/>
+                      </svg>
+                      <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
+                        <span style={{ fontSize: '8px', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>İNDİRİN</span>
+                        <span style={{ fontSize: '12px', fontWeight: 700, marginTop: '2px' }}>Google Play</span>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {(config.storeBadgeType === 'app-store' || config.storeBadgeType === 'both') && (
-                  <div
-                    style={{
-                      backgroundColor: '#000000',
-                      color: '#FFFFFF',
-                      border: '1px solid #334155',
-                      borderRadius: '8px',
-                      padding: '6px 14px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                      userSelect: 'none',
-                    }}
-                  >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.74 1.02-1.77.9-2.8-.88.04-1.94.59-2.57 1.33-.56.64-.99 1.68-.86 2.69.97.08 1.93-.49 2.53-1.22z"/>
-                    </svg>
-                    <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
-                      <span style={{ fontSize: '8px', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>İNDİRİN</span>
-                      <span style={{ fontSize: '12px', fontWeight: 700, marginTop: '2px' }}>App Store</span>
+                  {(config.storeBadgeType === 'app-store' || config.storeBadgeType === 'both') && (
+                    <div
+                      style={{
+                        backgroundColor: '#000000',
+                        color: '#FFFFFF',
+                        border: '1px solid #334155',
+                        borderRadius: '8px',
+                        padding: '6px 14px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                        userSelect: 'none',
+                      }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.74 1.02-1.77.9-2.8-.88.04-1.94.59-2.57 1.33-.56.64-.99 1.68-.86 2.69.97.08 1.93-.49 2.53-1.22z"/>
+                      </svg>
+                      <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
+                        <span style={{ fontSize: '8px', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>İNDİRİN</span>
+                        <span style={{ fontSize: '12px', fontWeight: 700, marginTop: '2px' }}>App Store</span>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
+                  )}
+                </div>
+              );
+            })()}
 
             {/* 6. Rating Badge */}
-            {config.showRating && config.ratingText && (
-              <div
-                className={`banner-element-layer ${config.selectedElementId === 'rating' ? 'is-selected' : ''}`}
-                onPointerDown={(e) => {
-                  if (editingElementId === 'rating') return;
-                  handleElementPointerDown(e, 'rating');
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (dragMovedRef.current) return;
-                  if (config.selectedElementId === 'rating' && editingElementId !== 'rating') {
+            {config.showRating && config.ratingText && (() => {
+              const isRatingSelected = !isExporting && config.selectedElementId === 'rating';
+              const ratingScale = config.elementScales?.['rating'] || 1;
+              return (
+                <div
+                  className={`banner-element-layer ${isRatingSelected ? 'is-selected' : ''}`}
+                  onPointerDown={(e) => {
+                    if (editingElementId === 'rating') return;
+                    handleElementPointerDown(e, 'rating');
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (dragMovedRef.current) return;
+                    if (config.selectedElementId === 'rating' && editingElementId !== 'rating') {
+                      setEditingElementId('rating');
+                    } else if (config.selectedElementId !== 'rating') {
+                      setEditingElementId(null);
+                      onChangeConfig({ selectedElementId: 'rating', selectedDeviceId: null, selectedShapeId: null, selectedTextId: null });
+                    }
+                  }}
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
                     setEditingElementId('rating');
-                  } else if (config.selectedElementId !== 'rating') {
-                    setEditingElementId(null);
                     onChangeConfig({ selectedElementId: 'rating', selectedDeviceId: null, selectedShapeId: null, selectedTextId: null });
-                  }
-                }}
-                onDoubleClick={(e) => {
-                  e.stopPropagation();
-                  setEditingElementId('rating');
-                  onChangeConfig({ selectedElementId: 'rating', selectedDeviceId: null, selectedShapeId: null, selectedTextId: null });
-                }}
-                style={{
-                  position: 'absolute',
-                  left: `${getElementPos('rating').x}px`,
-                  top: `${getElementPos('rating').y}px`,
-                  zIndex: config.selectedElementId === 'rating' ? 50 : 35,
-                  cursor: editingElementId === 'rating' ? 'text' : dragMode === 'element-move' && activeDragElementId === 'rating' ? 'grabbing' : 'grab',
-                  outline: config.selectedElementId === 'rating' ? '1.5px dashed #D90429' : '1px dashed transparent',
-                  outlineOffset: '4px',
-                  borderRadius: '8px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  backgroundColor: 'rgba(255, 255, 255, 0.12)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255, 255, 255, 0.18)',
-                  paddingLeft: '10px',
-                  paddingRight: '12px',
-                  paddingTop: '6px',
-                  paddingBottom: '6px',
-                  gap: '6px',
-                  color: '#F8FAFC',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  transition: dragMode === 'element-move' ? 'none' : 'outline 0.15s ease',
-                }}
-                title="Kullanıcı Puanı Rozeti - Taşımak için sürükleyin, düzenlemek için metne tıklayın"
-              >
-                <Star size={14} fill="#F59E0B" color="#F59E0B" style={{ flexShrink: 0 }} />
-                <EditableCanvasText
-                  as="span"
-                  value={config.ratingText}
-                  isEditing={editingElementId === 'rating'}
-                  onStopEditing={() => setEditingElementId(null)}
-                  onChange={(val) => onChangeConfig({ ratingText: val })}
-                  placeholder="4.9 ★★★★★"
+                  }}
                   style={{
+                    position: 'absolute',
+                    left: `${getElementPos('rating').x}px`,
+                    top: `${getElementPos('rating').y}px`,
+                    transform: ratingScale !== 1 ? `scale(${ratingScale})` : undefined,
+                    transformOrigin: 'top left',
+                    zIndex: config.selectedElementId === 'rating' ? 50 : 35,
+                    cursor: editingElementId === 'rating' ? 'text' : dragMode === 'element-move' && activeDragElementId === 'rating' ? 'grabbing' : 'grab',
+                    outline: isRatingSelected ? '1.5px dashed #D90429' : '1px dashed transparent',
+                    outlineOffset: '4px',
+                    borderRadius: '8px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.18)',
+                    paddingLeft: '10px',
+                    paddingRight: '12px',
+                    paddingTop: '6px',
+                    paddingBottom: '6px',
+                    gap: '6px',
                     color: '#F8FAFC',
                     fontSize: '12px',
                     fontWeight: 600,
+                    transition: dragMode === 'element-move' ? 'none' : 'outline 0.15s ease',
                   }}
-                />
-              </div>
-            )}
+                  title="Kullanıcı Puanı Rozeti - Taşımak için sürükleyin, köşelerinden boyutlandırın, düzenlemek için metne tıklayın"
+                >
+                  {isRatingSelected && (
+                    <>
+                      <div
+                        className="text-corner-handle handle-nw"
+                        title="Köşeden boyutlandır"
+                        style={{ transform: `scale(${1 / ratingScale})`, transformOrigin: 'center center' }}
+                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'rating', 'nw')}
+                      />
+                      <div
+                        className="text-corner-handle handle-ne"
+                        title="Köşeden boyutlandır"
+                        style={{ transform: `scale(${1 / ratingScale})`, transformOrigin: 'center center' }}
+                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'rating', 'ne')}
+                      />
+                      <div
+                        className="text-corner-handle handle-sw"
+                        title="Köşeden boyutlandır"
+                        style={{ transform: `scale(${1 / ratingScale})`, transformOrigin: 'center center' }}
+                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'rating', 'sw')}
+                      />
+                      <div
+                        className="text-corner-handle handle-se"
+                        title="Köşeden boyutlandır"
+                        style={{ transform: `scale(${1 / ratingScale})`, transformOrigin: 'center center' }}
+                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'rating', 'se')}
+                      />
+                    </>
+                  )}
+                  <Star size={14} fill="#F59E0B" color="#F59E0B" style={{ flexShrink: 0 }} />
+                  <EditableCanvasText
+                    as="span"
+                    value={config.ratingText}
+                    isEditing={editingElementId === 'rating'}
+                    onStopEditing={() => setEditingElementId(null)}
+                    onChange={(val) => onChangeConfig({ ratingText: val })}
+                    placeholder="4.9 ★★★★★"
+                    style={{
+                      color: '#F8FAFC',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                    }}
+                  />
+                </div>
+              );
+            })()}
 
             {/* DEVICE MOCKUPS LAYER */}
             {config.devices && config.devices.length > 0 && (

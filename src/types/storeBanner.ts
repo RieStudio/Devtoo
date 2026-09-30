@@ -100,6 +100,7 @@ export interface StoreBannerConfig {
 
   // Independent element positions & selection
   elementPositions?: Record<string, { x: number; y: number }>;
+  elementScales?: Record<string, number>;
   selectedElementId?: string | null;
 
   // Trust Badges & Ratings

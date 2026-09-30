@@ -1008,6 +1008,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                               selectedShapeId: shape.id,
                               selectedDeviceId: null,
                               selectedElementId: null,
+                              selectedTextId: null,
                             });
                           }}
                           style={{
@@ -1277,7 +1278,14 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                     return (
                       <div
                         key={dev.id}
-                        onClick={() => onChangeConfig({ selectedDeviceId: dev.id })}
+                        onClick={() =>
+                          onChangeConfig({
+                            selectedDeviceId: dev.id,
+                            selectedShapeId: null,
+                            selectedElementId: null,
+                            selectedTextId: null,
+                          })
+                        }
                         style={{
                           display: 'flex',
                           alignItems: 'center',
