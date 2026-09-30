@@ -190,6 +190,7 @@ export const StoreBannerMaker: React.FC<StoreBannerMakerProps> = ({
         onUploadAppIcon={handleUploadAppIcon}
         canvasExportRef={canvasExportRef}
         isVisible={isVisible}
+        isExporting={isExporting}
       />
 
       {/* Right Inspector Panel */}

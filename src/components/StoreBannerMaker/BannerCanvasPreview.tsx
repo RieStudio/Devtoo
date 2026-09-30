@@ -158,6 +158,7 @@ interface BannerCanvasPreviewProps {
   onUploadAppIcon: () => void;
   canvasExportRef: React.RefObject<HTMLDivElement | null>;
   isVisible?: boolean;
+  isExporting?: boolean;
 }
 
 export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
@@ -168,6 +169,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
   onUploadAppIcon,
   canvasExportRef,
   isVisible = true,
+  isExporting = false,
 }) => {
   const viewportRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -184,9 +186,9 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
   const [activeDragElementId, setActiveDragElementId] = useState<string | null>(null);
   const [activeDragShapeId, setActiveDragShapeId] = useState<string | null>(null);
   const [activeDragTextId, setActiveDragTextId] = useState<string | null>(null);
-  const [alignmentGuides, setAlignmentGuides] = useState<{ verticalX: number | null; horizontalY: number | null }>({
-    verticalX: null,
-    horizontalY: null,
+  const [alignmentGuides, setAlignmentGuides] = useState<{ showVertical: boolean; showHorizontal: boolean }>({
+    showVertical: false,
+    showHorizontal: false,
   });
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [editingElementId, setEditingElementId] = useState<string | null>(null);
@@ -264,112 +266,23 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
     candX: number,
     candY: number,
     width: number,
-    height: number,
-    currentId: string
-  ): { snappedX: number; snappedY: number; guideVerticalX: number | null; guideHorizontalY: number | null } => {
+    height: number
+  ): { snappedX: number; snappedY: number; showVertical: boolean; showHorizontal: boolean } => {
     const candCenterX = candX + width / 2;
     const candCenterY = candY + height / 2;
 
-    interface SnapTarget {
-      id: string;
-      centerX: number;
-      centerY: number;
-    }
+    const canvasCenterX = config.width / 2;
+    const canvasCenterY = config.height / 2;
 
-    const targets: SnapTarget[] = [
-      { id: 'canvas-center', centerX: Math.round(config.width / 2), centerY: Math.round(config.height / 2) },
-    ];
+    const SNAP_THRESHOLD = 8;
+    const snapX = Math.abs(candCenterX - canvasCenterX) <= SNAP_THRESHOLD;
+    const snapY = Math.abs(candCenterY - canvasCenterY) <= SNAP_THRESHOLD;
 
-    if (config.showAppIcon && currentId !== 'app-icon') {
-      const p = getElementPos('app-icon');
-      const size = config.appIconSize ?? 72;
-      targets.push({ id: 'app-icon', centerX: p.x + size / 2, centerY: p.y + size / 2 });
-    }
+    const snappedX = snapX ? Math.round(canvasCenterX - width / 2) : candX;
+    const snappedY = snapY ? Math.round(canvasCenterY - height / 2) : candY;
 
-    if (config.showEyebrow && currentId !== 'eyebrow') {
-      const p = getElementPos('eyebrow');
-      targets.push({ id: 'eyebrow', centerX: p.x + 80, centerY: p.y + 14 });
-    }
-
-    if (config.showStoreBadge && currentId !== 'store-badge') {
-      const p = getElementPos('store-badge');
-      const w = config.storeBadgeType === 'both' ? 260 : 135;
-      targets.push({ id: 'store-badge', centerX: p.x + w / 2, centerY: p.y + 22 });
-    }
-
-    if (config.showRating && currentId !== 'rating') {
-      const p = getElementPos('rating');
-      targets.push({ id: 'rating', centerX: p.x + 105, centerY: p.y + 18 });
-    }
-
-    // Text layers
-    (config.textLayers || []).forEach((tl) => {
-      if (tl.id !== currentId) {
-        const w = tl.width || 360;
-        const h = tl.fontSize * 1.3;
-        targets.push({ id: tl.id, centerX: tl.x + w / 2, centerY: tl.y + h / 2 });
-      }
-    });
-
-    // Shape layers
-    (config.shapeLayers || []).forEach((sl) => {
-      if (sl.id !== currentId) {
-        targets.push({ id: sl.id, centerX: sl.x + sl.width / 2, centerY: sl.y + sl.height / 2 });
-      }
-    });
-
-    // Devices
-    (config.devices || []).forEach((dev) => {
-      if (dev.id !== currentId) {
-        targets.push({
-          id: dev.id,
-          centerX: Math.round(config.width / 2 + dev.offsetX),
-          centerY: Math.round(config.height / 2 + dev.offsetY),
-        });
-      }
-    });
-
-    const SNAP_THRESHOLD = 7;
-    let snappedX = candX;
-    let snappedY = candY;
-    let guideVerticalX: number | null = null;
-    let guideHorizontalY: number | null = null;
-
-    let bestYDiff = SNAP_THRESHOLD;
-    for (const t of targets) {
-      const diffY = Math.abs(candCenterY - t.centerY);
-      if (diffY <= bestYDiff) {
-        bestYDiff = diffY;
-        snappedY = Math.round(t.centerY - height / 2);
-        guideHorizontalY = t.centerY;
-      }
-    }
-
-    let bestXDiff = SNAP_THRESHOLD;
-    for (const t of targets) {
-      const diffX = Math.abs(candCenterX - t.centerX);
-      if (diffX <= bestXDiff) {
-        bestXDiff = diffX;
-        snappedX = Math.round(t.centerX - width / 2);
-        guideVerticalX = t.centerX;
-      }
-    }
-
-    return { snappedX, snappedY, guideVerticalX, guideHorizontalY };
-  }, [
-    config.width,
-    config.height,
-    config.showAppIcon,
-    config.appIconSize,
-    config.showEyebrow,
-    config.showStoreBadge,
-    config.storeBadgeType,
-    config.showRating,
-    config.textLayers,
-    config.shapeLayers,
-    config.devices,
-    getElementPos,
-  ]);
+    return { snappedX, snappedY, showVertical: snapX, showHorizontal: snapY };
+  }, [config.width, config.height]);
 
   const startPosRef = useRef<{
     clientX: number;
@@ -1023,7 +936,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
         }
         const rawX = Math.round(startPosRef.current.initialOffsetX + deltaX);
         const rawY = Math.round(startPosRef.current.initialOffsetY + deltaY);
-        const snap = calculateSmartSnap(rawX, rawY, elemW, elemH, activeDragElementId);
+        const snap = calculateSmartSnap(rawX, rawY, elemW, elemH);
 
         onChangeConfig({
           elementPositions: {
@@ -1031,7 +944,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
             [activeDragElementId]: { x: snap.snappedX, y: snap.snappedY },
           },
         });
-        setAlignmentGuides({ verticalX: snap.guideVerticalX, horizontalY: snap.guideHorizontalY });
+        setAlignmentGuides({ showVertical: snap.showVertical, showHorizontal: snap.showHorizontal });
         return;
       }
 
@@ -1041,14 +954,14 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
         const tH = (targetLayer?.fontSize || 28) * 1.35;
         const rawX = Math.round(startPosRef.current.initialOffsetX + deltaX);
         const rawY = Math.round(startPosRef.current.initialOffsetY + deltaY);
-        const snap = calculateSmartSnap(rawX, rawY, tW, tH, activeDragTextId);
+        const snap = calculateSmartSnap(rawX, rawY, tW, tH);
 
         onChangeConfig({
           textLayers: (config.textLayers || []).map((l) =>
             l.id === activeDragTextId ? { ...l, x: snap.snappedX, y: snap.snappedY } : l
           ),
         });
-        setAlignmentGuides({ verticalX: snap.guideVerticalX, horizontalY: snap.guideHorizontalY });
+        setAlignmentGuides({ showVertical: snap.showVertical, showHorizontal: snap.showHorizontal });
         return;
       }
 
@@ -1141,14 +1054,14 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
         const sH = shape?.height || 100;
         const rawX = Math.round(startPosRef.current.initialOffsetX + deltaX);
         const rawY = Math.round(startPosRef.current.initialOffsetY + deltaY);
-        const snap = calculateSmartSnap(rawX, rawY, sW, sH, activeDragShapeId);
+        const snap = calculateSmartSnap(rawX, rawY, sW, sH);
 
         onChangeConfig({
           shapeLayers: (config.shapeLayers || []).map((s) =>
             s.id === activeDragShapeId ? { ...s, x: snap.snappedX, y: snap.snappedY } : s
           ),
         });
-        setAlignmentGuides({ verticalX: snap.guideVerticalX, horizontalY: snap.guideHorizontalY });
+        setAlignmentGuides({ showVertical: snap.showVertical, showHorizontal: snap.showHorizontal });
         return;
       }
 
@@ -1216,16 +1129,14 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
       if (!targetDev) return;
 
       if (dragMode === 'move') {
-        const devW = 280 * targetDev.scale;
-        const devH = 580 * targetDev.scale;
         const candOffsetX = Math.round(startPosRef.current.initialOffsetX + deltaX);
         const candOffsetY = Math.round(startPosRef.current.initialOffsetY + deltaY);
-        const devCanvasX = config.width / 2 + candOffsetX - devW / 2;
-        const devCanvasY = config.height / 2 + candOffsetY - devH / 2;
 
-        const snap = calculateSmartSnap(devCanvasX, devCanvasY, devW, devH, activeDragDeviceId);
-        const snappedOffsetX = snap.snappedX + devW / 2 - config.width / 2;
-        const snappedOffsetY = snap.snappedY + devH / 2 - config.height / 2;
+        const snapX = Math.abs(candOffsetX) <= 8;
+        const snapY = Math.abs(candOffsetY) <= 8;
+
+        const snappedOffsetX = snapX ? 0 : candOffsetX;
+        const snappedOffsetY = snapY ? 0 : candOffsetY;
 
         const updated = config.devices.map((d) =>
           d.id === activeDragDeviceId
@@ -1233,7 +1144,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
             : d
         );
         onChangeConfig({ devices: updated });
-        setAlignmentGuides({ verticalX: snap.guideVerticalX, horizontalY: snap.guideHorizontalY });
+        setAlignmentGuides({ showVertical: snapX, showHorizontal: snapY });
       } else if (dragMode === 'device-rotate') {
         const { centerX, centerY, startRotation, startPointerAngle } = rotateCenterRef.current;
         const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
@@ -1287,7 +1198,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
       setActiveDragShapeId(null);
       setActiveDragTextId(null);
       shapeResizeRef.current = null;
-      setAlignmentGuides({ verticalX: null, horizontalY: null });
+      setAlignmentGuides({ showVertical: false, showHorizontal: false });
     };
 
     window.addEventListener('pointermove', handlePointerMove);
@@ -1787,15 +1698,15 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
             borderRadius: '8px',
             fontSize: '12px',
             fontWeight: 600,
-            backgroundColor: '#FFFFFF',
-            color: '#475569',
+            backgroundColor: showSafeZone ? '#FFF1F2' : '#FFFFFF',
+            color: showSafeZone ? '#D90429' : '#475569',
             border: showSafeZone ? '1.5px solid #D90429' : '1px solid #CBD5E1',
             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
             cursor: 'pointer',
             transition: 'all 0.15s ease',
           }}
         >
-          <ShieldCheck size={14} color="#64748B" />
+          <ShieldCheck size={14} color={showSafeZone ? '#D90429' : '#64748B'} />
           <span>Güvenli Alan</span>
         </button>
       </div>
@@ -1986,39 +1897,19 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
               </div>
             )}
 
-            {/* Dynamic Alignment Guide Lines (Figma/Canva style smart magnet guides) */}
-            {alignmentGuides.verticalX !== null && (
+            {/* Symmetrical Center Alignment Guide Lines (Mockup Editor Style) */}
+            {!isExporting && alignmentGuides.showVertical && (
               <div
-                className="alignment-guide-line"
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  bottom: 0,
-                  left: `${alignmentGuides.verticalX}px`,
-                  width: 0,
-                  borderLeft: '1.5px dashed #D90429',
-                  transform: 'translateX(-50%)',
-                  pointerEvents: 'none',
-                  zIndex: 999,
-                  opacity: 0.9,
-                }}
+                className="alignment-guide-line alignment-guide-line-v"
+                title="Dikey Merkez Doğrultusu (Enine Simetrik)"
+                style={{ zIndex: 999 }}
               />
             )}
-            {alignmentGuides.horizontalY !== null && (
+            {!isExporting && alignmentGuides.showHorizontal && (
               <div
-                className="alignment-guide-line"
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  top: `${alignmentGuides.horizontalY}px`,
-                  height: 0,
-                  borderTop: '1.5px dashed #D90429',
-                  transform: 'translateY(-50%)',
-                  pointerEvents: 'none',
-                  zIndex: 999,
-                  opacity: 0.9,
-                }}
+                className="alignment-guide-line alignment-guide-line-h"
+                title="Yatay Merkez Doğrultusu (Boyuna Simetrik)"
+                style={{ zIndex: 999 }}
               />
             )}
 
