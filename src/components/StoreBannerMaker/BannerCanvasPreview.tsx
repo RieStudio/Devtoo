@@ -276,12 +276,12 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
           : { x: baseX, y: 256 };
       case 'store-badge':
         return isCenter
-          ? { x: Math.round((canvasW - 354) / 2), y: Math.round(canvasH * 0.68) }
+          ? { x: Math.round((canvasW - (config.storeBadgeLayout === 'column' && config.storeBadgeType === 'both' ? 154 : (config.storeBadgeType === 'both' ? 300 : 154))) / 2), y: Math.round(canvasH * 0.68) }
           : { x: baseX, y: 340 };
       case 'rating':
         return isCenter
           ? { x: Math.round((canvasW - 354) / 2) + 149, y: Math.round(canvasH * 0.68) + 3 }
-          : { x: config.showStoreBadge ? (config.storeBadgeType === 'both' ? baseX + 295 : baseX + 156) : baseX, y: 343 };
+          : { x: config.showStoreBadge ? (config.storeBadgeType === 'both' && config.storeBadgeLayout !== 'column' ? baseX + 300 : baseX + 164) : baseX, y: 343 };
       default:
         return { x: baseX, y: 85 };
     }
@@ -299,6 +299,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
     config.showAppIcon,
     config.showStoreBadge,
     config.storeBadgeType,
+    config.storeBadgeLayout,
   ]);
 
   const calculateSmartSnap = useCallback((
@@ -1084,8 +1085,9 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
             elemW = config.appIconSize ?? 72;
             elemH = elemW;
           } else if (activeDragElementId === 'store-badge') {
-            elemW = (config.storeBadgeType === 'both' ? 260 : 130) * s;
-            elemH = 44 * s;
+            const isStacked = config.storeBadgeLayout === 'column' && config.storeBadgeType === 'both';
+            elemW = (isStacked ? 154 : (config.storeBadgeType === 'both' ? 300 : 154)) * s;
+            elemH = (isStacked ? 96 : 44) * s;
           } else if (activeDragElementId === 'rating') {
             elemW = 240 * s;
             elemH = 36 * s;
@@ -1507,6 +1509,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
     config.width,
     config.height,
     config.storeBadgeType,
+    config.storeBadgeLayout,
     config.appIconSize,
     calculateSmartSnap,
     onChangeConfig
@@ -3139,6 +3142,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                     borderRadius: '8px',
                     padding: '2px',
                     display: 'inline-flex',
+                    flexDirection: config.storeBadgeLayout === 'column' && config.storeBadgeType === 'both' ? 'column' : 'row',
                     gap: '8px',
                     alignItems: 'center',
                     transition: dragMode === 'element-move' ? 'none' : 'left 0.15s ease-out, top 0.15s ease-out, transform 0.15s ease-out, outline 0.15s ease',
@@ -3190,7 +3194,10 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                         boxShadow: '0 4px 14px rgba(0, 0, 0, 0.35)',
                         userSelect: 'none',
                         boxSizing: 'border-box',
-                        minHeight: '42px',
+                        minHeight: '44px',
+                        height: '44px',
+                        width: config.storeBadgeLayout === 'column' && config.storeBadgeType === 'both' ? '154px' : 'auto',
+                        whiteSpace: 'nowrap',
                       }}
                     >
                       <svg width="24" height="26" viewBox="0 0 466 511.98" fillRule="evenodd" clipRule="evenodd" style={{ flexShrink: 0 }}>
@@ -3253,14 +3260,17 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                         color: '#FFFFFF',
                         border: '1px solid #A6A6A6',
                         borderRadius: '8px',
-                        padding: '6px 14px 7px 11px',
+                        padding: '6px 14px 7px 12px',
                         display: 'inline-flex',
                         alignItems: 'center',
-                        gap: '10px',
+                        gap: '11px',
                         boxShadow: '0 4px 14px rgba(0, 0, 0, 0.35)',
                         userSelect: 'none',
                         boxSizing: 'border-box',
-                        minHeight: '42px',
+                        minHeight: '44px',
+                        height: '44px',
+                        width: config.storeBadgeLayout === 'column' && config.storeBadgeType === 'both' ? '154px' : 'auto',
+                        whiteSpace: 'nowrap',
                       }}
                     >
                       <svg width="22" height="26" viewBox="0 0 814 1000" fill="#FFFFFF" style={{ flexShrink: 0 }}>

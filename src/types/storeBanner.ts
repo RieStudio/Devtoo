@@ -106,6 +106,7 @@ export interface StoreBannerConfig {
   // Trust Badges & Ratings
   showStoreBadge: boolean;
   storeBadgeType: 'google-play' | 'app-store' | 'both';
+  storeBadgeLayout?: 'row' | 'column';
   showRating: boolean;
   ratingText: string;
   ratingScore: number;

@@ -2274,6 +2274,82 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                   );
                 })()}
               </div>
+
+              {config.showStoreBadge && config.storeBadgeType === 'both' && (
+                <div style={{ marginTop: '10px' }}>
+                  <label style={{ fontSize: '10.5px', color: '#64748B', display: 'block', marginBottom: '6px', fontWeight: 600 }}>
+                    Rozet Düzeni
+                  </label>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    {(() => {
+                      const isRow = (config.storeBadgeLayout || 'row') === 'row';
+                      return (
+                        <button
+                          type="button"
+                          onClick={() => onChangeConfig({ storeBadgeLayout: 'row' })}
+                          style={{
+                            flex: 1,
+                            padding: '6px 8px',
+                            fontSize: '11px',
+                            fontWeight: isRow ? 600 : 500,
+                            borderRadius: '6px',
+                            border: isRow ? '1.5px solid #000000' : '1px solid #CBD5E1',
+                            backgroundColor: '#FFFFFF',
+                            color: isRow ? '#000000' : '#64748B',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                            transition: 'all 0.15s ease',
+                            boxShadow: isRow ? '0 1px 3px rgba(0, 0, 0, 0.08)' : 'none',
+                          }}
+                          title="Rozetleri yan yana yerleştir"
+                        >
+                          <svg width="14" height="12" viewBox="0 0 16 12" fill="none" stroke="currentColor" strokeWidth={isRow ? '2' : '1.5'} strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="1" y="2" width="6" height="8" rx="1.5" />
+                            <rect x="9" y="2" width="6" height="8" rx="1.5" />
+                          </svg>
+                          <span>Yan Yana</span>
+                        </button>
+                      );
+                    })()}
+                    {(() => {
+                      const isCol = config.storeBadgeLayout === 'column';
+                      return (
+                        <button
+                          type="button"
+                          onClick={() => onChangeConfig({ storeBadgeLayout: 'column' })}
+                          style={{
+                            flex: 1,
+                            padding: '6px 8px',
+                            fontSize: '11px',
+                            fontWeight: isCol ? 600 : 500,
+                            borderRadius: '6px',
+                            border: isCol ? '1.5px solid #000000' : '1px solid #CBD5E1',
+                            backgroundColor: '#FFFFFF',
+                            color: isCol ? '#000000' : '#64748B',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                            transition: 'all 0.15s ease',
+                            boxShadow: isCol ? '0 1px 3px rgba(0, 0, 0, 0.08)' : 'none',
+                          }}
+                          title="Rozetleri üst üste yerleştir"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth={isCol ? '2' : '1.5'} strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="2" y="1" width="10" height="5" rx="1.5" />
+                            <rect x="2" y="8" width="10" height="5" rx="1.5" />
+                          </svg>
+                          <span>Üst Üste</span>
+                        </button>
+                      );
+                    })()}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Rating Badge */}
@@ -2356,88 +2432,6 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                         </span>
                       </div>
                     </div>
-                  </div>
-
-                  {/* Hızlı Şablon Butonları */}
-                  <div style={{ display: 'flex', gap: '6px', marginTop: '2px' }}>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onChangeConfig({
-                          ratingBgColor: 'rgba(255, 255, 255, 0.12)',
-                          ratingTextColor: '#F8FAFC',
-                          ratingStarColor: '#F59E0B',
-                          ratingBorderColor: 'rgba(255, 255, 255, 0.18)',
-                        })
-                      }
-                      style={{
-                        flex: 1,
-                        padding: '4px 6px',
-                        fontSize: '10px',
-                        fontWeight: 600,
-                        borderRadius: '4px',
-                        border: '1px solid #CBD5E1',
-                        backgroundColor: '#F8FAFC',
-                        color: '#475569',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '4px',
-                      }}
-                      title="Şeffaf cam efektine sıfırla"
-                    >
-                      <RotateCcw size={10} />
-                      Şeffaf Cam
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onChangeConfig({
-                          ratingBgColor: '#0F172A',
-                          ratingTextColor: '#FFFFFF',
-                          ratingStarColor: '#F59E0B',
-                          ratingBorderColor: '#334155',
-                        })
-                      }
-                      style={{
-                        flex: 1,
-                        padding: '4px 6px',
-                        fontSize: '10px',
-                        fontWeight: 600,
-                        borderRadius: '4px',
-                        border: '1px solid #334155',
-                        backgroundColor: '#0F172A',
-                        color: '#FFFFFF',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Koyu Kutu
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onChangeConfig({
-                          ratingBgColor: '#FFFFFF',
-                          ratingTextColor: '#0F172A',
-                          ratingStarColor: '#F59E0B',
-                          ratingBorderColor: '#E2E8F0',
-                        })
-                      }
-                      style={{
-                        flex: 1,
-                        padding: '4px 6px',
-                        fontSize: '10px',
-                        fontWeight: 600,
-                        borderRadius: '4px',
-                        border: '1px solid #E2E8F0',
-                        backgroundColor: '#FFFFFF',
-                        color: '#0F172A',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Açık Kutu
-                    </button>
                   </div>
                 </div>
               )}

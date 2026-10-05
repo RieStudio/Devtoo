@@ -144,6 +144,7 @@ export const INITIAL_BANNER_CONFIG: StoreBannerConfig = {
 
   showStoreBadge: true,
   storeBadgeType: 'google-play',
+  storeBadgeLayout: 'row',
   showRating: true,
   ratingText: '4.9 ★★★★★ (10K+ Değerlendirme)',
   ratingScore: 4.9,
