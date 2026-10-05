@@ -3181,25 +3181,67 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                       style={{
                         backgroundColor: '#000000',
                         color: '#FFFFFF',
-                        border: '1px solid #334155',
+                        border: '1px solid #A6A6A6',
                         borderRadius: '8px',
-                        padding: '6px 14px',
-                        display: 'flex',
+                        padding: '6px 14px 7px 11px',
+                        display: 'inline-flex',
                         alignItems: 'center',
-                        gap: '8px',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                        gap: '10px',
+                        boxShadow: '0 4px 14px rgba(0, 0, 0, 0.35)',
                         userSelect: 'none',
+                        boxSizing: 'border-box',
+                        minHeight: '42px',
                       }}
                     >
-                      <svg width="18" height="20" viewBox="0 0 466 511.98" fillRule="evenodd" clipRule="evenodd" style={{ flexShrink: 0 }}>
-                        <path fill="#EA4335" d="M199.9 237.8 1.4 470.17c7.22 24.57 30.16 41.81 55.8 41.81 11.16 0 20.93-2.79 29.3-8.37l244.16-139.46L199.9 237.8z"/>
-                        <path fill="#FBBC04" d="m433.91 205.1-104.65-60-111.61 110.22 113.01 108.83 104.64-58.6c18.14-9.77 30.7-29.3 30.7-50.23-1.4-20.93-13.95-40.46-32.09-50.22z"/>
-                        <path fill="#34A853" d="M199.42 273.45 329.27 145.1 87.9 8.37C79.53 2.79 68.36 0 57.2 0 30.7 0 6.98 18.14 1.4 41.86l198.02 231.59z"/>
-                        <path fill="#4285F4" d="M1.39 41.86C0 46.04 0 51.63 0 57.2v397.64c0 5.57 0 9.76 1.4 15.34l216.27-214.86L1.39 41.86z"/>
+                      <svg width="24" height="26" viewBox="0 0 466 511.98" fillRule="evenodd" clipRule="evenodd" style={{ flexShrink: 0 }}>
+                        <defs>
+                          <linearGradient id="gplay_blue_banner" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#00C3FF" />
+                            <stop offset="100%" stopColor="#0184FB" />
+                          </linearGradient>
+                          <linearGradient id="gplay_green_banner" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#00F076" />
+                            <stop offset="100%" stopColor="#00B04A" />
+                          </linearGradient>
+                          <linearGradient id="gplay_yellow_banner" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#FFE000" />
+                            <stop offset="100%" stopColor="#FF9100" />
+                          </linearGradient>
+                          <linearGradient id="gplay_red_banner" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#FF334B" />
+                            <stop offset="100%" stopColor="#D50000" />
+                          </linearGradient>
+                        </defs>
+                        <path fill="url(#gplay_red_banner)" d="M199.9 237.8 1.4 470.17c7.22 24.57 30.16 41.81 55.8 41.81 11.16 0 20.93-2.79 29.3-8.37l244.16-139.46L199.9 237.8z" />
+                        <path fill="url(#gplay_yellow_banner)" d="m433.91 205.1-104.65-60-111.61 110.22 113.01 108.83 104.64-58.6c18.14-9.77 30.7-29.3 30.7-50.23-1.4-20.93-13.95-40.46-32.09-50.22z" />
+                        <path fill="url(#gplay_green_banner)" d="M199.42 273.45 329.27 145.1 87.9 8.37C79.53 2.79 68.36 0 57.2 0 30.7 0 6.98 18.14 1.4 41.86l198.02 231.59z" />
+                        <path fill="url(#gplay_blue_banner)" d="M1.39 41.86C0 46.04 0 51.63 0 57.2v397.64c0 5.57 0 9.76 1.4 15.34l216.27-214.86L1.39 41.86z" />
                       </svg>
                       <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
-                        <span style={{ fontSize: '8px', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>İNDİRİN</span>
-                        <span style={{ fontSize: '12px', fontWeight: 700, marginTop: '2px' }}>Google Play</span>
+                        <span
+                          style={{
+                            fontSize: '8.5px',
+                            color: '#FFFFFF',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.6px',
+                            fontWeight: 600,
+                            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                            marginBottom: '3px',
+                          }}
+                        >
+                          GET IT ON
+                        </span>
+                        <span
+                          style={{
+                            fontSize: '17px',
+                            fontWeight: 600,
+                            color: '#FFFFFF',
+                            letterSpacing: '-0.25px',
+                            fontFamily: '"Product Sans", "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                          }}
+                        >
+                          Google Play
+                        </span>
                       </div>
                     </div>
                   )}
@@ -3209,22 +3251,45 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                       style={{
                         backgroundColor: '#000000',
                         color: '#FFFFFF',
-                        border: '1px solid #334155',
+                        border: '1px solid #A6A6A6',
                         borderRadius: '8px',
-                        padding: '6px 14px',
-                        display: 'flex',
+                        padding: '6px 14px 7px 11px',
+                        display: 'inline-flex',
                         alignItems: 'center',
-                        gap: '8px',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                        gap: '10px',
+                        boxShadow: '0 4px 14px rgba(0, 0, 0, 0.35)',
                         userSelect: 'none',
+                        boxSizing: 'border-box',
+                        minHeight: '42px',
                       }}
                     >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.74 1.02-1.77.9-2.8-.88.04-1.94.59-2.57 1.33-.56.64-.99 1.68-.86 2.69.97.08 1.93-.49 2.53-1.22z"/>
+                      <svg width="22" height="26" viewBox="0 0 814 1000" fill="#FFFFFF" style={{ flexShrink: 0 }}>
+                        <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76.5 0-103.7 40.8-165.9 40.8s-105.6-57-155.5-127C46.7 790.7 0 663 0 541.8c0-194.4 126.4-297.5 250.8-297.5 66.1 0 121.2 43.4 162.7 43.4 39.5 0 101.1-46 176.3-46 28.5 0 130.9 2.6 198.3 99.2zm-234-181.5c31.1-36.9 53.1-88.1 53.1-139.3 0-7.1-.6-14.3-1.9-20.1-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8 1.3 15.6 1.9 18.1 3.2.6 8.4 1.3 13.6 1.3 45.4 0 102.5-30.4 135.5-71.3z" />
                       </svg>
                       <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
-                        <span style={{ fontSize: '8px', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>İNDİRİN</span>
-                        <span style={{ fontSize: '12px', fontWeight: 700, marginTop: '2px' }}>App Store</span>
+                        <span
+                          style={{
+                            fontSize: '9px',
+                            color: '#FFFFFF',
+                            letterSpacing: '-0.1px',
+                            fontWeight: 400,
+                            fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif',
+                            marginBottom: '3px',
+                          }}
+                        >
+                          Download on the
+                        </span>
+                        <span
+                          style={{
+                            fontSize: '18px',
+                            fontWeight: 600,
+                            color: '#FFFFFF',
+                            letterSpacing: '-0.4px',
+                            fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif',
+                          }}
+                        >
+                          App Store
+                        </span>
                       </div>
                     </div>
                   )}
