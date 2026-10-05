@@ -1230,17 +1230,20 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
         const rad = (textResizeRef.current.rotation || 0) * (Math.PI / 180);
         const projectedDelta = dX * Math.cos(rad) + dY * Math.sin(rad);
 
-        const currentLayer = (config.textLayers || []).find((l) => l.id === activeDragTextId);
-        const currentLayerX = currentLayer?.x || 0;
+        const initialX = startPosRef.current.initialOffsetX;
+        const initialW = textResizeRef.current.initialWidth;
+        const initialCenterX = initialX + initialW / 2;
         const canvasBoundWidth = config.width || 1200;
-        const maxWidthAllowed = Math.max(60, canvasBoundWidth - Math.max(0, currentLayerX));
+        const maxSymmetricWidth = Math.max(60, 2 * Math.min(initialCenterX, canvasBoundWidth - initialCenterX));
+        const maxWidthAllowed = Math.min(canvasBoundWidth, maxSymmetricWidth);
 
         const multiplier = dragMode === 'text-resize-right' ? 2 : -2;
-        const newW = Math.max(40, Math.min(maxWidthAllowed, Math.round(textResizeRef.current.initialWidth + projectedDelta * multiplier)));
+        const newW = Math.max(40, Math.min(maxWidthAllowed, Math.round(initialW + projectedDelta * multiplier)));
+        const newX = Math.round(initialX + (initialW - newW) / 2);
 
         onChangeConfig({
           textLayers: (config.textLayers || []).map((l) =>
-            l.id === activeDragTextId ? { ...l, width: newW } : l
+            l.id === activeDragTextId ? { ...l, width: newW, x: newX } : l
           ),
         }, false);
         return;
