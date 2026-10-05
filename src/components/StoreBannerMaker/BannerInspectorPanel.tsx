@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Palette, 
   Smartphone, 
@@ -79,6 +79,90 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
   onShowToast,
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>('presets');
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const pendingScrollSectionRef = useRef<string | null>(null);
+
+  // Auto-switch tab and scroll to relevant section when any canvas element is selected
+  useEffect(() => {
+    let targetTab: TabType | null = null;
+    let targetSectionId: string | null = null;
+
+    if (config.selectedShapeId) {
+      targetTab = 'background';
+      targetSectionId = 'section-banner-shapes';
+    } else if (config.selectedDeviceId) {
+      targetTab = 'devices';
+      targetSectionId = 'section-banner-devices';
+    } else if (config.selectedTextId) {
+      targetTab = 'text';
+      targetSectionId = 'section-banner-text-layers';
+    } else if (config.selectedElementId) {
+      switch (config.selectedElementId) {
+        case 'app-icon':
+          targetTab = 'branding';
+          targetSectionId = 'section-banner-app-icon';
+          break;
+        case 'eyebrow':
+          targetTab = 'branding';
+          targetSectionId = 'section-banner-eyebrow';
+          break;
+        case 'store-badge':
+          targetTab = 'branding';
+          targetSectionId = 'section-banner-store-badges';
+          break;
+        case 'rating':
+          targetTab = 'branding';
+          targetSectionId = 'section-banner-rating';
+          break;
+        case 'title':
+        case 'subtitle':
+          targetTab = 'text';
+          targetSectionId = 'section-banner-text-layers';
+          break;
+        default:
+          break;
+      }
+    }
+
+    if (targetTab && targetSectionId) {
+      pendingScrollSectionRef.current = targetSectionId;
+      setActiveTab((currentTab) => {
+        if (currentTab !== targetTab) {
+          return targetTab;
+        }
+        return currentTab;
+      });
+
+      const performScroll = () => {
+        const secId = pendingScrollSectionRef.current;
+        if (!secId) return;
+        const targetEl = document.getElementById(secId);
+        const container = scrollContainerRef.current;
+        if (targetEl && container) {
+          const containerRect = container.getBoundingClientRect();
+          const elRect = targetEl.getBoundingClientRect();
+          const offsetTop = elRect.top - containerRect.top + container.scrollTop - 14;
+
+          container.scrollTo({
+            top: Math.max(0, offsetTop),
+            behavior: 'smooth',
+          });
+        }
+      };
+
+      const t1 = setTimeout(performScroll, 50);
+      const t2 = setTimeout(performScroll, 160);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
+    }
+  }, [
+    config.selectedShapeId,
+    config.selectedDeviceId,
+    config.selectedTextId,
+    config.selectedElementId,
+  ]);
 
   // Custom Dimensions input state with strict 5-digit limit
   const [customWidth, setCustomWidth] = useState<string>(config.width.toString());
@@ -460,7 +544,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
         </button>
       </div>
 
-      <div className="inspector-content" style={{ padding: '16px', overflowY: 'auto', flex: 1 }}>
+      <div ref={scrollContainerRef} className="inspector-content" style={{ padding: '16px', overflowY: 'auto', flex: 1 }}>
         {/* ========================================================================= */}
         {/* TAB 1: MAĞAZA BOYUTLARI                                                   */}
         {/* ========================================================================= */}
@@ -882,7 +966,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             </div>
 
             {/* Background Shapes / Şekiller (Mockup Editor Özelliği) */}
-            <div className="inspector-section" style={{ borderTop: '1px solid #E2E8F0', paddingTop: '14px' }}>
+            <div id="section-banner-shapes" className="inspector-section" style={{ borderTop: '1px solid #E2E8F0', paddingTop: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', position: 'relative' }}>
                 <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase' }}>
                   Arka Plan Şekilleri
@@ -1233,7 +1317,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
         {activeTab === 'devices' && (
           <div className="inspector-tab-pane" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {/* Devices on Screen & Add Device Button */}
-            <div className="inspector-section">
+            <div id="section-banner-devices" className="inspector-section">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <label style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase' }}>
                   Ekrandaki Cihazlar ({enabledDevices.length})
@@ -1440,7 +1524,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
         {/* TAB 4: METİN & TİPOGRAFİ                                                  */}
         {/* ========================================================================= */}
         {activeTab === 'text' && (
-          <div className="inspector-tab-pane" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div id="section-banner-text-layers" className="inspector-tab-pane" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {/* Header with "+ Metin Ekle" button */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid #E2E8F0' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -1964,7 +2048,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
         {activeTab === 'branding' && (
           <div className="inspector-tab-pane" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {/* App Icon Badge */}
-            <div className="inspector-section">
+            <div id="section-banner-app-icon" className="inspector-section">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase' }}>Uygulama İkonu</span>
                 <input
@@ -2037,7 +2121,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             </div>
 
             {/* Eyebrow Pill Tag */}
-            <div className="inspector-section" style={{ borderTop: '1px solid #E2E8F0', paddingTop: '14px' }}>
+            <div id="section-banner-eyebrow" className="inspector-section" style={{ borderTop: '1px solid #E2E8F0', paddingTop: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase' }}>Vurgu Etiketi (Pill)</span>
                 <input
@@ -2086,7 +2170,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             </div>
 
             {/* Store Badges */}
-            <div className="inspector-section" style={{ borderTop: '1px solid #E2E8F0', paddingTop: '14px' }}>
+            <div id="section-banner-store-badges" className="inspector-section" style={{ borderTop: '1px solid #E2E8F0', paddingTop: '14px' }}>
               <div style={{ marginBottom: '8px' }}>
                 <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase' }}>Mağaza Rozetleri</span>
               </div>
@@ -2193,7 +2277,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             </div>
 
             {/* Rating Badge */}
-            <div className="inspector-section" style={{ borderTop: '1px solid #E2E8F0', paddingTop: '14px' }}>
+            <div id="section-banner-rating" className="inspector-section" style={{ borderTop: '1px solid #E2E8F0', paddingTop: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase' }}>Kullanıcı Puanı Rozeti</span>
                 <input
