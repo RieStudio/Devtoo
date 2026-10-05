@@ -44,7 +44,11 @@ type CanvasDragMode =
   | 'shape-resize-nw'
   | 'shape-resize-ne'
   | 'shape-resize-sw'
-  | 'shape-resize-se';
+  | 'shape-resize-se'
+  | 'shape-resize-left'
+  | 'shape-resize-right'
+  | 'shape-resize-top'
+  | 'shape-resize-bottom';
 
 const getFontFamilyCss = (fontFamily?: string) => {
   if (!fontFamily) return 'inherit';
@@ -976,6 +980,47 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
     });
   };
 
+  // Handle pointer down on shape side handles (left, right, top, bottom)
+  const handleShapeSideResizeStart = (
+    e: React.PointerEvent,
+    shapeId: string,
+    side: 'left' | 'right' | 'top' | 'bottom',
+    shapeX: number,
+    shapeY: number,
+    shapeW: number,
+    shapeH: number,
+    shapeRot: number,
+    type: ShapeType
+  ) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    shapeResizeRef.current = {
+      shapeId,
+      corner: side,
+      startX: e.clientX,
+      startY: e.clientY,
+      startW: shapeW,
+      startH: shapeH,
+      startShapeX: shapeX,
+      startShapeY: shapeY,
+      startRot: shapeRot,
+      type,
+    };
+
+    setDragMode(`shape-resize-${side}` as CanvasDragMode);
+    setActiveDragShapeId(shapeId);
+    dragMovedRef.current = false;
+    setEditingTextId(null);
+    setEditingElementId(null);
+    onChangeConfig({
+      selectedShapeId: shapeId,
+      selectedDeviceId: null,
+      selectedElementId: null,
+      selectedTextId: null,
+    });
+  };
+
   // Handle pointer down on device ROTATE pill
   const handleDeviceRotatePointerDown = (e: React.PointerEvent, deviceEl: HTMLElement | null, deviceId: string) => {
     e.stopPropagation();
@@ -1295,30 +1340,60 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
 
         let newW = info.startW;
         let newH = info.startH;
+        let shiftLocalX = 0;
+        let shiftLocalY = 0;
 
-        if (info.corner === 'se') {
-          newW = Math.max(30, Math.round(info.startW + localDx));
-          newH = Math.max(30, Math.round(info.startH + localDy));
-        } else if (info.corner === 'sw') {
-          newW = Math.max(30, Math.round(info.startW - localDx));
-          newH = Math.max(30, Math.round(info.startH + localDy));
-        } else if (info.corner === 'ne') {
-          newW = Math.max(30, Math.round(info.startW + localDx));
-          newH = Math.max(30, Math.round(info.startH - localDy));
-        } else if (info.corner === 'nw') {
-          newW = Math.max(30, Math.round(info.startW - localDx));
-          newH = Math.max(30, Math.round(info.startH - localDy));
+        if (info.corner === 'left') {
+          // Sol kenardan tutulunca: Sadece genişlik sola doğru büyür / küçülür, sağ kenar sabit kalır
+          newW = Math.max(15, Math.round(info.startW - localDx));
+          shiftLocalX = -(newW - info.startW) / 2;
+        } else if (info.corner === 'right') {
+          // Sağ kenardan tutulunca: Sadece genişlik sağa doğru büyür / küçülür, sol kenar sabit kalır
+          newW = Math.max(15, Math.round(info.startW + localDx));
+          shiftLocalX = (newW - info.startW) / 2;
+        } else if (info.corner === 'top') {
+          // Üst kenardan tutulunca: Sadece yükseklik yukarı doğru büyür / küçülür, alt kenar sabit kalır
+          newH = Math.max(15, Math.round(info.startH - localDy));
+          shiftLocalY = -(newH - info.startH) / 2;
+        } else if (info.corner === 'bottom') {
+          // Alt kenardan tutulunca: Sadece yükseklik aşağı doğru büyür / küçülür, üst kenar sabit kalır
+          newH = Math.max(15, Math.round(info.startH + localDy));
+          shiftLocalY = (newH - info.startH) / 2;
+        } else {
+          // Köşe tutamaçları (NW, NE, SW, SE): En-boy oranını (aspect ratio) koruyarak boyutlandırma
+          const signX = info.corner === 'se' || info.corner === 'ne' ? 1 : -1;
+          const signY = info.corner === 'se' || info.corner === 'sw' ? 1 : -1;
+
+          const deltaW = localDx * signX;
+          const deltaH = localDy * signY;
+          const initialDiag = Math.hypot(info.startW, info.startH);
+          const proj = initialDiag > 0 ? (deltaW * info.startW + deltaH * info.startH) / initialDiag : 0;
+          const scale = Math.max(0.05, (initialDiag + proj) / Math.max(1, initialDiag));
+
+          newW = Math.max(15, Math.round(info.startW * scale));
+          newH = Math.max(15, Math.round(info.startH * scale));
+
+          // Karşıt köşe sabit kalacak şekilde merkez kaydırması
+          shiftLocalX = (signX * (newW - info.startW)) / 2;
+          shiftLocalY = (signY * (newH - info.startH)) / 2;
         }
 
-        if (info.type === 'circle') {
-          const side = Math.max(newW, newH);
-          newW = side;
-          newH = side;
-        }
+        // Merkez kaymasını global koordinatlara dönüştürme
+        const deltaGlobalX = shiftLocalX * cos - shiftLocalY * sin;
+        const deltaGlobalY = shiftLocalX * sin + shiftLocalY * cos;
+
+        const initialCenterX = info.startShapeX + info.startW / 2;
+        const initialCenterY = info.startShapeY + info.startH / 2;
+
+        const newCenterX = initialCenterX + deltaGlobalX;
+        const newCenterY = initialCenterY + deltaGlobalY;
+
+        const newX = Math.round(newCenterX - newW / 2);
+        const newY = Math.round(newCenterY - newH / 2);
 
         onChangeConfig({
           shapeLayers: (config.shapeLayers || []).map((s) =>
-            s.id === activeDragShapeId ? { ...s, width: newW, height: newH } : s
+            s.id === activeDragShapeId ? { ...s, x: newX, y: newY, width: newW, height: newH } : s
           ),
         }, false);
         return;
@@ -1597,7 +1672,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
     if (!device.enabled) return null;
     const isSelected = config.selectedDeviceId === device.id;
     const isCurrentDragging = dragMode !== 'none' && activeDragDeviceId === device.id;
-    const invScale = 1 / Math.max(0.1, device.scale);
+    const invScale = Math.max(1.0, 1 / Math.max(0.1, device.scale));
 
     return (
       <div
@@ -2150,7 +2225,13 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                   }}
                   onPointerDown={(e) => {
                     const target = e.target as HTMLElement;
-                    if (target.closest('.shape-corner-handle') || target.closest('.shape-rotate-btn') || target.closest('.shape-delete-btn')) {
+                    if (
+                      target.closest('.shape-corner-handle') ||
+                      target.closest('.shape-side-handle') ||
+                      target.closest('.text-border-handle') ||
+                      target.closest('.shape-rotate-btn') ||
+                      target.closest('.shape-delete-btn')
+                    ) {
                       return;
                     }
                     handleShapePointerDown(e, shape.id);
@@ -2279,38 +2360,106 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                       position: 'relative',
                     }}
                   >
-                    {isSelected && (
-                      <>
-                        <div
-                          className="text-corner-handle shape-corner-handle handle-nw"
-                          title="Köşeden boyutlandır"
-                          onPointerDown={(e) =>
-                            handleShapeCornerResizeStart(e, shape.id, 'nw', shape.x, shape.y, shape.width, shape.height, shape.rotation || 0, shape.type)
-                          }
-                        />
-                        <div
-                          className="text-corner-handle shape-corner-handle handle-ne"
-                          title="Köşeden boyutlandır"
-                          onPointerDown={(e) =>
-                            handleShapeCornerResizeStart(e, shape.id, 'ne', shape.x, shape.y, shape.width, shape.height, shape.rotation || 0, shape.type)
-                          }
-                        />
-                        <div
-                          className="text-corner-handle shape-corner-handle handle-sw"
-                          title="Köşeden boyutlandır"
-                          onPointerDown={(e) =>
-                            handleShapeCornerResizeStart(e, shape.id, 'sw', shape.x, shape.y, shape.width, shape.height, shape.rotation || 0, shape.type)
-                          }
-                        />
-                        <div
-                          className="text-corner-handle shape-corner-handle handle-se"
-                          title="Köşeden boyutlandır"
-                          onPointerDown={(e) =>
-                            handleShapeCornerResizeStart(e, shape.id, 'se', shape.x, shape.y, shape.width, shape.height, shape.rotation || 0, shape.type)
-                          }
-                        />
-                      </>
-                    )}
+                    {isSelected && (() => {
+                      const shapeAvgSize = (shape.width + shape.height) / 2;
+                      const handleScale = Math.max(1.0, Math.min(2.5, Number((1.0 + Math.max(0, shapeAvgSize - 140) / 200).toFixed(2))));
+
+                      return (
+                        <>
+                          {/* 4 Köşe Tutamaçları: En-boy oranını (aspect ratio) koruyarak boyutlandırma */}
+                          <div
+                            className="text-corner-handle shape-corner-handle handle-nw"
+                            title="Köşeden orantılı boyutlandır"
+                            style={{
+                              transform: `scale(${handleScale})`,
+                              transformOrigin: 'center center',
+                            }}
+                            onPointerDown={(e) =>
+                              handleShapeCornerResizeStart(e, shape.id, 'nw', shape.x, shape.y, shape.width, shape.height, shape.rotation || 0, shape.type)
+                            }
+                          />
+                          <div
+                            className="text-corner-handle shape-corner-handle handle-ne"
+                            title="Köşeden orantılı boyutlandır"
+                            style={{
+                              transform: `scale(${handleScale})`,
+                              transformOrigin: 'center center',
+                            }}
+                            onPointerDown={(e) =>
+                              handleShapeCornerResizeStart(e, shape.id, 'ne', shape.x, shape.y, shape.width, shape.height, shape.rotation || 0, shape.type)
+                            }
+                          />
+                          <div
+                            className="text-corner-handle shape-corner-handle handle-sw"
+                            title="Köşeden orantılı boyutlandır"
+                            style={{
+                              transform: `scale(${handleScale})`,
+                              transformOrigin: 'center center',
+                            }}
+                            onPointerDown={(e) =>
+                              handleShapeCornerResizeStart(e, shape.id, 'sw', shape.x, shape.y, shape.width, shape.height, shape.rotation || 0, shape.type)
+                            }
+                          />
+                          <div
+                            className="text-corner-handle shape-corner-handle handle-se"
+                            title="Köşeden orantılı boyutlandır"
+                            style={{
+                              transform: `scale(${handleScale})`,
+                              transformOrigin: 'center center',
+                            }}
+                            onPointerDown={(e) =>
+                              handleShapeCornerResizeStart(e, shape.id, 'se', shape.x, shape.y, shape.width, shape.height, shape.rotation || 0, shape.type)
+                            }
+                          />
+
+                          {/* 4 Kenar Tutamaçları: Sol, Sağ, Üst, Alt (Sadece tutulan yönde boyutlandırma) */}
+                          <div
+                            className="text-border-handle shape-border-handle handle-left"
+                            title="Soldan genişlet / daralt"
+                            style={{
+                              transform: `translateY(-50%) scale(${handleScale})`,
+                              transformOrigin: 'center center',
+                            }}
+                            onPointerDown={(e) =>
+                              handleShapeSideResizeStart(e, shape.id, 'left', shape.x, shape.y, shape.width, shape.height, shape.rotation || 0, shape.type)
+                            }
+                          />
+                          <div
+                            className="text-border-handle shape-border-handle handle-right"
+                            title="Sağdan genişlet / daralt"
+                            style={{
+                              transform: `translateY(-50%) scale(${handleScale})`,
+                              transformOrigin: 'center center',
+                            }}
+                            onPointerDown={(e) =>
+                              handleShapeSideResizeStart(e, shape.id, 'right', shape.x, shape.y, shape.width, shape.height, shape.rotation || 0, shape.type)
+                            }
+                          />
+                          <div
+                            className="text-border-handle shape-border-handle handle-top"
+                            title="Yukarıdan genişlet / daralt"
+                            style={{
+                              transform: `translateX(-50%) scale(${handleScale})`,
+                              transformOrigin: 'center center',
+                            }}
+                            onPointerDown={(e) =>
+                              handleShapeSideResizeStart(e, shape.id, 'top', shape.x, shape.y, shape.width, shape.height, shape.rotation || 0, shape.type)
+                            }
+                          />
+                          <div
+                            className="text-border-handle shape-border-handle handle-bottom"
+                            title="Aşağıdan genişlet / daralt"
+                            style={{
+                              transform: `translateX(-50%) scale(${handleScale})`,
+                              transformOrigin: 'center center',
+                            }}
+                            onPointerDown={(e) =>
+                              handleShapeSideResizeStart(e, shape.id, 'bottom', shape.x, shape.y, shape.width, shape.height, shape.rotation || 0, shape.type)
+                            }
+                          />
+                        </>
+                      );
+                    })()}
                     {renderShapeSvgContent(shape)}
                   </div>
                 </div>
@@ -2358,30 +2507,37 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                   }}
                   title="Uygulama İkonu - Taşımak için sürükleyin, köşelerinden boyutlandırın, değiştirmek için çift tıklayın"
                 >
-                  {isAppIconSelected && (
-                    <>
-                      <div
-                        className="text-corner-handle handle-nw"
-                        title="Köşeden boyutlandır"
-                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'app-icon', 'nw')}
-                      />
-                      <div
-                        className="text-corner-handle handle-ne"
-                        title="Köşeden boyutlandır"
-                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'app-icon', 'ne')}
-                      />
-                      <div
-                        className="text-corner-handle handle-sw"
-                        title="Köşeden boyutlandır"
-                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'app-icon', 'sw')}
-                      />
-                      <div
-                        className="text-corner-handle handle-se"
-                        title="Köşeden boyutlandır"
-                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'app-icon', 'se')}
-                      />
-                    </>
-                  )}
+                  {isAppIconSelected && (() => {
+                    const iconHandleScale = Math.max(1.0, Math.min(2.5, Number((1.0 + Math.max(0, config.appIconSize - 72) / 60).toFixed(2))));
+                    return (
+                      <>
+                        <div
+                          className="text-corner-handle handle-nw"
+                          title="Köşeden boyutlandır"
+                          style={{ transform: `scale(${iconHandleScale})`, transformOrigin: 'center center' }}
+                          onPointerDown={(e) => handleElementCornerResizeStart(e, 'app-icon', 'nw')}
+                        />
+                        <div
+                          className="text-corner-handle handle-ne"
+                          title="Köşeden boyutlandır"
+                          style={{ transform: `scale(${iconHandleScale})`, transformOrigin: 'center center' }}
+                          onPointerDown={(e) => handleElementCornerResizeStart(e, 'app-icon', 'ne')}
+                        />
+                        <div
+                          className="text-corner-handle handle-sw"
+                          title="Köşeden boyutlandır"
+                          style={{ transform: `scale(${iconHandleScale})`, transformOrigin: 'center center' }}
+                          onPointerDown={(e) => handleElementCornerResizeStart(e, 'app-icon', 'sw')}
+                        />
+                        <div
+                          className="text-corner-handle handle-se"
+                          title="Köşeden boyutlandır"
+                          style={{ transform: `scale(${iconHandleScale})`, transformOrigin: 'center center' }}
+                          onPointerDown={(e) => handleElementCornerResizeStart(e, 'app-icon', 'se')}
+                        />
+                      </>
+                    );
+                  })()}
                   <div
                     style={{
                       width: `${config.appIconSize}px`,
@@ -2477,34 +2633,37 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                   }}
                   title="Vurgu Etiketi - Taşımak için sürükleyin, köşelerinden boyutlandırın, düzenlemek için tıklayın"
                 >
-                  {isEyebrowSelected && (
-                    <>
-                      <div
-                        className="text-corner-handle handle-nw"
-                        title="Köşeden boyutlandır"
-                        style={{ transform: `scale(${1 / eyebrowScale})`, transformOrigin: 'center center' }}
-                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'eyebrow', 'nw')}
-                      />
-                      <div
-                        className="text-corner-handle handle-ne"
-                        title="Köşeden boyutlandır"
-                        style={{ transform: `scale(${1 / eyebrowScale})`, transformOrigin: 'center center' }}
-                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'eyebrow', 'ne')}
-                      />
-                      <div
-                        className="text-corner-handle handle-sw"
-                        title="Köşeden boyutlandır"
-                        style={{ transform: `scale(${1 / eyebrowScale})`, transformOrigin: 'center center' }}
-                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'eyebrow', 'sw')}
-                      />
-                      <div
-                        className="text-corner-handle handle-se"
-                        title="Köşeden boyutlandır"
-                        style={{ transform: `scale(${1 / eyebrowScale})`, transformOrigin: 'center center' }}
-                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'eyebrow', 'se')}
-                      />
-                    </>
-                  )}
+                  {isEyebrowSelected && (() => {
+                    const eyebrowHandleScale = Math.max(1.0, 1 / Math.max(0.1, eyebrowScale));
+                    return (
+                      <>
+                        <div
+                          className="text-corner-handle handle-nw"
+                          title="Köşeden boyutlandır"
+                          style={{ transform: `scale(${eyebrowHandleScale})`, transformOrigin: 'center center' }}
+                          onPointerDown={(e) => handleElementCornerResizeStart(e, 'eyebrow', 'nw')}
+                        />
+                        <div
+                          className="text-corner-handle handle-ne"
+                          title="Köşeden boyutlandır"
+                          style={{ transform: `scale(${eyebrowHandleScale})`, transformOrigin: 'center center' }}
+                          onPointerDown={(e) => handleElementCornerResizeStart(e, 'eyebrow', 'ne')}
+                        />
+                        <div
+                          className="text-corner-handle handle-sw"
+                          title="Köşeden boyutlandır"
+                          style={{ transform: `scale(${eyebrowHandleScale})`, transformOrigin: 'center center' }}
+                          onPointerDown={(e) => handleElementCornerResizeStart(e, 'eyebrow', 'sw')}
+                        />
+                        <div
+                          className="text-corner-handle handle-se"
+                          title="Köşeden boyutlandır"
+                          style={{ transform: `scale(${eyebrowHandleScale})`, transformOrigin: 'center center' }}
+                          onPointerDown={(e) => handleElementCornerResizeStart(e, 'eyebrow', 'se')}
+                        />
+                      </>
+                    );
+                  })()}
                   <EditableCanvasText
                     as="span"
                     value={config.eyebrowText}
@@ -2721,61 +2880,70 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                         transition: dragMode.startsWith('text-') ? 'none' : 'transform 0.15s ease-out, width 0.15s ease-out, outline 0.15s ease',
                       }}
                     >
-                      {isSelected && (
-                        <>
-                          <div
-                            className="text-corner-handle handle-nw"
-                            title="Köşeden ölçeklendir"
-                            onPointerDown={(e) => {
-                              const wrapEl = e.currentTarget.closest('.free-text-rotated-wrap') as HTMLElement;
-                              handleTextCornerResizeStart(e, layer.id, 'nw', layer.fontSize, layer.width, wrapEl, layer.rotation || 0);
-                            }}
-                          />
-                          <div
-                            className="text-corner-handle handle-ne"
-                            title="Köşeden ölçeklendir"
-                            onPointerDown={(e) => {
-                              const wrapEl = e.currentTarget.closest('.free-text-rotated-wrap') as HTMLElement;
-                              handleTextCornerResizeStart(e, layer.id, 'ne', layer.fontSize, layer.width, wrapEl, layer.rotation || 0);
-                            }}
-                          />
-                          <div
-                            className="text-corner-handle handle-sw"
-                            title="Köşeden ölçeklendir"
-                            onPointerDown={(e) => {
-                              const wrapEl = e.currentTarget.closest('.free-text-rotated-wrap') as HTMLElement;
-                              handleTextCornerResizeStart(e, layer.id, 'sw', layer.fontSize, layer.width, wrapEl, layer.rotation || 0);
-                            }}
-                          />
-                          <div
-                            className="text-corner-handle handle-se"
-                            title="Köşeden ölçeklendir"
-                            onPointerDown={(e) => {
-                              const wrapEl = e.currentTarget.closest('.free-text-rotated-wrap') as HTMLElement;
-                              handleTextCornerResizeStart(e, layer.id, 'se', layer.fontSize, layer.width, wrapEl, layer.rotation || 0);
-                            }}
-                          />
+                      {isSelected && (() => {
+                        const textHandleScale = Math.max(1.0, Math.min(2.5, Number((1.0 + Math.max(0, layer.fontSize - 28) / 36).toFixed(2))));
+                        return (
+                          <>
+                            <div
+                              className="text-corner-handle handle-nw"
+                              title="Köşeden ölçeklendir"
+                              style={{ transform: `scale(${textHandleScale})`, transformOrigin: 'center center' }}
+                              onPointerDown={(e) => {
+                                const wrapEl = e.currentTarget.closest('.free-text-rotated-wrap') as HTMLElement;
+                                handleTextCornerResizeStart(e, layer.id, 'nw', layer.fontSize, layer.width, wrapEl, layer.rotation || 0);
+                              }}
+                            />
+                            <div
+                              className="text-corner-handle handle-ne"
+                              title="Köşeden ölçeklendir"
+                              style={{ transform: `scale(${textHandleScale})`, transformOrigin: 'center center' }}
+                              onPointerDown={(e) => {
+                                const wrapEl = e.currentTarget.closest('.free-text-rotated-wrap') as HTMLElement;
+                                handleTextCornerResizeStart(e, layer.id, 'ne', layer.fontSize, layer.width, wrapEl, layer.rotation || 0);
+                              }}
+                            />
+                            <div
+                              className="text-corner-handle handle-sw"
+                              title="Köşeden ölçeklendir"
+                              style={{ transform: `scale(${textHandleScale})`, transformOrigin: 'center center' }}
+                              onPointerDown={(e) => {
+                                const wrapEl = e.currentTarget.closest('.free-text-rotated-wrap') as HTMLElement;
+                                handleTextCornerResizeStart(e, layer.id, 'sw', layer.fontSize, layer.width, wrapEl, layer.rotation || 0);
+                              }}
+                            />
+                            <div
+                              className="text-corner-handle handle-se"
+                              title="Köşeden ölçeklendir"
+                              style={{ transform: `scale(${textHandleScale})`, transformOrigin: 'center center' }}
+                              onPointerDown={(e) => {
+                                const wrapEl = e.currentTarget.closest('.free-text-rotated-wrap') as HTMLElement;
+                                handleTextCornerResizeStart(e, layer.id, 'se', layer.fontSize, layer.width, wrapEl, layer.rotation || 0);
+                              }}
+                            />
 
-                          <div
-                            className="text-border-handle handle-left"
-                            title="Genişliği ayarla"
-                            onPointerDown={(e) => {
-                              const wrapEl = e.currentTarget.closest('.free-text-rotated-wrap') as HTMLElement;
-                              const curW = layer.width || wrapEl?.offsetWidth || 300;
-                              handleTextWidthResizeStart(e, layer.id, 'left', curW, layer.rotation || 0);
-                            }}
-                          />
-                          <div
-                            className="text-border-handle handle-right"
-                            title="Genişliği ayarla"
-                            onPointerDown={(e) => {
-                              const wrapEl = e.currentTarget.closest('.free-text-rotated-wrap') as HTMLElement;
-                              const curW = layer.width || wrapEl?.offsetWidth || 300;
-                              handleTextWidthResizeStart(e, layer.id, 'right', curW, layer.rotation || 0);
-                            }}
-                          />
-                        </>
-                      )}
+                            <div
+                              className="text-border-handle handle-left"
+                              title="Genişliği ayarla"
+                              style={{ transform: `translateY(-50%) scale(${textHandleScale})`, transformOrigin: 'center center' }}
+                              onPointerDown={(e) => {
+                                const wrapEl = e.currentTarget.closest('.free-text-rotated-wrap') as HTMLElement;
+                                const curW = layer.width || wrapEl?.offsetWidth || 300;
+                                handleTextWidthResizeStart(e, layer.id, 'left', curW, layer.rotation || 0);
+                              }}
+                            />
+                            <div
+                              className="text-border-handle handle-right"
+                              title="Genişliği ayarla"
+                              style={{ transform: `translateY(-50%) scale(${textHandleScale})`, transformOrigin: 'center center' }}
+                              onPointerDown={(e) => {
+                                const wrapEl = e.currentTarget.closest('.free-text-rotated-wrap') as HTMLElement;
+                                const curW = layer.width || wrapEl?.offsetWidth || 300;
+                                handleTextWidthResizeStart(e, layer.id, 'right', curW, layer.rotation || 0);
+                              }}
+                            />
+                          </>
+                        );
+                      })()}
                       <EditableCanvasText
                         as="span"
                         value={layer.text}
@@ -2974,34 +3142,37 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                   }}
                   title="Mağaza Rozetleri - Taşımak için sürükleyin, köşelerinden boyutlandırın"
                 >
-                  {isBadgeSelected && (
-                    <>
-                      <div
-                        className="text-corner-handle handle-nw"
-                        title="Köşeden boyutlandır"
-                        style={{ transform: `scale(${1 / badgeScale})`, transformOrigin: 'center center' }}
-                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'store-badge', 'nw')}
-                      />
-                      <div
-                        className="text-corner-handle handle-ne"
-                        title="Köşeden boyutlandır"
-                        style={{ transform: `scale(${1 / badgeScale})`, transformOrigin: 'center center' }}
-                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'store-badge', 'ne')}
-                      />
-                      <div
-                        className="text-corner-handle handle-sw"
-                        title="Köşeden boyutlandır"
-                        style={{ transform: `scale(${1 / badgeScale})`, transformOrigin: 'center center' }}
-                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'store-badge', 'sw')}
-                      />
-                      <div
-                        className="text-corner-handle handle-se"
-                        title="Köşeden boyutlandır"
-                        style={{ transform: `scale(${1 / badgeScale})`, transformOrigin: 'center center' }}
-                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'store-badge', 'se')}
-                      />
-                    </>
-                  )}
+                  {isBadgeSelected && (() => {
+                    const badgeHandleScale = Math.max(1.0, 1 / Math.max(0.1, badgeScale));
+                    return (
+                      <>
+                        <div
+                          className="text-corner-handle handle-nw"
+                          title="Köşeden boyutlandır"
+                          style={{ transform: `scale(${badgeHandleScale})`, transformOrigin: 'center center' }}
+                          onPointerDown={(e) => handleElementCornerResizeStart(e, 'store-badge', 'nw')}
+                        />
+                        <div
+                          className="text-corner-handle handle-ne"
+                          title="Köşeden boyutlandır"
+                          style={{ transform: `scale(${badgeHandleScale})`, transformOrigin: 'center center' }}
+                          onPointerDown={(e) => handleElementCornerResizeStart(e, 'store-badge', 'ne')}
+                        />
+                        <div
+                          className="text-corner-handle handle-sw"
+                          title="Köşeden boyutlandır"
+                          style={{ transform: `scale(${badgeHandleScale})`, transformOrigin: 'center center' }}
+                          onPointerDown={(e) => handleElementCornerResizeStart(e, 'store-badge', 'sw')}
+                        />
+                        <div
+                          className="text-corner-handle handle-se"
+                          title="Köşeden boyutlandır"
+                          style={{ transform: `scale(${badgeHandleScale})`, transformOrigin: 'center center' }}
+                          onPointerDown={(e) => handleElementCornerResizeStart(e, 'store-badge', 'se')}
+                        />
+                      </>
+                    );
+                  })()}
                   {(config.storeBadgeType === 'google-play' || config.storeBadgeType === 'both') && (
                     <div
                       style={{
@@ -3116,34 +3287,37 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                   }}
                   title="Kullanıcı Puanı Rozeti - Taşımak için sürükleyin, köşelerinden boyutlandırın, düzenlemek için metne tıklayın"
                 >
-                  {isRatingSelected && (
-                    <>
-                      <div
-                        className="text-corner-handle handle-nw"
-                        title="Köşeden boyutlandır"
-                        style={{ transform: `scale(${1 / ratingScale})`, transformOrigin: 'center center' }}
-                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'rating', 'nw')}
-                      />
-                      <div
-                        className="text-corner-handle handle-ne"
-                        title="Köşeden boyutlandır"
-                        style={{ transform: `scale(${1 / ratingScale})`, transformOrigin: 'center center' }}
-                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'rating', 'ne')}
-                      />
-                      <div
-                        className="text-corner-handle handle-sw"
-                        title="Köşeden boyutlandır"
-                        style={{ transform: `scale(${1 / ratingScale})`, transformOrigin: 'center center' }}
-                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'rating', 'sw')}
-                      />
-                      <div
-                        className="text-corner-handle handle-se"
-                        title="Köşeden boyutlandır"
-                        style={{ transform: `scale(${1 / ratingScale})`, transformOrigin: 'center center' }}
-                        onPointerDown={(e) => handleElementCornerResizeStart(e, 'rating', 'se')}
-                      />
-                    </>
-                  )}
+                  {isRatingSelected && (() => {
+                    const ratingHandleScale = Math.max(1.0, 1 / Math.max(0.1, ratingScale));
+                    return (
+                      <>
+                        <div
+                          className="text-corner-handle handle-nw"
+                          title="Köşeden boyutlandır"
+                          style={{ transform: `scale(${ratingHandleScale})`, transformOrigin: 'center center' }}
+                          onPointerDown={(e) => handleElementCornerResizeStart(e, 'rating', 'nw')}
+                        />
+                        <div
+                          className="text-corner-handle handle-ne"
+                          title="Köşeden boyutlandır"
+                          style={{ transform: `scale(${ratingHandleScale})`, transformOrigin: 'center center' }}
+                          onPointerDown={(e) => handleElementCornerResizeStart(e, 'rating', 'ne')}
+                        />
+                        <div
+                          className="text-corner-handle handle-sw"
+                          title="Köşeden boyutlandır"
+                          style={{ transform: `scale(${ratingHandleScale})`, transformOrigin: 'center center' }}
+                          onPointerDown={(e) => handleElementCornerResizeStart(e, 'rating', 'sw')}
+                        />
+                        <div
+                          className="text-corner-handle handle-se"
+                          title="Köşeden boyutlandır"
+                          style={{ transform: `scale(${ratingHandleScale})`, transformOrigin: 'center center' }}
+                          onPointerDown={(e) => handleElementCornerResizeStart(e, 'rating', 'se')}
+                        />
+                      </>
+                    );
+                  })()}
                   <Star
                     size={14}
                     fill={config.ratingStarColor || '#F59E0B'}
