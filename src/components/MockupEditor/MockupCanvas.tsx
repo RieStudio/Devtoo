@@ -257,7 +257,9 @@ const EditableCanvasText: React.FC<EditableCanvasTextProps> = ({
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (contentRef.current && contentRef.current.innerText !== value) {
+    if (!contentRef.current) return;
+    if (document.activeElement === contentRef.current) return;
+    if (contentRef.current.innerText !== (value || '')) {
       contentRef.current.innerText = value || '';
     }
   }, [value]);

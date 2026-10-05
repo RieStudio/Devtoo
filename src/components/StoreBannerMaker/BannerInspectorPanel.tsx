@@ -1555,6 +1555,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                       <textarea
                         rows={3}
                         className="input-field"
+                        dir="ltr"
                         style={{
                           width: '100%',
                           padding: '8px 10px',
@@ -1564,6 +1565,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                           resize: 'vertical',
                           fontFamily: 'inherit',
                           lineHeight: 1.4,
+                          direction: 'ltr',
                         }}
                         value={selectedTextLayer.text}
                         onChange={(e) => handleUpdateTextLayer({ text: e.target.value })}

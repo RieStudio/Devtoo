@@ -86,22 +86,32 @@ const EditableCanvasText: React.FC<EditableCanvasTextProps> = ({
 }) => {
   const contentRef = useRef<HTMLDivElement>(null);
 
+  // Sync external value changes to DOM:
+  // IMPORTANT: Do NOT touch innerText while the user is actively focused and typing inside this element!
+  // Mutating innerText or text node children while typing destroys the browser's caret position,
+  // resetting it to 0 and causing text to be typed backwards (Arabic-style).
   useEffect(() => {
-    if (contentRef.current && contentRef.current.innerText !== value) {
+    if (!contentRef.current) return;
+    if (document.activeElement === contentRef.current) {
+      return;
+    }
+    if (contentRef.current.innerText !== (value || '')) {
       contentRef.current.innerText = value || '';
     }
   }, [value]);
 
   useEffect(() => {
     if (isEditing && contentRef.current) {
-      contentRef.current.focus();
-      // Place cursor at the end for typing rather than selecting all text
-      const range = document.createRange();
-      range.selectNodeContents(contentRef.current);
-      range.collapse(false);
-      const sel = window.getSelection();
-      sel?.removeAllRanges();
-      sel?.addRange(range);
+      if (document.activeElement !== contentRef.current) {
+        contentRef.current.focus();
+        // Place cursor at the end for typing rather than selecting all text
+        const range = document.createRange();
+        range.selectNodeContents(contentRef.current);
+        range.collapse(false);
+        const sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+      }
     }
   }, [isEditing]);
 
@@ -123,6 +133,13 @@ const EditableCanvasText: React.FC<EditableCanvasTextProps> = ({
     }
   };
 
+  const handleBlur = () => {
+    if (contentRef.current && contentRef.current.innerText !== (value || '')) {
+      contentRef.current.innerText = value || '';
+    }
+    onStopEditing?.();
+  };
+
   return (
     <Component
       ref={contentRef as any}
@@ -131,6 +148,7 @@ const EditableCanvasText: React.FC<EditableCanvasTextProps> = ({
       spellCheck={false}
       autoCorrect="off"
       autoCapitalize="off"
+      dir="ltr"
       className={`editable-canvas-text ${className} ${isEditing ? 'is-editing' : ''}`}
       style={{
         cursor: isEditing ? 'text' : 'inherit',
@@ -140,17 +158,17 @@ const EditableCanvasText: React.FC<EditableCanvasTextProps> = ({
         borderRadius: '4px',
         display: 'inline-block',
         minWidth: '30px',
+        direction: 'ltr',
+        unicodeBidi: 'plaintext',
         ...style,
       }}
       data-placeholder={placeholder}
-      onBlur={onStopEditing}
+      onBlur={handleBlur}
       onInput={handleInput}
       onPaste={handlePaste}
       onKeyDown={handleKeyDown}
       title={isEditing ? undefined : 'Düzenlemek için tıklayın'}
-    >
-      {value}
-    </Component>
+    />
   );
 };
 
