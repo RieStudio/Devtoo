@@ -9,13 +9,13 @@ export function generatePolicyMarkdown(config: PrivacyPolicyConfig): string {
   const selectedServices = THIRD_PARTY_SERVICES.filter((s) => config.services[s.id]);
 
   if (isTr) {
-    let md = `# Gizlilik Politikası
+    let md = `# ${config.appName} Gizlilik Politikası
 
 **Son Güncelleme:** ${config.effectiveDate}
 
-Bu Gizlilik Politikası, **${config.companyName}** ("Geliştirici", "biz", "bize" veya "bizim") tarafından geliştirilen **${config.appName}** ${config.appType === 'game' ? 'mobil oyunu' : 'mobil uygulaması'} ("Uygulama") için geçerlidir.
+Bu Gizlilik Politikası, **${config.companyName}** tarafından geliştirilen **${config.appName}** ${config.appType === 'game' ? 'mobil oyunu' : 'mobil uygulaması'} için geçerlidir.
 
-Gizliliğinize son derece önem veriyoruz. Bu politika metni; Uygulama'yı kullanırken hangi verilerin işlendiğini, üçüncü taraf servislerin rolünü ve haklarınızı açıklamaktadır.
+Gizliliğinize son derece önem veriyoruz. Bu politika metni; ${config.appType === 'game' ? 'oyunu' : 'uygulamayı'} kullanırken hangi verilerin işlendiğini, üçüncü taraf servislerin rolünü ve haklarınızı açıklamaktadır.
 
 ---
 
@@ -95,7 +95,7 @@ Sorularınız, geri bildirimleriniz veya veri talepleriniz için bize ulaşabili
   }
 
   // English fallback
-  let md = `# Privacy Policy
+  let md = `# ${config.appName} Privacy Policy
 
 **Last Updated:** ${config.effectiveDate}
 
@@ -310,16 +310,15 @@ export function generatePolicyHtml(config: PrivacyPolicyConfig): string {
 </head>
 <body>
   <div class="container">
-    <div class="badge">${config.appName}</div>
-    <h1>${isTr ? 'Gizlilik Politikası' : 'Privacy Policy'}</h1>
+    <h1>${config.appName} ${isTr ? 'Gizlilik Politikası' : 'Privacy Policy'}</h1>
     <div class="meta">
       ${isTr ? 'Son Güncelleme' : 'Last Updated'}: <strong>${config.effectiveDate}</strong> • ${isTr ? 'Geliştirici' : 'Developer'}: <strong>${config.companyName}</strong>
     </div>
 
     <p>
       ${isTr 
-        ? `Bu Gizlilik Politikası, <strong>${config.companyName}</strong> tarafından geliştirilen <strong>${config.appName}</strong> ${config.appType === 'game' ? 'mobil oyunu' : 'mobil uygulaması'} ("Uygulama") için geçerlidir. Kullanıcılarımızın gizliliğini korumak en yüksek önceliğimizdir.`
-        : `This Privacy Policy governs your use of the software application <strong>${config.appName}</strong> developed by <strong>${config.companyName}</strong>. Protecting our users' data is our highest priority.`}
+        ? `Bu Gizlilik Politikası, <strong>${config.companyName}</strong> tarafından geliştirilen <strong>${config.appName}</strong> ${config.appType === 'game' ? 'mobil oyunu' : 'mobil uygulaması'} için geçerlidir. Kullanıcılarımızın gizliliğini korumak en yüksek önceliğimizdir.`
+        : `This Privacy Policy governs your use of the ${config.appType === 'game' ? 'mobile game' : 'mobile application'} <strong>${config.appName}</strong> developed by <strong>${config.companyName}</strong>. Protecting our users' data is our highest priority.`}
     </p>
 
     <h2>1. ${isTr ? 'Toplanan Bilgiler ve İzinler' : 'Information Collection and Permissions'}</h2>

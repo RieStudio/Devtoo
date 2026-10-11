@@ -1,8 +1,5 @@
 import React, { useState } from 'react';
 import { 
-  FileText, 
-  ShieldCheck, 
-  Globe, 
   Copy, 
   Check, 
   Download, 
@@ -92,12 +89,11 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
         {/* Sekmeler */}
         <div style={{ display: 'flex', gap: '6px', backgroundColor: '#F1F5F9', padding: '4px', borderRadius: '10px' }}>
           {[
-            { id: 'preview' as const, label: 'Politika Önizlemesi', icon: FileText },
-            { id: 'data-safety' as const, label: 'Play Store Veri Güvenliği', icon: ShieldCheck, badge: 'Kopya Kağıdı' },
-            { id: 'hosting' as const, label: 'Canlı Link & Hosting', icon: Globe },
+            { id: 'preview' as const, label: 'Politika Önizlemesi' },
+            { id: 'data-safety' as const, label: 'Play Store Veri Güvenliği', badge: 'Kopya Kağıdı' },
+            { id: 'hosting' as const, label: 'Canlı Link & Hosting' },
           ].map((tab) => {
             const isSelected = activeTab === tab.id;
-            const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
@@ -106,7 +102,6 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '6px',
                   padding: '6px 14px',
                   borderRadius: '7px',
                   border: 'none',
@@ -119,7 +114,6 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
                   transition: 'all 0.15s ease',
                 }}
               >
-                <Icon size={14} color={isSelected ? '#D90429' : '#64748B'} />
                 <span>{tab.label}</span>
                 {tab.badge && (
                   <span style={{
@@ -129,7 +123,7 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
                     color: isSelected ? '#FFFFFF' : '#475569',
                     padding: '1px 6px',
                     borderRadius: '4px',
-                    marginLeft: '2px',
+                    marginLeft: '6px',
                   }}>
                     {tab.badge}
                   </span>
@@ -173,21 +167,8 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
               padding: '36px 40px',
               boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -2px rgba(0,0,0,0.02)',
             }}>
-              <div style={{
-                display: 'inline-block',
-                fontSize: '11px',
-                fontWeight: 700,
-                color: '#D90429',
-                backgroundColor: 'rgba(217, 4, 41, 0.08)',
-                padding: '3px 10px',
-                borderRadius: '9999px',
-                marginBottom: '10px',
-              }}>
-                {config.appName}
-              </div>
-
-              <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#0F172A', marginBottom: '4px' }}>
-                {config.language === 'tr' ? 'Gizlilik Politikası' : 'Privacy Policy'}
+              <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
+                {config.appName} {config.language === 'tr' ? 'Gizlilik Politikası' : 'Privacy Policy'}
               </h1>
 
               <div style={{ fontSize: '12px', color: '#64748B', marginBottom: '24px', paddingBottom: '16px', borderBottom: '1px solid #F1F5F9' }}>
