@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Gamepad2, 
   Smartphone, 
   Check, 
-  AlertTriangle 
+  AlertTriangle,
+  Info
 } from 'lucide-react';
 import type { PrivacyPolicyConfig, ThirdPartyServiceId } from '../../types/privacyPolicy';
 import { THIRD_PARTY_SERVICES } from '../../constants/privacyPolicyPresets';
@@ -17,6 +18,8 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
   config,
   onChange,
 }) => {
+  const [showDeletionHelp, setShowDeletionHelp] = useState<boolean>(false);
+
   const handleToggleService = (serviceId: ThirdPartyServiceId) => {
     onChange({
       services: {
@@ -278,20 +281,70 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
                     <AlertTriangle size={13} />
                     <span>Google Play Şartı: Hesap Silme URL'i Zorunludur!</span>
                   </div>
-                  <input
-                    type="url"
-                    value={config.features.accountDeletionUrl || ''}
-                    onChange={(e) => handleUpdateFeature('accountDeletionUrl', e.target.value)}
-                    placeholder="https://siteniz.com/delete-account"
-                    style={{
-                      width: '100%',
-                      padding: '6px 8px',
-                      borderRadius: '6px',
-                      border: '1px solid #CBD5E1',
-                      fontSize: '11.5px',
-                      boxSizing: 'border-box',
-                    }}
-                  />
+                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <input
+                      type="url"
+                      value={config.features.accountDeletionUrl || ''}
+                      onChange={(e) => handleUpdateFeature('accountDeletionUrl', e.target.value)}
+                      placeholder="https://forms.gle/... veya web linki"
+                      style={{
+                        width: '100%',
+                        padding: '6px 28px 6px 8px',
+                        borderRadius: '6px',
+                        border: '1px solid #CBD5E1',
+                        fontSize: '11.5px',
+                        boxSizing: 'border-box',
+                        outline: 'none',
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowDeletionHelp(!showDeletionHelp)}
+                      title="Google Play Hesap Silme URL'i hakkında bilgi al"
+                      style={{
+                        position: 'absolute',
+                        right: '7px',
+                        background: 'none',
+                        border: 'none',
+                        padding: '2px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        color: showDeletionHelp ? '#D90429' : '#64748B',
+                        zIndex: 2,
+                        transition: 'color 0.15s ease',
+                      }}
+                    >
+                      <Info size={14} />
+                    </button>
+                  </div>
+
+                  {showDeletionHelp && (
+                    <div style={{
+                      marginTop: '8px',
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      backgroundColor: '#EFF6FF',
+                      border: '1px solid #BFDBFE',
+                      fontSize: '11px',
+                      color: '#1E40AF',
+                      lineHeight: '1.5',
+                    }}>
+                      <div style={{ fontWeight: 700, color: '#1E3A8A', marginBottom: '3px' }}>
+                        Neden Web URL'si İsteniyor?
+                      </div>
+                      <div>
+                        Google Play, kullanıcının uygulamayı telefonundan silmiş olsa bile hesabının ve verilerinin silinmesini web üzerinden talep edebilmesini zorunlu tutar.
+                      </div>
+                      <div style={{ marginTop: '6px', fontWeight: 700, color: '#1E3A8A' }}>
+                        💡 Web siteniz yoksa:
+                      </div>
+                      <div>
+                        1 dakikada ücretsiz bir <strong>Google Form</strong> açıp linkini (<code>https://forms.gle/...</code>) veya Notion sayfanızı buraya yapıştırabilirsiniz. Google Play bunu resmi olarak onaylar.
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
