@@ -76,8 +76,8 @@ export const INITIAL_BANNER_CONFIG: StoreBannerConfig = {
   elementPositions: {
     'app-icon': { x: 388, y: 85 },
     'eyebrow': { x: 476, y: 103 },
-    'store-badge': { x: 335, y: 340 },
-    'rating': { x: 484, y: 343 },
+    'store-badge': { x: 320, y: 340 },
+    'rating': { x: 494, y: 343 },
   },
   selectedElementId: null,
 
@@ -193,8 +193,8 @@ export const getPresetLayoutPatch = (
         elementPositions: {
           'app-icon': { x: 388, y: 85 },
           'eyebrow': { x: 476, y: 103 },
-          'store-badge': { x: 335, y: 340 },
-          'rating': { x: 484, y: 343 },
+          'store-badge': { x: 320, y: 340 },
+          'rating': { x: 494, y: 343 },
         },
         textLayers: [
           {
@@ -249,8 +249,8 @@ export const getPresetLayoutPatch = (
         elementPositions: {
           'app-icon': { x: 812, y: 220 },
           'eyebrow': { x: 928, y: 247 },
-          'store-badge': { x: 768, y: 610 },
-          'rating': { x: 931, y: 613 },
+          'store-badge': { x: 770, y: 610 },
+          'rating': { x: 938, y: 613 },
         },
         textLayers: [
           {
@@ -305,8 +305,8 @@ export const getPresetLayoutPatch = (
         elementPositions: {
           'app-icon': { x: 396, y: 340 },
           'eyebrow': { x: 514, y: 372 },
-          'store-badge': { x: 349, y: 740 },
-          'rating': { x: 510, y: 743 },
+          'store-badge': { x: 350, y: 740 },
+          'rating': { x: 518, y: 743 },
         },
         textLayers: [
           {
@@ -361,8 +361,8 @@ export const getPresetLayoutPatch = (
         elementPositions: {
           'app-icon': { x: 472, y: 110 },
           'eyebrow': { x: 568, y: 132 },
-          'store-badge': { x: 423, y: 400 },
-          'rating': { x: 572, y: 403 },
+          'store-badge': { x: 410, y: 400 },
+          'rating': { x: 584, y: 403 },
         },
         textLayers: [
           {

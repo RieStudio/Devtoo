@@ -276,12 +276,12 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
           : { x: baseX, y: 256 };
       case 'store-badge':
         return isCenter
-          ? { x: Math.round((canvasW - (config.storeBadgeLayout === 'column' && config.storeBadgeType === 'both' ? 154 : (config.storeBadgeType === 'both' ? 300 : 154))) / 2), y: Math.round(canvasH * 0.68) }
+          ? { x: Math.round((canvasW - (config.storeBadgeLayout === 'column' && config.storeBadgeType === 'both' ? 154 : (config.storeBadgeType === 'both' ? 320 : 160))) / 2), y: Math.round(canvasH * 0.68) }
           : { x: baseX, y: 340 };
       case 'rating':
         return isCenter
-          ? { x: Math.round((canvasW - 354) / 2) + 149, y: Math.round(canvasH * 0.68) + 3 }
-          : { x: config.showStoreBadge ? (config.storeBadgeType === 'both' && config.storeBadgeLayout !== 'column' ? baseX + 300 : baseX + 164) : baseX, y: 343 };
+          ? { x: Math.round((canvasW - 378) / 2) + 174, y: Math.round(canvasH * 0.68) + 3 }
+          : { x: config.showStoreBadge ? (config.storeBadgeType === 'both' && config.storeBadgeLayout !== 'column' ? baseX + 320 : baseX + 176) : baseX, y: 343 };
       default:
         return { x: baseX, y: 85 };
     }
