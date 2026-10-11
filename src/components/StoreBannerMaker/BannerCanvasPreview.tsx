@@ -2054,7 +2054,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
             borderRadius: '8px',
             fontSize: '12px',
             fontWeight: 600,
-            backgroundColor: showSafeZone ? '#FFF1F2' : '#FFFFFF',
+            backgroundColor: '#FFFFFF',
             color: showSafeZone ? '#D90429' : '#475569',
             border: showSafeZone ? '1.5px solid #D90429' : '1px solid #CBD5E1',
             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
