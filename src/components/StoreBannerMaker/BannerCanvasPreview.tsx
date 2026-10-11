@@ -8,14 +8,12 @@ import {
   Crop, 
   Trash2, 
   Star,
-  Layout,
   RotateCw,
   Move
 } from 'lucide-react';
 import type { StoreBannerConfig, BannerDeviceConfig } from '../../types/storeBanner';
 import type { ShapeType } from '../../types/mockup';
 import { DeviceFrame } from '../MockupEditor/DeviceFrame';
-import { BANNER_PRESETS } from '../../constants/bannerPresets';
 import { renderShapeSvgContent } from '../MockupEditor/MockupCanvas';
 
 type CanvasDragMode = 
@@ -381,9 +379,9 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
     const vpH = viewportEl.clientHeight;
     if (vpW <= 0 || vpH <= 0) return;
 
-    // Account for 48px top screen-header and padding around card
+    // Account for card dimensions and padding around card
     const cardWidth = config.width;
-    const cardHeight = config.height + 48; // includes header
+    const cardHeight = config.height;
 
     const padding = 80;
     const availableWidth = vpW - padding;
@@ -571,10 +569,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
       handleDeselectAll();
     }
 
-    if (
-      target.closest('.store-banner-surface') ||
-      target.closest('.mockup-screen-header')
-    ) {
+    if (target.closest('.store-banner-surface')) {
       return;
     }
 
@@ -1602,8 +1597,6 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [config.selectedDeviceId, config.devices, onChangeConfig]);
 
-  const currentPreset = BANNER_PRESETS.find((p) => p.id === config.preset);
-
   // Compute background style
   const getCanvasBackground = (): React.CSSProperties => {
     if (config.bgType === 'solid') {
@@ -2133,31 +2126,11 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
           opacity: isReady ? 1 : 0,
         }}
       >
-        {/* Screen Card Wrapper with Top Header */}
+        {/* Screen Card Wrapper */}
         <div 
           className="mockup-screen-wrapper is-active-screen" 
           style={{ width: `${config.width}px` }}
         >
-          {/* Mockup Screen Header Card (Exact styling from Mockup Editor) */}
-          <div className="mockup-screen-header">
-            <div className="mockup-screen-title">
-              <Layout size={13} color="#64748B" />
-              <span className="screen-title-clickable" title="Mağaza Bannerı">
-                {currentPreset?.name || 'Store Banner'}
-              </span>
-
-              <span style={{ fontSize: '10px', backgroundColor: '#0F172A', color: '#FFF', padding: '1px 6px', borderRadius: '4px', fontWeight: 600, fontFamily: 'monospace' }}>
-                {config.width} × {config.height} px
-              </span>
-
-              {config.preset === 'google-play-feature' && (
-                <span style={{ fontSize: '10px', backgroundColor: '#059669', color: '#FFF', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>
-                  Google Play Standardı
-                </span>
-              )}
-            </div>
-          </div>
-
           {/* THE BANNER RENDER SURFACE (Target of html-to-image export) */}
           <div
             ref={canvasExportRef}
