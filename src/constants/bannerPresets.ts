@@ -7,7 +7,7 @@ export const BANNER_PRESETS: BannerPreset[] = [
     store: 'google-play',
     width: 1024,
     height: 500,
-    description: 'Play Store zorunlu öne çıkan grafik (1024×500 px)',
+    description: 'Play Store zorunlu öne çıkan grafik',
     badge: '1024×500 • Önerilen'
   },
   {
@@ -16,7 +16,7 @@ export const BANNER_PRESETS: BannerPreset[] = [
     store: 'app-store',
     width: 1920,
     height: 1080,
-    description: 'Apple App Store In-App Event & Yatay Banner (1920×1080 px)',
+    description: 'Apple App Store In-App Event & Yatay Banner',
     badge: '1920×1080'
   },
   {
@@ -25,7 +25,7 @@ export const BANNER_PRESETS: BannerPreset[] = [
     store: 'app-store',
     width: 1080,
     height: 1350,
-    description: 'Apple App Store Today hikaye kartı (1080×1350 px)',
+    description: 'Apple App Store Today hikaye kartı',
     badge: '1080×1350'
   },
   {
