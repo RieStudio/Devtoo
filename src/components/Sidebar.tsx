@@ -3,6 +3,7 @@ import {
   Smartphone, 
   Image as ImageIcon, 
   Layout,
+  ShieldCheck,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
@@ -38,6 +39,14 @@ const TOOLS: ToolItem[] = [
     isAvailable: true,
     description: 'Google Play Feature Graphic & Mağaza Bannerı'
   },
+  {
+    id: 'privacy-policy-studio',
+    name: 'Privacy Policy Studio',
+    category: 'Geliştirici Araçları',
+    icon: 'ShieldCheck',
+    isAvailable: true,
+    description: 'Gizlilik politikası & Play Store Veri Güvenliği formu'
+  },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeTool, onSelectTool }) => {
@@ -49,6 +58,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTool, onSelectTool }) =>
         return <Smartphone className="nav-icon" />;
       case 'Layout':
         return <Layout className="nav-icon" />;
+      case 'ShieldCheck':
+        return <ShieldCheck className="nav-icon" />;
       case 'Image':
       default:
         return <ImageIcon className="nav-icon" />;

@@ -13,6 +13,7 @@ import { ImageCropModal } from './components/MockupEditor/ImageCropModal';
 import { ExportModal, type ExportFormat } from './components/MockupEditor/ExportModal';
 import { AppIconResizer } from './components/AppIconResizer/AppIconResizer';
 import { StoreBannerMaker } from './components/StoreBannerMaker/StoreBannerMaker';
+import { PrivacyPolicyStudio } from './components/PrivacyPolicyStudio/PrivacyPolicyStudio';
 
 const INITIAL_CONFIG: MockupConfig = {
   id: 'screen-1',
@@ -115,6 +116,9 @@ export function App() {
   const bannerExportRef = useRef<(() => void) | null>(null);
   const bannerUploadRef = useRef<(() => void) | null>(null);
   const [isBannerExporting, setIsBannerExporting] = useState<boolean>(false);
+
+  // Privacy Policy Studio Header Integration
+  const privacyExportRef = useRef<(() => void) | null>(null);
 
   const toastTimeoutRef = useRef<any>(null);
   const showToast = (msg: string) => {
@@ -1043,6 +1047,8 @@ export function App() {
               ? () => iconExportRef.current?.()
               : activeTool === 'store-banner-maker'
               ? () => bannerExportRef.current?.()
+              : activeTool === 'privacy-policy-studio'
+              ? () => privacyExportRef.current?.()
               : () => setIsExportModalOpen(true)
           }
           onExportAll={() => setIsExportModalOpen(true)}
@@ -1129,6 +1135,13 @@ export function App() {
             setCanBannerRedo(redoable);
           }}
           onExportStateChange={setIsBannerExporting}
+          onShowToast={showToast}
+        />
+
+        {/* Privacy Policy Studio Çalışma Alanı */}
+        <PrivacyPolicyStudio
+          isVisible={activeTool === 'privacy-policy-studio'}
+          onRegisterExport={(fn) => { privacyExportRef.current = fn; }}
           onShowToast={showToast}
         />
       </div>

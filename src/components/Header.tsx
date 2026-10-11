@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, Upload, Smartphone, Image as ImageIcon, Layout, Undo2, Redo2 } from 'lucide-react';
+import { Download, Upload, Smartphone, Image as ImageIcon, Layout, ShieldCheck, Undo2, Redo2 } from 'lucide-react';
 
 interface HeaderProps {
   activeTool?: string;
@@ -42,6 +42,11 @@ export const Header: React.FC<HeaderProps> = ({
             <>
               <Layout size={18} color="#D90429" />
               <span>Store Banner Maker</span>
+            </>
+          ) : activeTool === 'privacy-policy-studio' ? (
+            <>
+              <ShieldCheck size={18} color="#D90429" />
+              <span>Privacy Policy Studio</span>
             </>
           ) : (
             <>
@@ -159,6 +164,20 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Download size={14} />
             <span>{isExporting ? 'Oluşturuluyor...' : 'İndir'}</span>
+          </button>
+        </div>
+      )}
+
+      {activeTool === 'privacy-policy-studio' && (
+        <div className="header-actions">
+          <button
+            className="btn-chili"
+            onClick={onExport}
+            disabled={isExporting}
+            title="Gizlilik politikasını hazır HTML dosyası olarak indir"
+          >
+            <Download size={14} />
+            <span>HTML İndir</span>
           </button>
         </div>
       )}
