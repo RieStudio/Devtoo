@@ -1772,7 +1772,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
           filter: getShadowStyle(device.shadowDepth),
           cursor: dragMode === 'move' && isCurrentDragging ? 'grabbing' : 'grab',
           zIndex: isSelected ? 35 : 20 + index,
-          transition: isCurrentDragging ? 'none' : 'left 0.15s ease-out, top 0.15s ease-out, transform 0.15s ease-out, outline 0.15s ease, filter 0.2s ease',
+          transition: isCurrentDragging ? 'none' : 'left 0.4s cubic-bezier(0.16, 1, 0.3, 1), top 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), outline 0.15s ease, filter 0.25s ease',
           pointerEvents: 'auto',
           touchAction: 'none',
         }}
@@ -2122,14 +2122,17 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
           left: 0,
           transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
           transformOrigin: '0 0',
-          transition: isPanning || !isReady ? 'none' : 'transform 0.12s cubic-bezier(0.16, 1, 0.3, 1)',
+          transition: isPanning || !isReady ? 'none' : 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
           opacity: isReady ? 1 : 0,
         }}
       >
         {/* Screen Card Wrapper */}
         <div 
           className="mockup-screen-wrapper is-active-screen" 
-          style={{ width: `${config.width}px` }}
+          style={{ 
+            width: `${config.width}px`,
+            transition: isPanning ? 'none' : 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+          }}
         >
           {/* THE BANNER RENDER SURFACE (Target of html-to-image export) */}
           <div
@@ -2156,7 +2159,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
               boxShadow: '0 12px 36px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08)',
               border: '1px solid var(--border-default)',
               borderRadius: '8px',
-              transition: isPanning ? 'none' : 'width 0.15s ease-out, height 0.15s ease-out, background-color 0.15s ease-out, background 0.15s ease-out',
+              transition: isPanning ? 'none' : 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1), height 0.4s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
               ...getCanvasBackground(),
             }}
           >
@@ -2263,7 +2266,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                     top: `${shape.y}px`,
                     width: `${shape.width}px`,
                     height: `${shape.height}px`,
-                    transition: dragMode.startsWith('shape-') ? 'none' : 'left 0.15s ease-out, top 0.15s ease-out, width 0.15s ease-out, height 0.15s ease-out, transform 0.15s ease-out, opacity 0.15s ease-out',
+                    transition: dragMode.startsWith('shape-') ? 'none' : 'left 0.4s cubic-bezier(0.16, 1, 0.3, 1), top 0.4s cubic-bezier(0.16, 1, 0.3, 1), width 0.4s cubic-bezier(0.16, 1, 0.3, 1), height 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease-out',
                     zIndex: isSelected ? 35 : 12,
                     opacity: (shape.opacity ?? 100) / 100,
                   }}
@@ -2547,7 +2550,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                     outlineOffset: '4px',
                     borderRadius: '8px',
                     padding: '2px',
-                    transition: dragMode === 'element-move' ? 'none' : 'left 0.15s ease-out, top 0.15s ease-out, outline 0.15s ease',
+                    transition: dragMode === 'element-move' ? 'none' : 'left 0.4s cubic-bezier(0.16, 1, 0.3, 1), top 0.4s cubic-bezier(0.16, 1, 0.3, 1), outline 0.15s ease',
                   }}
                   title="Uygulama İkonu - Taşımak için sürükleyin, köşelerinden boyutlandırın, değiştirmek için çift tıklayın"
                 >
@@ -2673,7 +2676,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                     borderRadius: '999px',
                     padding: '2px',
                     display: 'inline-flex',
-                    transition: dragMode === 'element-move' ? 'none' : 'left 0.15s ease-out, top 0.15s ease-out, transform 0.15s ease-out, outline 0.15s ease',
+                    transition: dragMode === 'element-move' ? 'none' : 'left 0.4s cubic-bezier(0.16, 1, 0.3, 1), top 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), outline 0.15s ease',
                   }}
                   title="Vurgu Etiketi - Taşımak için sürükleyin, köşelerinden boyutlandırın, düzenlemek için tıklayın"
                 >
@@ -2750,7 +2753,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                       zIndex: isSelected ? 48 : 36,
                       fontFamily: getFontFamilyCss(layer.fontFamily),
                       cursor: editingTextId === layer.id ? 'text' : dragMode === 'text-move' && activeDragTextId === layer.id ? 'grabbing' : 'grab',
-                      transition: dragMode.startsWith('text-') ? 'none' : 'left 0.15s ease-out, top 0.15s ease-out, outline 0.1s ease',
+                      transition: dragMode.startsWith('text-') ? 'none' : 'left 0.4s cubic-bezier(0.16, 1, 0.3, 1), top 0.4s cubic-bezier(0.16, 1, 0.3, 1), outline 0.1s ease',
                     }}
                     onPointerDown={(e) => {
                       if (editingTextId === layer.id) return;
@@ -2921,7 +2924,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                         display: 'flex',
                         justifyContent: layer.textAlign === 'center' ? 'center' : layer.textAlign === 'right' ? 'flex-end' : 'flex-start',
                         alignItems: 'flex-start',
-                        transition: dragMode.startsWith('text-') ? 'none' : 'transform 0.15s ease-out, width 0.15s ease-out, outline 0.15s ease',
+                        transition: dragMode.startsWith('text-') ? 'none' : 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), width 0.4s cubic-bezier(0.16, 1, 0.3, 1), outline 0.15s ease',
                       }}
                     >
                       {isSelected && (() => {
@@ -3057,7 +3060,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                       borderRadius: '6px',
                       padding: '2px',
                       textAlign: config.textAlignment,
-                      transition: dragMode === 'element-move' ? 'none' : 'left 0.15s ease-out, top 0.15s ease-out, outline 0.15s ease',
+                      transition: dragMode === 'element-move' ? 'none' : 'left 0.4s cubic-bezier(0.16, 1, 0.3, 1), top 0.4s cubic-bezier(0.16, 1, 0.3, 1), outline 0.15s ease',
                     }}
                     title="Başlık - Taşımak için sürükleyin, düzenlemek için tıklayın"
                   >
@@ -3118,7 +3121,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                       borderRadius: '6px',
                       padding: '2px',
                       textAlign: config.textAlignment,
-                      transition: dragMode === 'element-move' ? 'none' : 'left 0.15s ease-out, top 0.15s ease-out, outline 0.15s ease',
+                      transition: dragMode === 'element-move' ? 'none' : 'left 0.4s cubic-bezier(0.16, 1, 0.3, 1), top 0.4s cubic-bezier(0.16, 1, 0.3, 1), outline 0.15s ease',
                     }}
                     title="Alt Başlık - Taşımak için sürükleyin, düzenlemek için tıklayın"
                   >
@@ -3183,7 +3186,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                     flexDirection: config.storeBadgeLayout === 'column' && config.storeBadgeType === 'both' ? 'column' : 'row',
                     gap: '8px',
                     alignItems: 'center',
-                    transition: dragMode === 'element-move' ? 'none' : 'left 0.15s ease-out, top 0.15s ease-out, transform 0.15s ease-out, outline 0.15s ease',
+                    transition: dragMode === 'element-move' ? 'none' : 'left 0.4s cubic-bezier(0.16, 1, 0.3, 1), top 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), outline 0.15s ease',
                   }}
                   title="Mağaza Rozetleri - Taşımak için sürükleyin, köşelerinden boyutlandırın"
                 >
@@ -3399,7 +3402,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                     color: config.ratingTextColor || '#F8FAFC',
                     fontSize: '12px',
                     fontWeight: 600,
-                    transition: dragMode === 'element-move' ? 'none' : 'left 0.15s ease-out, top 0.15s ease-out, transform 0.15s ease-out, outline 0.15s ease',
+                    transition: dragMode === 'element-move' ? 'none' : 'left 0.4s cubic-bezier(0.16, 1, 0.3, 1), top 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), outline 0.15s ease',
                   }}
                   title="Kullanıcı Puanı Rozeti - Taşımak için sürükleyin, köşelerinden boyutlandırın, düzenlemek için metne tıklayın"
                 >

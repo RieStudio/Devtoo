@@ -571,7 +571,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                         border: isSelected ? '1.5px solid #D90429' : '1px solid #E2E8F0',
                         backgroundColor: '#FFFFFF',
                         cursor: 'pointer',
-                        transition: 'all 0.15s ease',
+                        transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
                       }}
                     >
                       <div>
