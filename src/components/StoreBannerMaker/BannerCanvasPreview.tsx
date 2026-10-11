@@ -519,7 +519,32 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
     };
   }, []);
 
-  // Pointer Down for Panning
+  // Deselect all active layers/elements/devices
+  const handleDeselectAll = useCallback(() => {
+    setEditingTextId(null);
+    setEditingElementId(null);
+    if (
+      config.selectedDeviceId ||
+      config.selectedElementId ||
+      config.selectedShapeId ||
+      config.selectedTextId
+    ) {
+      onChangeConfig({
+        selectedDeviceId: null,
+        selectedElementId: null,
+        selectedShapeId: null,
+        selectedTextId: null,
+      });
+    }
+  }, [
+    config.selectedDeviceId,
+    config.selectedElementId,
+    config.selectedShapeId,
+    config.selectedTextId,
+    onChangeConfig,
+  ]);
+
+  // Pointer Down for Panning & Deselection outside design area
   const handleCanvasPointerDown = (e: React.PointerEvent) => {
     const target = e.target as HTMLElement;
     if (
@@ -528,11 +553,27 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
       target.closest('.device-rotate-pill') ||
       target.closest('.device-delete-pill') ||
       target.closest('.resize-handle') ||
-      target.closest('.store-banner-surface') ||
-      target.closest('.mockup-screen-header') ||
+      target.closest('.text-corner-handle') ||
+      target.closest('.shape-rotate-handle') ||
+      target.closest('.shape-corner-handle') ||
+      target.closest('.banner-element-layer') ||
+      target.closest('.free-shape-layer') ||
+      target.closest('.free-text-layer') ||
       target.closest('.canvas-bottom-zoom-toolbar') ||
       target.closest('.canvas-top-right-toolbar') ||
       target.closest('.btn-pill-action')
+    ) {
+      return;
+    }
+
+    // Tasarım alanı (banner surface) dışındaki herhangi bir yere tıklandığında/basıldığında seçimi kaldır
+    if (!target.closest('.store-banner-surface')) {
+      handleDeselectAll();
+    }
+
+    if (
+      target.closest('.store-banner-surface') ||
+      target.closest('.mockup-screen-header')
     ) {
       return;
     }
@@ -544,6 +585,31 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
       initialPanY: panOffset.y,
     };
     setIsPanning(true);
+  };
+
+  const handleViewportClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (
+      target.closest('.store-banner-surface') ||
+      target.closest('.device-interactive-container') ||
+      target.closest('.device-transform-gizmo') ||
+      target.closest('.device-rotate-pill') ||
+      target.closest('.device-delete-pill') ||
+      target.closest('.resize-handle') ||
+      target.closest('.text-corner-handle') ||
+      target.closest('.shape-rotate-handle') ||
+      target.closest('.shape-corner-handle') ||
+      target.closest('.banner-element-layer') ||
+      target.closest('.free-shape-layer') ||
+      target.closest('.free-text-layer') ||
+      target.closest('.canvas-bottom-zoom-toolbar') ||
+      target.closest('.canvas-top-right-toolbar') ||
+      target.closest('.btn-pill-action')
+    ) {
+      return;
+    }
+
+    handleDeselectAll();
   };
 
   useEffect(() => {
@@ -1963,6 +2029,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
       ref={viewportRef}
       className="canvas-viewport" 
       onPointerDown={handleCanvasPointerDown}
+      onClick={handleViewportClick}
       style={{
         cursor: isPanning ? 'grabbing' : 'grab',
       }}
@@ -1971,6 +2038,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
       <div 
         className="canvas-top-right-toolbar" 
         onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
         style={{
           position: 'absolute',
           top: '16px',
@@ -2007,7 +2075,11 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
       </div>
 
       {/* Floating Bottom-Center Zoom Toolbar (Identical to MockupEditor) */}
-      <div className="canvas-bottom-zoom-toolbar" onClick={(e) => e.stopPropagation()}>
+      <div 
+        className="canvas-bottom-zoom-toolbar" 
+        onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
+      >
         <button
           type="button"
           className="zoom-btn"
@@ -2099,14 +2171,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                 !target.closest('.free-shape-layer') &&
                 !target.closest('.free-text-layer')
               ) {
-                setEditingTextId(null);
-                setEditingElementId(null);
-                onChangeConfig({
-                  selectedDeviceId: null,
-                  selectedElementId: null,
-                  selectedShapeId: null,
-                  selectedTextId: null,
-                });
+                handleDeselectAll();
               }
             }}
             style={{
