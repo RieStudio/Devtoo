@@ -150,16 +150,6 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
             {isCopied ? <Check size={14} color="#16A34A" /> : <Copy size={14} />}
             <span>{isCopied ? 'Kopyalandı!' : 'Metni Kopyala'}</span>
           </button>
-
-          <button
-            type="button"
-            className="btn-chili"
-            onClick={handleDownloadHtml}
-            style={{ padding: '6px 14px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '5px' }}
-          >
-            <Download size={14} />
-            <span>HTML İndir</span>
-          </button>
         </div>
       </div>
 

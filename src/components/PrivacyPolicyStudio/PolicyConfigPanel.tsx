@@ -2,7 +2,6 @@ import React from 'react';
 import { 
   Gamepad2, 
   Smartphone, 
-  ShieldCheck, 
   Check, 
   AlertTriangle 
 } from 'lucide-react';
@@ -54,15 +53,9 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
         borderBottom: '1px solid #EDF2F7',
         backgroundColor: '#FAFAFA',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <ShieldCheck size={18} color="#D90429" />
-          <h2 style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A' }}>
-            Politika & Veri Ayarları
-          </h2>
-        </div>
-        <p style={{ fontSize: '11.5px', color: '#64748B', marginTop: '3px' }}>
-          Bilgileri doldurun; politika ve Play Store Veri Güvenliği formu anında güncellensin.
-        </p>
+        <h2 style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A' }}>
+          Politika & Veri Ayarları
+        </h2>
       </div>
 
       <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '22px' }}>
@@ -152,7 +145,7 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
                   padding: '7px 10px',
                   borderRadius: '6px',
                   border: config.appType === 'game' ? '1.5px solid #D90429' : '1px solid #CBD5E1',
-                  backgroundColor: config.appType === 'game' ? '#FFF5F5' : '#FFFFFF',
+                  backgroundColor: '#FFFFFF',
                   color: config.appType === 'game' ? '#D90429' : '#334155',
                   fontSize: '11.5px',
                   fontWeight: 600,
@@ -163,7 +156,7 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
                   gap: '6px',
                 }}
               >
-                <Gamepad2 size={14} />
+                <Gamepad2 size={14} color={config.appType === 'game' ? '#D90429' : '#64748B'} />
                 <span>Mobil Oyun</span>
               </button>
               <button
@@ -174,7 +167,7 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
                   padding: '7px 10px',
                   borderRadius: '6px',
                   border: config.appType === 'app' ? '1.5px solid #D90429' : '1px solid #CBD5E1',
-                  backgroundColor: config.appType === 'app' ? '#FFF5F5' : '#FFFFFF',
+                  backgroundColor: '#FFFFFF',
                   color: config.appType === 'app' ? '#D90429' : '#334155',
                   fontSize: '11.5px',
                   fontWeight: 600,
@@ -185,7 +178,7 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
                   gap: '6px',
                 }}
               >
-                <Smartphone size={14} />
+                <Smartphone size={14} color={config.appType === 'app' ? '#D90429' : '#64748B'} />
                 <span>Mobil Uygulama</span>
               </button>
             </div>
@@ -219,8 +212,8 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
                     justifyContent: 'space-between',
                     padding: '8px 12px',
                     borderRadius: '8px',
-                    border: isChecked ? '1px solid #D90429' : '1px solid #E2E8F0',
-                    backgroundColor: isChecked ? '#FFF5F5' : '#FFFFFF',
+                    border: '1px solid #E2E8F0',
+                    backgroundColor: '#FFFFFF',
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
                   }}
