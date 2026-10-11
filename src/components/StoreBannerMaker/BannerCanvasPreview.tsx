@@ -2138,7 +2138,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
           <div
             ref={canvasExportRef}
             id="store-banner-export-surface"
-            className="mockup-render-box store-banner-surface"
+            className={`mockup-render-box store-banner-surface ${isExporting ? 'is-exporting' : ''}`}
             onClick={(e) => {
               const target = e.target as HTMLElement;
               if (
@@ -2156,9 +2156,10 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
               minHeight: `${config.height}px`,
               position: 'relative',
               overflow: 'hidden',
-              boxShadow: '0 12px 36px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08)',
-              border: '1px solid var(--border-default)',
-              borderRadius: '8px',
+              boxShadow: isExporting ? 'none' : '0 12px 36px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08)',
+              border: isExporting ? 'none' : '1px solid var(--border-default)',
+              borderRadius: isExporting ? '0px' : '8px',
+              outline: 'none',
               transition: isPanning ? 'none' : 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1), height 0.4s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
               ...getCanvasBackground(),
             }}
@@ -2197,7 +2198,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
             </div>
 
             {/* Google Play / App Store Safe Zone Overlay Guide */}
-            {showSafeZone && (
+            {showSafeZone && !isExporting && (
               <div
                 style={{
                   position: 'absolute',

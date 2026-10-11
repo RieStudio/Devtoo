@@ -3139,6 +3139,13 @@ input[type="range"] {
   position: relative;
 }
 
+.store-banner-surface.is-exporting {
+  border: none !important;
+  outline: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
 .banner-inspector-panel {
   width: 360px;
   min-width: 360px;

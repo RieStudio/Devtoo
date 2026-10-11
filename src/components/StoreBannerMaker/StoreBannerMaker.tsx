@@ -4,6 +4,7 @@ import type { StoreBannerConfig, BannerDeviceConfig } from '../../types/storeBan
 import { INITIAL_BANNER_CONFIG } from '../../constants/bannerPresets';
 import { BannerCanvasPreview } from './BannerCanvasPreview';
 import { BannerInspectorPanel } from './BannerInspectorPanel';
+import { BannerExportModal } from './BannerExportModal';
 import { ImageCropModal } from '../MockupEditor/ImageCropModal';
 
 interface StoreBannerMakerProps {
@@ -29,6 +30,7 @@ export const StoreBannerMaker: React.FC<StoreBannerMakerProps> = ({
 }) => {
   const [config, setConfig] = useState<StoreBannerConfig>(INITIAL_BANNER_CONFIG);
   const [isExporting, setIsExporting] = useState<boolean>(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
 
   // Device crop state
   const [activeCropDeviceId, setActiveCropDeviceId] = useState<string | null>(null);
@@ -160,54 +162,146 @@ export const StoreBannerMaker: React.FC<StoreBannerMakerProps> = ({
     });
   };
 
-  // Export Banner to PNG / JPEG
-  const handlePerformExport = useCallback(async () => {
+  // Open Export Modal
+  const handleOpenExportModal = useCallback(() => {
+    setIsExportModalOpen(true);
+  }, []);
+
+  // Export Banner to PNG or JPEG with pristine store-compliant quality
+  const handlePerformExport = useCallback(async (options?: {
+    scale?: number;
+    format?: 'png' | 'jpeg';
+    customFilename?: string;
+  }) => {
     if (!canvasExportRef.current) return;
     setIsExporting(true);
     if (onExportStateChange) onExportStateChange(true);
 
     try {
+      // 1. Allow React state updates to flush into the DOM before capturing (ensures borders/guides are hidden)
+      await new Promise((resolve) => setTimeout(resolve, 80));
+
       const exportElement = canvasExportRef.current;
-      const pixelRatio = config.exportScale || 1;
 
-      // Google Play requires strictly 1024x500 without alpha or JPG
-      const isGooglePlay = config.preset === 'google-play-feature';
-
-      let dataUrl: string;
-      let fileExt = 'png';
-
-      if (isGooglePlay) {
-        // High quality JPEG/PNG
-        dataUrl = await toPng(exportElement, {
-          quality: 1,
-          pixelRatio: pixelRatio,
-          cacheBust: true,
-          style: {
-            transform: 'none',
-            borderRadius: '0px',
-          },
-        });
-      } else {
-        dataUrl = await toPng(exportElement, {
-          quality: 0.98,
-          pixelRatio: pixelRatio,
-          cacheBust: true,
-          style: {
-            transform: 'none',
-            borderRadius: '0px',
-          },
-        });
+      // 2. Ensure all custom web fonts (Outfit, Inter etc.) are fully rendered
+      if (document.fonts) {
+        await document.fonts.ready;
       }
 
-      // Trigger download
+      // 3. Ensure all images inside the banner surface are completely loaded & decoded
+      const images = Array.from(exportElement.querySelectorAll('img'));
+      await Promise.all(
+        images.map((img) => {
+          if (img.complete && img.naturalHeight !== 0) return Promise.resolve();
+          return new Promise<void>((resolve) => {
+            img.onload = () => resolve();
+            img.onerror = () => resolve();
+          });
+        })
+      );
+
+      const exportScale = options?.scale || config.exportScale || 1;
+      const exportFormat = options?.format || 'png';
+      const baseWidth = config.width;
+      const baseHeight = config.height;
+      const targetWidth = Math.round(baseWidth * exportScale);
+      const targetHeight = Math.round(baseHeight * exportScale);
+
+      // Store-specific requirements:
+      // Google Play: Strictly 1024x500 px, 24-bit PNG or JPEG without alpha channel (no transparency allowed).
+      // App Store Promo: Strictly 1920x1080 px, RGB color space, no transparency.
+      // App Store Today: Strictly 1080x1350 px, RGB color space, no transparency.
+      // Custom: Exact config.width x config.height px.
+      const isGooglePlay = config.preset === 'google-play-feature';
+      const isAppStore = config.preset === 'appstore-promo' || config.preset === 'appstore-today';
+
+      // Capture direct native rasterization at exact requested scale (zero downsample blur)
+      const rawDataUrl = await toPng(exportElement, {
+        cacheBust: true,
+        width: baseWidth,
+        height: baseHeight,
+        canvasWidth: targetWidth,
+        canvasHeight: targetHeight,
+        pixelRatio: exportScale,
+        style: {
+          transform: 'none',
+          borderRadius: '0px',
+          border: 'none',
+          outline: 'none',
+          boxShadow: 'none',
+          margin: '0',
+        },
+      });
+
+      // Post-process through offscreen canvas:
+      // 1. Enforce strict 24-bit opaque RGB (alpha: false) for Google Play & App Store to prevent console upload rejections
+      // 2. Exact 1:1 pixel fidelity with no artificial blurring or multi-pass resampling
+      const finalDataUrl = await new Promise<string>((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = targetWidth;
+          canvas.height = targetHeight;
+
+          // For Google Play and App Store, alpha: false ensures strictly 24-bit opaque RGB
+          const needsOpaque = isGooglePlay || isAppStore || exportFormat === 'jpeg';
+          const ctx = canvas.getContext('2d', { alpha: !needsOpaque });
+
+          if (!ctx) {
+            resolve(rawDataUrl);
+            return;
+          }
+
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+
+          if (needsOpaque) {
+            // Fill background with solid theme color or fallback to prevent any transparent alpha pixels
+            ctx.fillStyle = config.bgColor || '#0F172A';
+            ctx.fillRect(0, 0, targetWidth, targetHeight);
+          }
+
+          // Draw directly 1:1 onto target dimensions without multi-stage downsampling blur
+          ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+          const mimeType = exportFormat === 'jpeg' ? 'image/jpeg' : 'image/png';
+          resolve(canvas.toDataURL(mimeType, exportFormat === 'jpeg' ? 0.95 : 1.0));
+        };
+        img.onerror = () => reject(new Error('Banner render hatası'));
+        img.src = rawDataUrl;
+      });
+
+      // Trigger download with descriptive store-compliant filename
       const link = document.createElement('a');
-      const cleanTitle = (config.titleText || 'store-banner')
-        .toLowerCase()
-        .replace(/[^a-z0-9]/g, '-')
-        .replace(/-+/g, '-');
-      link.download = `${cleanTitle}-${config.width}x${config.height}.${fileExt}`;
-      link.href = dataUrl;
+      let filename = options?.customFilename;
+
+      if (!filename) {
+        const cleanTitle = (config.titleText || 'store-banner')
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, '-')
+          .replace(/-+/g, '-');
+
+        let presetSuffix = '';
+        if (isGooglePlay) {
+          presetSuffix = 'google-play-feature';
+        } else if (config.preset === 'appstore-promo') {
+          presetSuffix = 'appstore-promo';
+        } else if (config.preset === 'appstore-today') {
+          presetSuffix = 'appstore-today';
+        } else {
+          presetSuffix = 'banner';
+        }
+
+        const scaleTag = exportScale > 1 ? `@${exportScale}x` : '';
+        filename = `${cleanTitle}-${presetSuffix}-${targetWidth}x${targetHeight}${scaleTag}`;
+      }
+
+      const ext = exportFormat === 'jpeg' ? 'jpg' : 'png';
+      link.download = filename.endsWith(`.${ext}`) ? filename : `${filename}.${ext}`;
+      link.href = finalDataUrl;
       link.click();
+
+      setIsExportModalOpen(false);
     } catch (err) {
       console.error('Banner export error:', err);
       if (onShowToast) onShowToast('Dışa aktarma sırasında bir hata oluştu.');
@@ -220,9 +314,9 @@ export const StoreBannerMaker: React.FC<StoreBannerMakerProps> = ({
   // Register callbacks for top Header integration
   useEffect(() => {
     if (isVisible && onRegisterExport) {
-      onRegisterExport(handlePerformExport);
+      onRegisterExport(handleOpenExportModal);
     }
-  }, [isVisible, onRegisterExport, handlePerformExport]);
+  }, [isVisible, onRegisterExport, handleOpenExportModal]);
 
   useEffect(() => {
     if (isVisible && onRegisterUpload) {
@@ -298,9 +392,18 @@ export const StoreBannerMaker: React.FC<StoreBannerMakerProps> = ({
         onCropDeviceScreenshot={handleCropDeviceScreenshot}
         onUploadAppIcon={handleUploadAppIcon}
         onUploadBgImage={handleUploadBgImage}
-        onExport={handlePerformExport}
+        onExport={handleOpenExportModal}
         isExporting={isExporting}
         onShowToast={onShowToast}
+      />
+
+      {/* Banner Export Quality & Format Modal */}
+      <BannerExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        onExport={handlePerformExport}
+        isExporting={isExporting}
+        config={config}
       />
 
       {/* Interactive Crop Modal for Device Screenshots */}
