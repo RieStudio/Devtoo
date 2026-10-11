@@ -56,17 +56,6 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
     if (onShowToast) onShowToast('HTML dosyası indirildi.');
   };
 
-  const handleDownloadMarkdown = () => {
-    const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.download = `privacy-policy.md`;
-    link.href = url;
-    link.click();
-    URL.revokeObjectURL(url);
-    if (onShowToast) onShowToast('Markdown dosyası indirildi.');
-  };
-
   return (
     <div style={{
       flex: 1,
@@ -90,7 +79,7 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
         <div style={{ display: 'flex', gap: '6px', backgroundColor: '#F1F5F9', padding: '4px', borderRadius: '10px' }}>
           {[
             { id: 'preview' as const, label: 'Politika Önizlemesi' },
-            { id: 'data-safety' as const, label: 'Play Store Veri Güvenliği', badge: 'Kopya Kağıdı' },
+            { id: 'data-safety' as const, label: 'Play Store Veri Güvenliği', badge: 'Rehber' },
             { id: 'hosting' as const, label: 'Canlı Link & Hosting' },
           ].map((tab) => {
             const isSelected = activeTab === tab.id;
@@ -406,16 +395,6 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
                   >
                     <Download size={15} />
                     <span>Hazır "privacy-policy.html" İndir</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    className="btn-secondary"
-                    onClick={handleDownloadMarkdown}
-                    style={{ padding: '8px 16px', fontSize: '12.5px', display: 'flex', alignItems: 'center', gap: '6px' }}
-                  >
-                    <Download size={15} />
-                    <span>Markdown (.md) Olarak İndir</span>
                   </button>
                 </div>
               </div>
