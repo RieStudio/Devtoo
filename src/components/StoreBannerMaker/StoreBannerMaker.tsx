@@ -208,10 +208,6 @@ export const StoreBannerMaker: React.FC<StoreBannerMakerProps> = ({
       link.download = `${cleanTitle}-${config.width}x${config.height}.${fileExt}`;
       link.href = dataUrl;
       link.click();
-
-      if (onShowToast) {
-        onShowToast(`Banner indirildi (${config.width * pixelRatio}×${config.height * pixelRatio} px)`);
-      }
     } catch (err) {
       console.error('Banner export error:', err);
       if (onShowToast) onShowToast('Dışa aktarma sırasında bir hata oluştu.');

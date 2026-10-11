@@ -134,15 +134,14 @@ export const AppIconResizer: React.FC<AppIconResizerProps> = ({
             setExportProgressText(statusText);
           }
         );
+        setIsExportModalOpen(false);
       } catch (err) {
         console.error('Export error:', err);
         alert('Dışa aktarma sırasında bir hata oluştu.');
       } finally {
-        setTimeout(() => {
-          setIsExporting(false);
-          setExportProgressText('');
-          setExportPercent(0);
-        }, 1000);
+        setIsExporting(false);
+        setExportProgressText('');
+        setExportPercent(0);
       }
     };
   }, [config, selectedSpecs, handleTriggerUpload]);

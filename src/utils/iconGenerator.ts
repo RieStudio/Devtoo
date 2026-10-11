@@ -211,7 +211,7 @@ Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}
   downloadBlob(zipBlob, finalFileName);
 
   if (onProgress) {
-    onProgress(100, 'İndirme tamamlandı!');
+    onProgress(100, 'Hazırlandı');
   }
 }
 

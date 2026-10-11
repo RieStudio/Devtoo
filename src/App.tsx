@@ -978,7 +978,6 @@ export function App() {
         link.download = `${zipBaseName}.zip`;
         link.click();
         URL.revokeObjectURL(downloadUrl);
-        showToast('Tüm ekranlar başarıyla indirildi.');
       } else {
         // Single Active Screen Export
         const isDevOnly = activeScreenConfig.exportMode === 'device-only';
@@ -1011,7 +1010,6 @@ export function App() {
         link.download = finalName;
         link.href = dataUrl;
         link.click();
-        showToast(`Görsel ${format.toUpperCase()} formatında indirildi.`);
       }
 
       setIsExportModalOpen(false);
