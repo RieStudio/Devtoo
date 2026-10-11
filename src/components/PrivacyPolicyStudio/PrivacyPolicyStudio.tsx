@@ -54,8 +54,7 @@ export const PrivacyPolicyStudio: React.FC<PrivacyPolicyStudioProps> = ({
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);
-    if (onShowToast) onShowToast('Gizlilik Politikası (HTML) indirildi.');
-  }, [config, onShowToast]);
+  }, [config]);
 
   useEffect(() => {
     if (isVisible && onRegisterExport) {

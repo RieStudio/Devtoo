@@ -53,7 +53,6 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);
-    if (onShowToast) onShowToast('HTML dosyası indirildi.');
   };
 
   return (
@@ -122,18 +121,20 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
           })}
         </div>
 
-        {/* Hızlı Aksiyon Butonları */}
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button
-            type="button"
-            className="btn-secondary"
-            onClick={handleCopyMarkdown}
-            style={{ padding: '6px 12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '5px' }}
-          >
-            {isCopied ? <Check size={14} color="#16A34A" /> : <Copy size={14} />}
-            <span>{isCopied ? 'Kopyalandı!' : 'Metni Kopyala'}</span>
-          </button>
-        </div>
+        {/* Hızlı Aksiyon Butonları (Yalnızca Politika Önizlemesi sekmesinde görünür) */}
+        {activeTab === 'preview' && (
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={handleCopyMarkdown}
+              style={{ padding: '6px 12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '5px' }}
+            >
+              {isCopied ? <Check size={14} color="#16A34A" /> : <Copy size={14} />}
+              <span>{isCopied ? 'Kopyalandı!' : 'Metni Kopyala'}</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* İçerik Alanı */}
