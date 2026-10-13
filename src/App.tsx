@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, lazy, Suspense } from 'react';
 import { toPng, toJpeg, toSvg } from 'html-to-image';
 import JSZip from 'jszip';
 import { AlertCircle, X } from 'lucide-react';
@@ -9,13 +9,16 @@ import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { MockupCanvas } from './components/MockupEditor/MockupCanvas';
 import { InspectorPanel } from './components/MockupEditor/InspectorPanel';
-import { ImageCropModal } from './components/MockupEditor/ImageCropModal';
-import { ExportModal, type ExportFormat } from './components/MockupEditor/ExportModal';
-import { AppIconResizer } from './components/AppIconResizer/AppIconResizer';
-import { StoreBannerMaker } from './components/StoreBannerMaker/StoreBannerMaker';
-import { PrivacyPolicyStudio } from './components/PrivacyPolicyStudio/PrivacyPolicyStudio';
-import { AuthModal } from './components/Auth/AuthModal';
-import { ProjectsModal } from './components/Projects/ProjectsModal';
+import type { ExportFormat } from './components/MockupEditor/ExportModal';
+
+// Code Splitting / Lazy Loading for optimal initial load time
+const ImageCropModal = lazy(() => import('./components/MockupEditor/ImageCropModal').then(m => ({ default: m.ImageCropModal })));
+const ExportModal = lazy(() => import('./components/MockupEditor/ExportModal').then(m => ({ default: m.ExportModal })));
+const AppIconResizer = lazy(() => import('./components/AppIconResizer/AppIconResizer').then(m => ({ default: m.AppIconResizer })));
+const StoreBannerMaker = lazy(() => import('./components/StoreBannerMaker/StoreBannerMaker').then(m => ({ default: m.StoreBannerMaker })));
+const PrivacyPolicyStudio = lazy(() => import('./components/PrivacyPolicyStudio/PrivacyPolicyStudio').then(m => ({ default: m.PrivacyPolicyStudio })));
+const AuthModal = lazy(() => import('./components/Auth/AuthModal').then(m => ({ default: m.AuthModal })));
+const ProjectsModal = lazy(() => import('./components/Projects/ProjectsModal').then(m => ({ default: m.ProjectsModal })));
 
 const INITIAL_CONFIG: MockupConfig = {
   id: 'screen-1',
@@ -1166,143 +1169,158 @@ export function App() {
         </div>
 
         {/* App Icon Resizer Çalışma Alanı */}
-        <AppIconResizer
-          isVisible={activeTool === 'app-icon-resizer'}
-          onRegisterExport={(fn) => { iconExportRef.current = fn; }}
-          onRegisterUpload={(fn) => { iconUploadRef.current = fn; }}
-          onRegisterCrop={(fn) => { iconCropRef.current = fn; }}
-          onExportStateChange={setIsIconExporting}
-          onHasImageChange={setHasIconImage}
-        />
+        <Suspense fallback={null}>
+          <AppIconResizer
+            isVisible={activeTool === 'app-icon-resizer'}
+            onRegisterExport={(fn) => { iconExportRef.current = fn; }}
+            onRegisterUpload={(fn) => { iconUploadRef.current = fn; }}
+            onRegisterCrop={(fn) => { iconCropRef.current = fn; }}
+            onExportStateChange={setIsIconExporting}
+            onHasImageChange={setHasIconImage}
+          />
+        </Suspense>
 
         {/* Store Banner Maker Çalışma Alanı */}
-        <StoreBannerMaker
-          isVisible={activeTool === 'store-banner-maker'}
-          onRegisterExport={(fn) => { bannerExportRef.current = fn; }}
-          onRegisterUpload={(fn) => { bannerUploadRef.current = fn; }}
-          onRegisterUndo={(fn) => { bannerUndoRef.current = fn; }}
-          onRegisterRedo={(fn) => { bannerRedoRef.current = fn; }}
-          onRegisterGetData={(fn) => { bannerGetDataRef.current = fn as any; }}
-          onRegisterLoadData={(fn) => { bannerLoadDataRef.current = fn as any; }}
-          onHistoryStateChange={(undoable, redoable) => {
-            setCanBannerUndo(undoable);
-            setCanBannerRedo(redoable);
-          }}
-          onExportStateChange={setIsBannerExporting}
-          onShowToast={showToast}
-        />
+        <Suspense fallback={null}>
+          <StoreBannerMaker
+            isVisible={activeTool === 'store-banner-maker'}
+            onRegisterExport={(fn) => { bannerExportRef.current = fn; }}
+            onRegisterUpload={(fn) => { bannerUploadRef.current = fn; }}
+            onRegisterUndo={(fn) => { bannerUndoRef.current = fn; }}
+            onRegisterRedo={(fn) => { bannerRedoRef.current = fn; }}
+            onRegisterGetData={(fn) => { bannerGetDataRef.current = fn as any; }}
+            onRegisterLoadData={(fn) => { bannerLoadDataRef.current = fn as any; }}
+            onHistoryStateChange={(undoable, redoable) => {
+              setCanBannerUndo(undoable);
+              setCanBannerRedo(redoable);
+            }}
+            onExportStateChange={setIsBannerExporting}
+            onShowToast={showToast}
+          />
+        </Suspense>
 
         {/* Privacy Policy Studio Çalışma Alanı */}
-        <PrivacyPolicyStudio
-          isVisible={activeTool === 'privacy-policy-studio'}
-          onRegisterExport={(fn) => { privacyExportRef.current = fn; }}
-          onRegisterGetData={(fn) => { privacyGetDataRef.current = fn as any; }}
-          onRegisterLoadData={(fn) => { privacyLoadDataRef.current = fn as any; }}
-          onShowToast={showToast}
-        />
+        <Suspense fallback={null}>
+          <PrivacyPolicyStudio
+            isVisible={activeTool === 'privacy-policy-studio'}
+            onRegisterExport={(fn) => { privacyExportRef.current = fn; }}
+            onRegisterGetData={(fn) => { privacyGetDataRef.current = fn as any; }}
+            onRegisterLoadData={(fn) => { privacyLoadDataRef.current = fn as any; }}
+            onShowToast={showToast}
+          />
+        </Suspense>
       </div>
 
-      {/* Interactive Crop Modal */}
-      {isCropModalOpen && (activeSelectedDev?.originalScreenshotUrl || activeSelectedDev?.screenshotUrl || activeScreenConfig.originalScreenshotUrl || activeScreenConfig.screenshotUrl) && (
-        <ImageCropModal
-          imageSrc={activeSelectedDev?.originalScreenshotUrl || activeSelectedDev?.screenshotUrl || activeScreenConfig.originalScreenshotUrl || activeScreenConfig.screenshotUrl!}
-          aspectRatio={targetAspect}
-          initialCrop={(activeSelectedDev?.cropData || activeScreenConfig.cropData) as any}
-          onCropComplete={(croppedDataUrl, cropDetails) => {
-            const updatedDevs = currentScreenDevices.map((d) =>
-              d.id === activeSelectedDev.id
-                ? {
-                  ...d,
-                  screenshotUrl: croppedDataUrl,
-                  cropData: cropDetails,
-                  screenshotScale: 1,
-                  screenshotOffsetX: 0,
-                  screenshotOffsetY: 0,
+      {/* Modals with Suspense for on-demand lazy loading */}
+      <Suspense fallback={null}>
+        {/* Interactive Crop Modal */}
+        {isCropModalOpen && (activeSelectedDev?.originalScreenshotUrl || activeSelectedDev?.screenshotUrl || activeScreenConfig.originalScreenshotUrl || activeScreenConfig.screenshotUrl) && (
+          <ImageCropModal
+            imageSrc={activeSelectedDev?.originalScreenshotUrl || activeSelectedDev?.screenshotUrl || activeScreenConfig.originalScreenshotUrl || activeScreenConfig.screenshotUrl!}
+            aspectRatio={targetAspect}
+            initialCrop={(activeSelectedDev?.cropData || activeScreenConfig.cropData) as any}
+            onCropComplete={(croppedDataUrl, cropDetails) => {
+              const updatedDevs = currentScreenDevices.map((d) =>
+                d.id === activeSelectedDev.id
+                  ? {
+                    ...d,
+                    screenshotUrl: croppedDataUrl,
+                    cropData: cropDetails,
+                    screenshotScale: 1,
+                    screenshotOffsetX: 0,
+                    screenshotOffsetY: 0,
+                  }
+                  : d
+              );
+              handleUpdateConfig({
+                devices: updatedDevs,
+                screenshotUrl: croppedDataUrl,
+                cropData: cropDetails,
+                screenshotScale: 1,
+                screenshotOffsetX: 0,
+                screenshotOffsetY: 0,
+              });
+              setIsCropModalOpen(false);
+            }}
+            onResetToOriginal={() => {
+              const origUrl = activeSelectedDev?.originalScreenshotUrl || activeSelectedDev?.screenshotUrl || activeScreenConfig.originalScreenshotUrl || activeScreenConfig.screenshotUrl;
+              const updatedDevs = currentScreenDevices.map((d) =>
+                d.id === activeSelectedDev.id
+                  ? {
+                    ...d,
+                    screenshotUrl: origUrl,
+                    cropData: null,
+                    screenshotScale: 1,
+                    screenshotOffsetX: 0,
+                    screenshotOffsetY: 0,
+                  }
+                  : d
+              );
+              handleUpdateConfig({
+                devices: updatedDevs,
+                screenshotUrl: origUrl,
+                cropData: null,
+                screenshotScale: 1,
+                screenshotOffsetX: 0,
+                screenshotOffsetY: 0,
+              });
+              setIsCropModalOpen(false);
+            }}
+            onCancel={() => setIsCropModalOpen(false)}
+          />
+        )}
+
+        {/* Export Format & Options Modal */}
+        {isExportModalOpen && (
+          <ExportModal
+            isOpen={isExportModalOpen}
+            onClose={() => setIsExportModalOpen(false)}
+            onExport={handlePerformExport}
+            screenCount={screens.length}
+            activeScreenTitle={activeScreenConfig.screenTitle || 'Ekran'}
+            canvasWidth={activeScreenConfig.width || 1080}
+            canvasHeight={activeScreenConfig.height || 1920}
+            isExporting={isExporting}
+          />
+        )}
+
+        {/* Auth Modal */}
+        {isAuthModalOpen && (
+          <AuthModal
+            isOpen={isAuthModalOpen}
+            onClose={() => setIsAuthModalOpen(false)}
+            onShowToast={showToast}
+          />
+        )}
+
+        {/* Projects Modal */}
+        {isProjectsModalOpen && (
+          <ProjectsModal
+            isOpen={isProjectsModalOpen}
+            onClose={() => setIsProjectsModalOpen(false)}
+            activeTool={activeTool}
+            currentToolData={getCurrentToolData()}
+            onLoadProject={(toolType, data) => {
+              if (toolType === 'mockup') {
+                if (data.screens) {
+                  setScreens(data.screens as MockupConfig[]);
+                  if (data.activeScreenId) setActiveScreenId(data.activeScreenId as string);
                 }
-                : d
-            );
-            handleUpdateConfig({
-              devices: updatedDevs,
-              screenshotUrl: croppedDataUrl,
-              cropData: cropDetails,
-              screenshotScale: 1,
-              screenshotOffsetX: 0,
-              screenshotOffsetY: 0,
-            });
-            setIsCropModalOpen(false);
-          }}
-          onResetToOriginal={() => {
-            const origUrl = activeSelectedDev?.originalScreenshotUrl || activeSelectedDev?.screenshotUrl || activeScreenConfig.originalScreenshotUrl || activeScreenConfig.screenshotUrl;
-            const updatedDevs = currentScreenDevices.map((d) =>
-              d.id === activeSelectedDev.id
-                ? {
-                  ...d,
-                  screenshotUrl: origUrl,
-                  cropData: null,
-                  screenshotScale: 1,
-                  screenshotOffsetX: 0,
-                  screenshotOffsetY: 0,
-                }
-                : d
-            );
-            handleUpdateConfig({
-              devices: updatedDevs,
-              screenshotUrl: origUrl,
-              cropData: null,
-              screenshotScale: 1,
-              screenshotOffsetX: 0,
-              screenshotOffsetY: 0,
-            });
-            setIsCropModalOpen(false);
-          }}
-          onCancel={() => setIsCropModalOpen(false)}
-        />
-      )}
-
-      {/* Export Format & Options Modal */}
-      <ExportModal
-        isOpen={isExportModalOpen}
-        onClose={() => setIsExportModalOpen(false)}
-        onExport={handlePerformExport}
-        screenCount={screens.length}
-        activeScreenTitle={activeScreenConfig.screenTitle || 'Ekran'}
-        canvasWidth={activeScreenConfig.width || 1080}
-        canvasHeight={activeScreenConfig.height || 1920}
-        isExporting={isExporting}
-      />
-
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        onShowToast={showToast}
-      />
-
-      {/* Projects Modal */}
-      <ProjectsModal
-        isOpen={isProjectsModalOpen}
-        onClose={() => setIsProjectsModalOpen(false)}
-        activeTool={activeTool}
-        currentToolData={getCurrentToolData()}
-        onLoadProject={(toolType, data) => {
-          if (toolType === 'mockup') {
-            if (data.screens) {
-              setScreens(data.screens as MockupConfig[]);
-              if (data.activeScreenId) setActiveScreenId(data.activeScreenId as string);
-            }
-            setActiveTool('mockup-editor');
-          } else if (toolType === 'banner') {
-            bannerLoadDataRef.current?.(data);
-            setActiveTool('store-banner-maker');
-          } else if (toolType === 'privacy') {
-            privacyLoadDataRef.current?.(data);
-            setActiveTool('privacy-policy-studio');
-          } else if (toolType === 'icon') {
-            setActiveTool('app-icon-resizer');
-          }
-        }}
-        onShowToast={showToast}
-      />
+                setActiveTool('mockup-editor');
+              } else if (toolType === 'banner') {
+                bannerLoadDataRef.current?.(data);
+                setActiveTool('store-banner-maker');
+              } else if (toolType === 'privacy') {
+                privacyLoadDataRef.current?.(data);
+                setActiveTool('privacy-policy-studio');
+              } else if (toolType === 'icon') {
+                setActiveTool('app-icon-resizer');
+              }
+            }}
+            onShowToast={showToast}
+          />
+        )}
+      </Suspense>
 
       {/* Elegant Toast Alert Notification */}
       {toastMessage && (
