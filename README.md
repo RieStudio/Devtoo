@@ -1,32 +1,44 @@
-# React + TypeScript + Vite
+# Devtoo
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+![React](https://img.shields.io/badge/React-19-20232A?logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)
+![Client-Side](https://img.shields.io/badge/Client--Side-Only-2ea44f)
+![License](https://img.shields.io/badge/License-MIT-blue)
 
-Currently, two official plugins are available:
+A lightweight, browser-based toolkit for mobile app and game developers to create store graphics and compliance assets.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Everything runs locally on the client side. No server uploads, no accounts, and no tracking.
 
-## React Compiler
+## Tools
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Mockup Editor:** Create App Store and Google Play screenshots with device frames, customizable typography, and backgrounds.
+- **Store Banner Maker:** Design promotional graphics and feature banners (such as 1024x500 for Google Play).
+- **App Icon Resizer:** Generate required icon sizes and bundles for iOS, Android, macOS, and web.
+- **Privacy Policy Studio:** Build compliant privacy policies and data safety disclosures formatted for store review submissions.
 
-## Expanding the Oxlint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+- React 19
+- TypeScript
+- Vite
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+## Development
+
+Install dependencies:
+
+```bash
+npm install
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Start the dev server:
+
+```bash
+npm run dev
+```
+
+Build for production:
+
+```bash
+npm run build
+```
