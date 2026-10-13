@@ -1,14 +1,22 @@
-# Devtoo
+<p align="center">
+  <img src="public/logo.svg" alt="Devtoo Logo" width="340" />
+</p>
 
-![React](https://img.shields.io/badge/React-19-20232A?logo=react&logoColor=61DAFB)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)
-![Client-Side](https://img.shields.io/badge/Client--Side-Only-2ea44f)
-![License](https://img.shields.io/badge/License-MIT-blue)
+<p align="center">
+  <img src="https://img.shields.io/badge/React-19-20232A?logo=react&logoColor=61DAFB" alt="React" />
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white" alt="Vite" />
+  <img src="https://img.shields.io/badge/Client--Side-Only-2ea44f" alt="Client-Side" />
+  <img src="https://img.shields.io/badge/License-MIT-blue" alt="License" />
+</p>
 
-A lightweight, browser-based toolkit for mobile app and game developers to create store graphics and compliance assets.
+<p align="center">
+  A lightweight, browser-based toolkit for mobile app and game developers to create store graphics and compliance assets.
+</p>
 
-Everything runs locally on the client side. No server uploads, no accounts, and no tracking.
+<p align="center">
+  Everything runs locally on the client side. No server uploads, no accounts, and no tracking.
+</p>
 
 ## Tools
 

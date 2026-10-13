@@ -666,19 +666,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
             >
               <div
                 style={{
-                  width: '42px',
-                  height: '42px',
-                  borderRadius: '12px',
-                  backgroundColor: '#FFF0F3',
-                  border: '1px solid #FFCCD5',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   flexShrink: 0,
                   color: '#D90429',
+                  paddingTop: '2px',
                 }}
               >
-                <Trash2 size={20} />
+                <Trash2 size={24} strokeWidth={2} />
               </div>
               <div style={{ flex: 1 }}>
                 <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: '#0F172A', letterSpacing: '-0.01em' }}>
