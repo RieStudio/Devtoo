@@ -99,10 +99,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div 
           className="sidebar-header-brand"
           onClick={() => onSelectTool('dashboard')}
-          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0px', overflow: 'visible' }}
           title="Ana Sayfaya Git (Dashboard)"
         >
-          <DevtooLogo size={28} variant="swift" />
+          <div style={{ marginRight: '-4px', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+            <DevtooLogo size={34} variant="swift" />
+          </div>
           {!isCollapsed && (
             <div className="brand-name">
               <span>Dev<span style={{ color: 'var(--chili-primary)' }}>too</span></span>

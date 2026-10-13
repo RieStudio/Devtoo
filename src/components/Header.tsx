@@ -41,12 +41,13 @@ export const Header: React.FC<HeaderProps> = ({
     <header className={`devtoo-header ${activeTool === 'dashboard' ? 'floating-island-navbar' : ''}`}>
       <div className="header-title-area">
         {activeTool === 'dashboard' ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <DevtooLogo size={26} variant="swift" />
-            <span style={{ fontSize: '17px', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em', display: 'inline-flex' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0px' }}>
+            <div style={{ marginRight: '-4px', display: 'flex', alignItems: 'center' }}>
+              <DevtooLogo size={38} variant="swift" />
+            </div>
+            <span style={{ fontFamily: "'Outfit', 'Plus Jakarta Sans', sans-serif", fontSize: '24px', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em', display: 'inline-flex', lineHeight: 1 }}>
               <span>Dev<span style={{ color: '#D90429' }}>too</span></span>
             </span>
-            <span style={{ fontSize: '11px', fontWeight: 600, color: '#64748B', backgroundColor: '#F1F5F9', padding: '2px 8px', borderRadius: '999px', marginLeft: '4px' }}>Tasarım Merkezi</span>
           </div>
         ) : (
           <div className="tool-active-badge">
@@ -84,7 +85,7 @@ export const Header: React.FC<HeaderProps> = ({
                   type="button"
                   className="btn-secondary"
                   onClick={onOpenProjectsModal}
-                  style={{ padding: '6px 12px', fontSize: '12px' }}
+                  style={{ padding: '6px 14px', fontSize: '12px', borderRadius: '999px' }}
                 >
                   <FolderKanban size={14} color="#D90429" />
                   <span>Projelerim</span>
@@ -114,7 +115,7 @@ export const Header: React.FC<HeaderProps> = ({
                 type="button"
                 className="btn-secondary"
                 onClick={onOpenAuthModal}
-                style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 600 }}
+                style={{ padding: '7px 16px', fontSize: '12px', fontWeight: 600, borderRadius: '999px' }}
               >
                 <LogIn size={14} color="#D90429" />
                 <span>Giriş Yap / Kaydol</span>

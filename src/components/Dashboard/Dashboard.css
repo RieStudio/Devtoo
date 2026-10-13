@@ -15,7 +15,7 @@
 /* Hero Section - Devtoo Chili Red Theme */
 .dashboard-hero {
   width: 100%;
-  max-width: 1400px;
+  max-width: 1100px;
   background: linear-gradient(135deg, #D90429 0%, #BA0322 100%);
   border: 1px solid #B7094C;
   border-radius: var(--radius-xl);
