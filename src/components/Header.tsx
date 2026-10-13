@@ -37,7 +37,7 @@ export const Header: React.FC<HeaderProps> = ({
   const { user } = useAuth();
 
   return (
-    <header className="devtoo-header">
+    <header className={`devtoo-header ${activeTool === 'dashboard' ? 'floating-island-navbar' : ''}`}>
       <div className="header-title-area">
         {activeTool === 'dashboard' ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

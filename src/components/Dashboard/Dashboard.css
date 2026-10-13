@@ -7,7 +7,7 @@
   height: 100%;
   overflow-y: auto;
   background-color: var(--bg-app);
-  padding: 32px 40px 60px 40px;
+  padding: 20px 40px 60px 40px;
   box-sizing: border-box;
 }
 
@@ -233,17 +233,18 @@
 }
 
 .quick-card-icon-wrap {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: flex;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: transparent !important;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   transition: transform 0.2s ease;
 }
 
 .quick-create-card:hover .quick-card-icon-wrap {
-  transform: scale(1.06);
+  transform: translateY(-2px) scale(1.08);
 }
 
 .quick-card-badge {

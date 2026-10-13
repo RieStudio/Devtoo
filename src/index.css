@@ -366,6 +366,29 @@ body {
   z-index: 5;
 }
 
+/* Floating Island Navbar (Yüzen Ada Tasarımı) */
+.devtoo-header.floating-island-navbar {
+  margin: 18px auto 0 auto;
+  width: calc(100% - 80px);
+  max-width: 1400px;
+  height: 60px;
+  min-height: 60px;
+  background-color: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: var(--radius-full);
+  box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.05), 0 4px 6px -2px rgba(15, 23, 42, 0.02);
+  padding: 0 24px;
+  flex-shrink: 0;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.devtoo-header.floating-island-navbar:hover {
+  box-shadow: 0 12px 30px -4px rgba(15, 23, 42, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.03);
+  border-color: rgba(203, 213, 225, 0.95);
+}
+
 .header-title-area {
   display: flex;
   align-items: center;

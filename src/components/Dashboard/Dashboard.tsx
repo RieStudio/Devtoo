@@ -14,7 +14,6 @@ import {
   X,
   ExternalLink,
   Layers,
-  Sparkles,
   FolderKanban,
   Loader2
 } from 'lucide-react';
@@ -311,10 +310,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <section className="dashboard-hero">
         <div className="dashboard-hero-header">
           <div className="dashboard-hero-title-group">
-            <div className="dashboard-hero-badge">
-              <Sparkles size={12} />
-              <span>Devtoo Design Studio</span>
-            </div>
             <h1 className="dashboard-hero-title">
               {user ? `Tekrar Hoş Geldiniz, ${user.email?.split('@')[0]}!` : 'Ne tasarlamak istiyorsunuz?'}
             </h1>
@@ -386,10 +381,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
             onClick={() => onSelectTool('mockup-editor')}
           >
             <div className="quick-card-top">
-              <div className="quick-card-icon-wrap" style={{ backgroundColor: '#FFF0F3', color: '#D90429' }}>
-                <Smartphone size={22} />
+              <div className="quick-card-icon-wrap" style={{ color: '#D90429' }}>
+                <Smartphone size={24} strokeWidth={2} />
               </div>
-              <span className="quick-card-badge">1080 × 1920</span>
             </div>
             <div className="quick-card-body">
               <h3 className="quick-card-title">Mockup Editor</h3>
@@ -409,10 +403,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
             onClick={() => onSelectTool('store-banner-maker')}
           >
             <div className="quick-card-top">
-              <div className="quick-card-icon-wrap" style={{ backgroundColor: '#FEF3C7', color: '#D97706' }}>
-                <Layout size={22} />
+              <div className="quick-card-icon-wrap" style={{ color: '#D97706' }}>
+                <Layout size={24} strokeWidth={2} />
               </div>
-              <span className="quick-card-badge">1024 × 500</span>
             </div>
             <div className="quick-card-body">
               <h3 className="quick-card-title">Store Banner Maker</h3>
@@ -432,10 +425,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
             onClick={() => onSelectTool('app-icon-resizer')}
           >
             <div className="quick-card-top">
-              <div className="quick-card-icon-wrap" style={{ backgroundColor: '#EFF6FF', color: '#2563EB' }}>
-                <ImageIcon size={22} />
+              <div className="quick-card-icon-wrap" style={{ color: '#2563EB' }}>
+                <ImageIcon size={24} strokeWidth={2} />
               </div>
-              <span className="quick-card-badge">1024 × 1024</span>
             </div>
             <div className="quick-card-body">
               <h3 className="quick-card-title">App Icon Resizer</h3>
@@ -455,10 +447,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
             onClick={() => onSelectTool('privacy-policy-studio')}
           >
             <div className="quick-card-top">
-              <div className="quick-card-icon-wrap" style={{ backgroundColor: '#ECFDF5', color: '#059669' }}>
-                <ShieldCheck size={22} />
+              <div className="quick-card-icon-wrap" style={{ color: '#059669' }}>
+                <ShieldCheck size={24} strokeWidth={2} />
               </div>
-              <span className="quick-card-badge">GDPR & Play Uyumlu</span>
             </div>
             <div className="quick-card-body">
               <h3 className="quick-card-title">Privacy Policy Studio</h3>
