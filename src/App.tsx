@@ -14,6 +14,8 @@ import { ExportModal, type ExportFormat } from './components/MockupEditor/Export
 import { AppIconResizer } from './components/AppIconResizer/AppIconResizer';
 import { StoreBannerMaker } from './components/StoreBannerMaker/StoreBannerMaker';
 import { PrivacyPolicyStudio } from './components/PrivacyPolicyStudio/PrivacyPolicyStudio';
+import { AuthModal } from './components/Auth/AuthModal';
+import { ProjectsModal } from './components/Projects/ProjectsModal';
 
 const INITIAL_CONFIG: MockupConfig = {
   id: 'screen-1',
@@ -103,6 +105,8 @@ export function App() {
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
   const [isCropModalOpen, setIsCropModalOpen] = useState<boolean>(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+  const [isProjectsModalOpen, setIsProjectsModalOpen] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // App Icon Resizer Header Integration
@@ -1035,7 +1039,12 @@ export function App() {
   return (
     <div className="devtoo-layout">
       {/* Sol Sabit Menü (Sidebar) */}
-      <Sidebar activeTool={activeTool} onSelectTool={setActiveTool} />
+      <Sidebar 
+        activeTool={activeTool} 
+        onSelectTool={setActiveTool} 
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        onOpenProjectsModal={() => setIsProjectsModalOpen(true)}
+      />
 
       {/* Ana Çalışma Alanı (Workspace) */}
       <div className="main-workspace">
@@ -1213,6 +1222,35 @@ export function App() {
         canvasWidth={activeScreenConfig.width || 1080}
         canvasHeight={activeScreenConfig.height || 1920}
         isExporting={isExporting}
+      />
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onShowToast={showToast}
+      />
+
+      {/* Projects Modal */}
+      <ProjectsModal
+        isOpen={isProjectsModalOpen}
+        onClose={() => setIsProjectsModalOpen(false)}
+        activeTool={activeTool}
+        currentToolData={{ screens, activeScreenId }}
+        onLoadProject={(toolType, data) => {
+          if (toolType === 'mockup' && data.screens) {
+            setScreens(data.screens as MockupConfig[]);
+            if (data.activeScreenId) setActiveScreenId(data.activeScreenId as string);
+            setActiveTool('mockup-editor');
+          } else if (toolType === 'banner') {
+            setActiveTool('store-banner-maker');
+          } else if (toolType === 'privacy') {
+            setActiveTool('privacy-policy-studio');
+          } else if (toolType === 'icon') {
+            setActiveTool('app-icon-resizer');
+          }
+        }}
+        onShowToast={showToast}
       />
 
       {/* Elegant Toast Alert Notification */}
