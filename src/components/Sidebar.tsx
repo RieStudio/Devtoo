@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { 
   Smartphone, 
   Image as ImageIcon, 
+  Layout,
   ShieldCheck,
   ChevronLeft,
   ChevronRight,
@@ -80,7 +81,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       case 'Smartphone':
         return <Smartphone className="nav-icon" />;
       case 'Layout':
-        return <DevtooLogo size={18} variant="swift" />;
+        return <Layout className="nav-icon" />;
       case 'ShieldCheck':
         return <ShieldCheck className="nav-icon" />;
       case 'Image':
@@ -98,13 +99,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div 
           className="sidebar-header-brand"
           onClick={() => onSelectTool('dashboard')}
-          style={{ cursor: 'pointer' }}
+          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
           title="Ana Sayfaya Git (Dashboard)"
         >
-          <DevtooLogo size={32} variant="badge" />
+          <DevtooLogo size={28} variant="swift" />
           {!isCollapsed && (
             <div className="brand-name">
-              Dev<span style={{ color: 'var(--chili-primary)' }}>too</span>
+              <span>Dev<span style={{ color: 'var(--chili-primary)' }}>too</span></span>
             </div>
           )}
         </div>

@@ -1164,7 +1164,6 @@ export function App() {
             <Dashboard
               onSelectTool={setActiveTool}
               onLoadProject={handleLoadProject}
-              onOpenAuthModal={() => setIsAuthModalOpen(true)}
               onOpenProjectsModal={() => setIsProjectsModalOpen(true)}
               onShowToast={showToast}
             />

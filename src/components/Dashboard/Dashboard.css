@@ -3,6 +3,7 @@
 .dashboard-container {
   display: flex;
   flex-direction: column;
+  align-items: center;
   flex: 1;
   height: 100%;
   overflow-y: auto;
@@ -11,17 +12,21 @@
   box-sizing: border-box;
 }
 
-/* Hero Section */
+/* Hero Section - Devtoo Chili Red Theme */
 .dashboard-hero {
-  background: linear-gradient(135deg, #FFFFFF 0%, #FFF5F7 100%);
-  border: 1px solid #FFE3E8;
+  width: 100%;
+  max-width: 1400px;
+  background: linear-gradient(135deg, #D90429 0%, #BA0322 100%);
+  border: 1px solid #B7094C;
   border-radius: var(--radius-xl);
-  padding: 32px 36px;
+  padding: 36px 40px;
   margin-bottom: 36px;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 10px 25px -4px rgba(217, 4, 41, 0.22), 0 4px 6px -2px rgba(217, 4, 41, 0.1);
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 22px;
+  color: #FFFFFF;
+  box-sizing: border-box;
 }
 
 .dashboard-hero-header {
@@ -34,39 +39,22 @@
 .dashboard-hero-title-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-}
-
-.dashboard-hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--chili-primary);
-  background-color: var(--chili-subtle);
-  border: 1px solid var(--chili-border);
-  padding: 3px 10px;
-  border-radius: var(--radius-full);
-  width: fit-content;
-  margin-bottom: 4px;
+  gap: 8px;
 }
 
 .dashboard-hero-title {
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--text-primary);
+  font-size: 28px;
+  font-weight: 800;
+  color: #FFFFFF;
   letter-spacing: -0.02em;
   margin: 0;
 }
 
 .dashboard-hero-subtitle {
   font-size: 14px;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.9);
   margin: 0;
-  max-width: 620px;
+  max-width: 640px;
   line-height: 1.5;
 }
 
@@ -80,9 +68,8 @@
 
 .dashboard-search-wrap {
   position: relative;
-  flex: 1;
-  min-width: 280px;
-  max-width: 440px;
+  width: 100%;
+  max-width: 480px;
 }
 
 .dashboard-search-icon {
@@ -90,28 +77,28 @@
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--text-muted);
+  color: #94A3B8;
   pointer-events: none;
 }
 
 .dashboard-search-input {
   width: 100%;
-  height: 42px;
+  height: 44px;
   background-color: #FFFFFF;
-  border: 1px solid var(--border-default);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: var(--radius-lg);
-  padding: 0 16px 0 40px;
+  padding: 0 16px 0 42px;
   font-size: 13px;
   font-family: var(--font-sans);
-  color: var(--text-primary);
+  color: #0F172A;
   outline: none;
   transition: all 0.15s ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .dashboard-search-input:focus {
-  border-color: var(--chili-primary);
-  box-shadow: 0 0 0 3px var(--chili-glow);
+  border-color: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.35);
 }
 
 .dashboard-search-clear {
@@ -122,7 +109,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-muted);
+  color: #94A3B8;
   display: flex;
   align-items: center;
   padding: 4px;
@@ -130,10 +117,10 @@
 }
 
 .dashboard-search-clear:hover {
-  color: var(--text-primary);
+  color: #0F172A;
 }
 
-/* Import File Button */
+/* Import / Action Buttons in Red Hero */
 .dashboard-btn-import {
   display: inline-flex;
   align-items: center;
@@ -141,27 +128,31 @@
   height: 42px;
   padding: 0 18px;
   background-color: #FFFFFF;
-  border: 1px solid var(--border-default);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: var(--radius-lg);
-  color: var(--text-primary);
+  color: #D90429;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.15s ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 .dashboard-btn-import:hover {
-  background-color: var(--bg-hover);
-  border-color: var(--border-strong);
+  background-color: #FFF0F3;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.16);
 }
 
 /* Sections */
 .dashboard-section {
+  width: 100%;
+  max-width: 1400px;
   display: flex;
   flex-direction: column;
   gap: 18px;
   margin-bottom: 38px;
+  box-sizing: border-box;
 }
 
 .dashboard-section-header {

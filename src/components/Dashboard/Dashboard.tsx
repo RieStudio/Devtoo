@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   Smartphone,
+  Layout,
   Image as ImageIcon,
   ShieldCheck,
   Search,
@@ -9,7 +10,6 @@ import {
   Trash2,
   Plus,
   ArrowRight,
-  Cloud,
   X,
   ExternalLink,
   Layers,
@@ -18,7 +18,6 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase, type ToolType, type UserProject } from '../../lib/supabase';
-import { DevtooLogo } from '../common/DevtooLogo';
 import './Dashboard.css';
 
 interface DashboardProject {
@@ -33,7 +32,6 @@ interface DashboardProject {
 interface DashboardProps {
   onSelectTool: (toolId: string) => void;
   onLoadProject: (toolType: ToolType, data: Record<string, unknown>) => void;
-  onOpenAuthModal: () => void;
   onOpenProjectsModal: () => void;
   onShowToast: (message: string) => void;
 }
@@ -41,7 +39,6 @@ interface DashboardProps {
 export const Dashboard: React.FC<DashboardProps> = ({
   onSelectTool,
   onLoadProject,
-  onOpenAuthModal,
   onOpenProjectsModal,
   onShowToast,
 }) => {
@@ -403,8 +400,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
             onClick={() => onSelectTool('store-banner-maker')}
           >
             <div className="quick-card-top">
-              <div className="quick-card-icon-wrap" style={{ color: '#D90429' }}>
-                <DevtooLogo size={24} variant="swift" />
+              <div className="quick-card-icon-wrap" style={{ color: '#D97706' }}>
+                <Layout size={24} strokeWidth={2} />
               </div>
             </div>
             <div className="quick-card-body">
@@ -543,7 +540,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     )}
                     {project.tool_type === 'banner' && (
                       <>
-                        <DevtooLogo size={38} variant="swift" />
+                        <Layout size={38} color="#D97706" strokeWidth={1.5} />
                         <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>1024 × 500 Banner</span>
                       </>
                     )}
@@ -632,28 +629,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
         )}
       </section>
-
-      {/* Cloud Guest Sync Banner */}
-      {!user && (
-        <div className="dashboard-cloud-banner">
-          <div className="dashboard-cloud-banner-left">
-            <div className="dashboard-cloud-icon-wrap">
-              <Cloud size={20} />
-            </div>
-            <div className="dashboard-cloud-text">
-              <h4>Tasarımlarınızı Buluta Kaydedin</h4>
-              <p>Oturum açarak çalışmalarınızı tüm cihazlarınızdan senkronize edebilir ve güvenle saklayabilirsiniz.</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            className="dashboard-cloud-btn"
-            onClick={onOpenAuthModal}
-          >
-            Giriş Yap / Kaydol
-          </button>
-        </div>
-      )}
     </div>
   );
 };

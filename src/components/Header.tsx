@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, Upload, Smartphone, Image as ImageIcon, ShieldCheck, Undo2, Redo2, FolderKanban, LogIn } from 'lucide-react';
+import { Download, Upload, Smartphone, Image as ImageIcon, Layout, ShieldCheck, Undo2, Redo2, FolderKanban, LogIn } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { DevtooLogo } from './common/DevtooLogo';
 
@@ -42,13 +42,11 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="header-title-area">
         {activeTool === 'dashboard' ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ width: '28px', height: '28px', backgroundColor: '#FFF0F3', border: '1px solid #FFCCD5', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <DevtooLogo size={20} variant="swift" />
-            </div>
-            <span style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>
-              Dev<span style={{ color: '#D90429' }}>too</span>
+            <DevtooLogo size={26} variant="swift" />
+            <span style={{ fontSize: '17px', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em', display: 'inline-flex' }}>
+              <span>Dev<span style={{ color: '#D90429' }}>too</span></span>
             </span>
-            <span style={{ fontSize: '11px', fontWeight: 600, color: '#64748B', backgroundColor: '#F1F5F9', padding: '2px 8px', borderRadius: '999px', marginLeft: '2px' }}>Tasarım Merkezi</span>
+            <span style={{ fontSize: '11px', fontWeight: 600, color: '#64748B', backgroundColor: '#F1F5F9', padding: '2px 8px', borderRadius: '999px', marginLeft: '4px' }}>Tasarım Merkezi</span>
           </div>
         ) : (
           <div className="tool-active-badge">
@@ -59,7 +57,7 @@ export const Header: React.FC<HeaderProps> = ({
               </>
             ) : activeTool === 'store-banner-maker' ? (
               <>
-                <DevtooLogo size={18} variant="swift" />
+                <Layout size={18} color="#D90429" />
                 <span>Store Banner Maker</span>
               </>
             ) : activeTool === 'privacy-policy-studio' ? (

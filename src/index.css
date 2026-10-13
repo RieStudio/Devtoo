@@ -180,9 +180,9 @@ body {
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.4px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 0;
 }
 
 .brand-tag {
