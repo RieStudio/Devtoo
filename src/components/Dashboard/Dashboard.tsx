@@ -48,6 +48,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [cloudProjects, setCloudProjects] = useState<UserProject[]>([]);
   const [localProjects, setLocalProjects] = useState<DashboardProject[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [projectToDelete, setProjectToDelete] = useState<DashboardProject | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load drafts saved in localStorage
@@ -190,10 +191,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
     onShowToast(`"${project.name}" çalışma alanına yüklendi.`);
   };
 
-  // Handle delete project
-  const handleDeleteProject = async (project: DashboardProject, e: React.MouseEvent) => {
+  // Handle delete project click (opens custom in-app confirmation modal)
+  const handleDeleteProject = (project: DashboardProject, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!window.confirm(`"${project.name}" adlı tasarımı silmek istediğinize emin misiniz?`)) return;
+    setProjectToDelete(project);
+  };
+
+  // Confirm delete project
+  const confirmDeleteProject = async () => {
+    if (!projectToDelete) return;
+    const project = projectToDelete;
+    setProjectToDelete(null);
 
     if (project.isLocal) {
       if (project.tool_type === 'mockup') {
@@ -225,6 +233,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
       }
     }
   };
+
+  // Close delete modal on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && projectToDelete) {
+        setProjectToDelete(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [projectToDelete]);
 
   // Handle export JSON
   const handleExportProjectJson = (project: DashboardProject, e: React.MouseEvent) => {
@@ -280,15 +299,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
       return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
     } catch {
       return 'Yakın zamanda';
-    }
-  };
-
-  const getToolDisplayName = (type: ToolType): string => {
-    switch (type) {
-      case 'banner': return 'Store Banner';
-      case 'privacy': return 'Privacy Policy';
-      case 'icon': return 'Icon Resizer';
-      default: return 'Mockup';
     }
   };
 
@@ -367,7 +377,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <div className="dashboard-section-header">
           <div className="dashboard-section-title-wrap">
             <h2 className="dashboard-section-title">Yeni Tasarım Başlat</h2>
-            <p className="dashboard-section-subtitle">Aşağıdaki stüdyolardan birini seçerek anında tasarlamaya başlayın</p>
           </div>
         </div>
 
@@ -467,11 +476,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <div className="dashboard-section-header">
           <div className="dashboard-section-title-wrap">
             <h2 className="dashboard-section-title">Son Tasarımlarım</h2>
-            <p className="dashboard-section-subtitle">
-              {filteredProjects.length > 0 
-                ? `Toplam ${filteredProjects.length} kayıtlı tasarım bulundu`
-                : 'Daha önce oluşturduğunuz veya taslak halindeki projeler'}
-            </p>
           </div>
 
           {/* Filter Tabs */}
@@ -533,28 +537,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <div className="project-card-thumbnail">
                   <div className="project-thumbnail-preview">
                     {project.tool_type === 'mockup' && (
-                      <>
-                        <Smartphone size={38} color="#D90429" strokeWidth={1.5} />
-                        <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Mockup Canvas</span>
-                      </>
+                      <Smartphone size={38} color="#D90429" strokeWidth={1.5} />
                     )}
                     {project.tool_type === 'banner' && (
-                      <>
-                        <Layout size={38} color="#D97706" strokeWidth={1.5} />
-                        <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>1024 × 500 Banner</span>
-                      </>
+                      <Layout size={38} color="#D97706" strokeWidth={1.5} />
                     )}
                     {project.tool_type === 'icon' && (
-                      <>
-                        <ImageIcon size={38} color="#2563EB" strokeWidth={1.5} />
-                        <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>İkon Paketi</span>
-                      </>
+                      <ImageIcon size={38} color="#2563EB" strokeWidth={1.5} />
                     )}
                     {project.tool_type === 'privacy' && (
-                      <>
-                        <ShieldCheck size={38} color="#059669" strokeWidth={1.5} />
-                        <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Gizlilik Belgesi</span>
-                      </>
+                      <ShieldCheck size={38} color="#059669" strokeWidth={1.5} />
                     )}
                   </div>
 
@@ -591,9 +583,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <div className="project-card-info">
                   <div className="project-card-title-row">
                     <h4 className="project-card-title">{project.name}</h4>
-                    <span className={`project-tool-tag ${project.tool_type}`}>
-                      {getToolDisplayName(project.tool_type)}
-                    </span>
                   </div>
                   <div className="project-card-meta">
                     <span>{project.isLocal ? 'Yerel Taslak' : 'Bulut Kaydı'}</span>
@@ -629,6 +618,133 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
         )}
       </section>
+
+      {/* Custom In-App Delete Confirmation Modal */}
+      {projectToDelete && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.55)',
+            backdropFilter: 'blur(6px)',
+            WebkitBackdropFilter: 'blur(6px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '16px',
+            animation: 'fadeIn 0.15s ease',
+          }}
+          onClick={() => setProjectToDelete(null)}
+        >
+          <div
+            style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: '16px',
+              width: '100%',
+              maxWidth: '420px',
+              overflow: 'hidden',
+              boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.25)',
+              border: '1px solid #E2E8F0',
+              display: 'flex',
+              flexDirection: 'column',
+              animation: 'slideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header / Body */}
+            <div
+              style={{
+                padding: '24px 24px 20px 24px',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '14px',
+              }}
+            >
+              <div
+                style={{
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '12px',
+                  backgroundColor: '#FFF0F3',
+                  border: '1px solid #FFCCD5',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  color: '#D90429',
+                }}
+              >
+                <Trash2 size={20} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: '#0F172A', letterSpacing: '-0.01em' }}>
+                  Tasarımı Sil
+                </h3>
+                <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#64748B', lineHeight: 1.5 }}>
+                  <strong style={{ color: '#0F172A' }}>"{projectToDelete.name}"</strong> adlı tasarımı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
+                </p>
+              </div>
+            </div>
+
+            {/* Actions Footer */}
+            <div
+              style={{
+                padding: '14px 24px 18px 24px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                gap: '10px',
+                backgroundColor: '#F8FAFC',
+                borderTop: '1px solid #F1F5F9',
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setProjectToDelete(null)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  border: '1px solid #CBD5E1',
+                  backgroundColor: '#FFFFFF',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: '#475569',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                Vazgeç
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteProject}
+                style={{
+                  padding: '8px 18px',
+                  borderRadius: '8px',
+                  border: '1px solid #D90429',
+                  backgroundColor: '#D90429',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: '#FFFFFF',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  boxShadow: '0 2px 6px rgba(217, 4, 41, 0.25)',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                <Trash2 size={14} />
+                <span>Evet, Sil</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
