@@ -1,6 +1,7 @@
 import React from 'react';
-import { Download, Upload, Smartphone, Image as ImageIcon, Layout, ShieldCheck, Undo2, Redo2, FolderKanban, LogIn } from 'lucide-react';
+import { Download, Upload, Smartphone, Image as ImageIcon, ShieldCheck, Undo2, Redo2, FolderKanban, LogIn } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { DevtooLogo } from './common/DevtooLogo';
 
 interface HeaderProps {
   activeTool?: string;
@@ -41,8 +42,12 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="header-title-area">
         {activeTool === 'dashboard' ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div className="logo-badge" title="Devtoo" style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', backgroundColor: '#FFF0F3', fontSize: '15px' }}>🌶️</div>
-            <span style={{ fontSize: '16px', fontWeight: 700, color: '#0F172A', letterSpacing: '-0.02em' }}>Devtoo</span>
+            <div style={{ width: '28px', height: '28px', backgroundColor: '#FFF0F3', border: '1px solid #FFCCD5', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <DevtooLogo size={20} variant="swift" />
+            </div>
+            <span style={{ fontSize: '16px', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>
+              Dev<span style={{ color: '#D90429' }}>too</span>
+            </span>
             <span style={{ fontSize: '11px', fontWeight: 600, color: '#64748B', backgroundColor: '#F1F5F9', padding: '2px 8px', borderRadius: '999px', marginLeft: '2px' }}>Tasarım Merkezi</span>
           </div>
         ) : (
@@ -54,7 +59,7 @@ export const Header: React.FC<HeaderProps> = ({
               </>
             ) : activeTool === 'store-banner-maker' ? (
               <>
-                <Layout size={18} color="#D90429" />
+                <DevtooLogo size={18} variant="swift" />
                 <span>Store Banner Maker</span>
               </>
             ) : activeTool === 'privacy-policy-studio' ? (

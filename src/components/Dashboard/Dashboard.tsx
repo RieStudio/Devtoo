@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   Smartphone,
-  Layout,
   Image as ImageIcon,
   ShieldCheck,
   Search,
@@ -19,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase, type ToolType, type UserProject } from '../../lib/supabase';
+import { DevtooLogo } from '../common/DevtooLogo';
 import './Dashboard.css';
 
 interface DashboardProject {
@@ -403,8 +403,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
             onClick={() => onSelectTool('store-banner-maker')}
           >
             <div className="quick-card-top">
-              <div className="quick-card-icon-wrap" style={{ color: '#D97706' }}>
-                <Layout size={24} strokeWidth={2} />
+              <div className="quick-card-icon-wrap" style={{ color: '#D90429' }}>
+                <DevtooLogo size={24} variant="swift" />
               </div>
             </div>
             <div className="quick-card-body">
@@ -543,7 +543,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     )}
                     {project.tool_type === 'banner' && (
                       <>
-                        <Layout size={38} color="#D97706" strokeWidth={1.5} />
+                        <DevtooLogo size={38} variant="swift" />
                         <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>1024 × 500 Banner</span>
                       </>
                     )}

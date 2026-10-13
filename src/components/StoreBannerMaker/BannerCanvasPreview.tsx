@@ -15,6 +15,7 @@ import type { StoreBannerConfig, BannerDeviceConfig } from '../../types/storeBan
 import type { ShapeType } from '../../types/mockup';
 import { DeviceFrame } from '../MockupEditor/DeviceFrame';
 import { renderShapeSvgContent } from '../MockupEditor/MockupCanvas';
+import { DevtooLogo } from '../common/DevtooLogo';
 
 type CanvasDragMode = 
   | 'none' 
@@ -2620,17 +2621,18 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                         style={{
                           width: '100%',
                           height: '100%',
-                          background: 'linear-gradient(135deg, #D90429 0%, #EF233C 100%)',
+                          backgroundColor: '#FFF0F3',
+                          border: '1px solid #FFCCD5',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          color: '#FFFFFF',
-                          fontSize: `${Math.round(config.appIconSize * 0.42)}px`,
-                          fontWeight: 800,
                           userSelect: 'none',
                         }}
                       >
-                        🌶️
+                        <DevtooLogo
+                          size={Math.round(config.appIconSize * 0.65)}
+                          variant="swift"
+                        />
                       </div>
                     )}
                   </div>

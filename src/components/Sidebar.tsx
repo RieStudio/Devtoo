@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { 
   Smartphone, 
   Image as ImageIcon, 
-  Layout,
   ShieldCheck,
   ChevronLeft,
   ChevronRight,
@@ -13,6 +12,7 @@ import {
 } from 'lucide-react';
 import type { ToolItem } from '../types/mockup';
 import { useAuth } from '../context/AuthContext';
+import { DevtooLogo } from './common/DevtooLogo';
 
 interface SidebarProps {
   activeTool: string;
@@ -80,7 +80,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       case 'Smartphone':
         return <Smartphone className="nav-icon" />;
       case 'Layout':
-        return <Layout className="nav-icon" />;
+        return <DevtooLogo size={18} variant="swift" />;
       case 'ShieldCheck':
         return <ShieldCheck className="nav-icon" />;
       case 'Image':
@@ -101,10 +101,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
           style={{ cursor: 'pointer' }}
           title="Ana Sayfaya Git (Dashboard)"
         >
-          <div className="logo-badge" title="Devtoo">🌶️</div>
+          <DevtooLogo size={32} variant="badge" />
           {!isCollapsed && (
             <div className="brand-name">
-              Devtoo
+              Dev<span style={{ color: 'var(--chili-primary)' }}>too</span>
             </div>
           )}
         </div>
