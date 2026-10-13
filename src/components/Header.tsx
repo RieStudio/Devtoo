@@ -1,5 +1,6 @@
 import React from 'react';
-import { Download, Upload, Smartphone, Image as ImageIcon, Layout, ShieldCheck, Undo2, Redo2 } from 'lucide-react';
+import { Download, Upload, Smartphone, Image as ImageIcon, Layout, ShieldCheck, Undo2, Redo2, FolderKanban, LogIn } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 interface HeaderProps {
   activeTool?: string;
@@ -14,6 +15,8 @@ interface HeaderProps {
   canRedo?: boolean;
   isExporting: boolean;
   hasIconImage?: boolean;
+  onOpenAuthModal?: () => void;
+  onOpenProjectsModal?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({ 
@@ -28,34 +31,95 @@ export const Header: React.FC<HeaderProps> = ({
   canRedo = true,
   isExporting,
   hasIconImage = false,
+  onOpenAuthModal,
+  onOpenProjectsModal,
 }) => {
+  const { user } = useAuth();
+
   return (
     <header className="devtoo-header">
       <div className="header-title-area">
-        <div className="tool-active-badge">
-          {activeTool === 'app-icon-resizer' ? (
-            <>
-              <ImageIcon size={18} color="#D90429" />
-              <span>App Icon Resizer</span>
-            </>
-          ) : activeTool === 'store-banner-maker' ? (
-            <>
-              <Layout size={18} color="#D90429" />
-              <span>Store Banner Maker</span>
-            </>
-          ) : activeTool === 'privacy-policy-studio' ? (
-            <>
-              <ShieldCheck size={18} color="#D90429" />
-              <span>Privacy Policy Studio</span>
-            </>
+        {activeTool === 'dashboard' ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="logo-badge" title="Devtoo" style={{ width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', backgroundColor: '#FFF0F3', fontSize: '15px' }}>🌶️</div>
+            <span style={{ fontSize: '16px', fontWeight: 700, color: '#0F172A', letterSpacing: '-0.02em' }}>Devtoo</span>
+            <span style={{ fontSize: '11px', fontWeight: 600, color: '#64748B', backgroundColor: '#F1F5F9', padding: '2px 8px', borderRadius: '999px', marginLeft: '2px' }}>Tasarım Merkezi</span>
+          </div>
+        ) : (
+          <div className="tool-active-badge">
+            {activeTool === 'app-icon-resizer' ? (
+              <>
+                <ImageIcon size={18} color="#D90429" />
+                <span>App Icon Resizer</span>
+              </>
+            ) : activeTool === 'store-banner-maker' ? (
+              <>
+                <Layout size={18} color="#D90429" />
+                <span>Store Banner Maker</span>
+              </>
+            ) : activeTool === 'privacy-policy-studio' ? (
+              <>
+                <ShieldCheck size={18} color="#D90429" />
+                <span>Privacy Policy Studio</span>
+              </>
+            ) : (
+              <>
+                <Smartphone size={18} color="#D90429" />
+                <span>Mockup Editor</span>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
+      {activeTool === 'dashboard' && (
+        <div className="header-actions">
+          {user ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {onOpenProjectsModal && (
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={onOpenProjectsModal}
+                  style={{ padding: '6px 12px', fontSize: '12px' }}
+                >
+                  <FolderKanban size={14} color="#D90429" />
+                  <span>Projelerim</span>
+                </button>
+              )}
+              <div
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  backgroundColor: '#D90429',
+                  color: '#FFFFFF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                }}
+                title={user.email}
+              >
+                {user.email?.[0]?.toUpperCase() || 'U'}
+              </div>
+            </div>
           ) : (
-            <>
-              <Smartphone size={18} color="#D90429" />
-              <span>Mockup Editor</span>
-            </>
+            onOpenAuthModal && (
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={onOpenAuthModal}
+                style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 600 }}
+              >
+                <LogIn size={14} color="#D90429" />
+                <span>Giriş Yap / Kaydol</span>
+              </button>
+            )
           )}
         </div>
-      </div>
+      )}
 
       {activeTool === 'mockup-editor' && (
         <div className="header-actions">

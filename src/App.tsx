@@ -10,8 +10,10 @@ import { Header } from './components/Header';
 import { MockupCanvas } from './components/MockupEditor/MockupCanvas';
 import { InspectorPanel } from './components/MockupEditor/InspectorPanel';
 import type { ExportFormat } from './components/MockupEditor/ExportModal';
+import type { ToolType } from './lib/supabase';
 
 // Code Splitting / Lazy Loading for optimal initial load time
+const Dashboard = lazy(() => import('./components/Dashboard/Dashboard').then(m => ({ default: m.Dashboard })));
 const ImageCropModal = lazy(() => import('./components/MockupEditor/ImageCropModal').then(m => ({ default: m.ImageCropModal })));
 const ExportModal = lazy(() => import('./components/MockupEditor/ExportModal').then(m => ({ default: m.ExportModal })));
 const AppIconResizer = lazy(() => import('./components/AppIconResizer/AppIconResizer').then(m => ({ default: m.AppIconResizer })));
@@ -102,7 +104,7 @@ const INITIAL_CONFIG: MockupConfig = {
 };
 
 export function App() {
-  const [activeTool, setActiveTool] = useState<string>('mockup-editor');
+  const [activeTool, setActiveTool] = useState<string>('dashboard');
   const [screens, setScreens] = useState<MockupConfig[]>(() => {
     try {
       const saved = localStorage.getItem('devtoo_mockup_screens');
@@ -1075,6 +1077,24 @@ export function App() {
     }
   };
 
+  const handleLoadProject = useCallback((toolType: ToolType, data: Record<string, unknown>) => {
+    if (toolType === 'mockup') {
+      if (data.screens) {
+        setScreens(data.screens as MockupConfig[]);
+        if (data.activeScreenId) setActiveScreenId(data.activeScreenId as string);
+      }
+      setActiveTool('mockup-editor');
+    } else if (toolType === 'banner') {
+      bannerLoadDataRef.current?.(data);
+      setActiveTool('store-banner-maker');
+    } else if (toolType === 'privacy') {
+      privacyLoadDataRef.current?.(data);
+      setActiveTool('privacy-policy-studio');
+    } else if (toolType === 'icon') {
+      setActiveTool('app-icon-resizer');
+    }
+  }, []);
+
   const currentScreenDevices = getMockupDevices(activeScreenConfig);
   const activeSelectedDevId = activeScreenConfig.selectedDeviceId || currentScreenDevices[0]?.id || 'device-primary';
   const activeSelectedDev = currentScreenDevices.find((d) => d.id === activeSelectedDevId) || currentScreenDevices[0];
@@ -1084,19 +1104,23 @@ export function App() {
 
   return (
     <div className="devtoo-layout">
-      {/* Sol Sabit Menü (Sidebar) */}
-      <Sidebar 
-        activeTool={activeTool} 
-        onSelectTool={setActiveTool} 
-        onOpenAuthModal={() => setIsAuthModalOpen(true)}
-        onOpenProjectsModal={() => setIsProjectsModalOpen(true)}
-      />
+      {/* Sol Sabit Menü (Sidebar) - Dashboard ekranında gizlenir */}
+      {activeTool !== 'dashboard' && (
+        <Sidebar 
+          activeTool={activeTool} 
+          onSelectTool={setActiveTool} 
+          onOpenAuthModal={() => setIsAuthModalOpen(true)}
+          onOpenProjectsModal={() => setIsProjectsModalOpen(true)}
+        />
+      )}
 
       {/* Ana Çalışma Alanı (Workspace) */}
       <div className="main-workspace">
         {/* Üst Navigasyon Barı */}
         <Header
           activeTool={activeTool}
+          onOpenAuthModal={() => setIsAuthModalOpen(true)}
+          onOpenProjectsModal={() => setIsProjectsModalOpen(true)}
           onExport={
             activeTool === 'app-icon-resizer'
               ? () => iconExportRef.current?.()
@@ -1133,6 +1157,19 @@ export function App() {
           }
           hasIconImage={hasIconImage}
         />
+
+        {/* Dashboard (Canva / Figma Style Ana Sayfa) */}
+        {activeTool === 'dashboard' && (
+          <Suspense fallback={null}>
+            <Dashboard
+              onSelectTool={setActiveTool}
+              onLoadProject={handleLoadProject}
+              onOpenAuthModal={() => setIsAuthModalOpen(true)}
+              onOpenProjectsModal={() => setIsProjectsModalOpen(true)}
+              onShowToast={showToast}
+            />
+          </Suspense>
+        )}
 
         {/* Mockup Editor Çalışma Alanı */}
         <div
@@ -1300,23 +1337,7 @@ export function App() {
             onClose={() => setIsProjectsModalOpen(false)}
             activeTool={activeTool}
             currentToolData={getCurrentToolData()}
-            onLoadProject={(toolType, data) => {
-              if (toolType === 'mockup') {
-                if (data.screens) {
-                  setScreens(data.screens as MockupConfig[]);
-                  if (data.activeScreenId) setActiveScreenId(data.activeScreenId as string);
-                }
-                setActiveTool('mockup-editor');
-              } else if (toolType === 'banner') {
-                bannerLoadDataRef.current?.(data);
-                setActiveTool('store-banner-maker');
-              } else if (toolType === 'privacy') {
-                privacyLoadDataRef.current?.(data);
-                setActiveTool('privacy-policy-studio');
-              } else if (toolType === 'icon') {
-                setActiveTool('app-icon-resizer');
-              }
-            }}
+            onLoadProject={handleLoadProject}
             onShowToast={showToast}
           />
         )}

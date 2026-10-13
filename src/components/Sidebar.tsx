@@ -8,7 +8,8 @@ import {
   ChevronRight,
   LogIn,
   LogOut,
-  FolderKanban
+  FolderKanban,
+  LayoutGrid
 } from 'lucide-react';
 import type { ToolItem } from '../types/mockup';
 import { useAuth } from '../context/AuthContext';
@@ -21,6 +22,14 @@ interface SidebarProps {
 }
 
 const TOOLS: ToolItem[] = [
+  {
+    id: 'dashboard',
+    name: 'Ana Sayfa',
+    category: 'Genel',
+    icon: 'LayoutGrid',
+    isAvailable: true,
+    description: 'Tasarım merkezi ve son projeler'
+  },
   {
     id: 'mockup-editor',
     name: 'Mockup Editor',
@@ -66,6 +75,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const getIcon = (iconName: string) => {
     switch (iconName) {
+      case 'LayoutGrid':
+        return <LayoutGrid className="nav-icon" />;
       case 'Smartphone':
         return <Smartphone className="nav-icon" />;
       case 'Layout':
@@ -84,7 +95,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <aside className={`devtoo-sidebar ${isCollapsed ? 'is-collapsed' : ''}`}>
       {/* Brand Header & Toggle Button */}
       <div className="sidebar-header">
-        <div className="sidebar-header-brand">
+        <div 
+          className="sidebar-header-brand"
+          onClick={() => onSelectTool('dashboard')}
+          style={{ cursor: 'pointer' }}
+          title="Ana Sayfaya Git (Dashboard)"
+        >
           <div className="logo-badge" title="Devtoo">🌶️</div>
           {!isCollapsed && (
             <div className="brand-name">
