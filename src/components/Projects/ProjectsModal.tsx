@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   X, 
   FolderKanban, 
@@ -11,7 +11,9 @@ import {
   Image as ImageIcon,
   Search,
   Loader2,
-  Calendar
+  Calendar,
+  Download,
+  Upload
 } from 'lucide-react';
 import { supabase, type UserProject, type ToolType } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
@@ -43,6 +45,56 @@ export const ProjectsModal: React.FC<ProjectsModalProps> = ({
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [projectName, setProjectName] = useState<string>('');
   const [showSaveForm, setShowSaveForm] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleExportJson = () => {
+    if (!currentToolData) {
+      if (onShowToast) onShowToast('Dışa aktarılacak aktif tasarım bulunamadı.');
+      return;
+    }
+    const toolType = getToolTypeFromId(activeTool);
+    const exportPayload = {
+      format: 'devtoo-project',
+      version: 1,
+      tool_type: toolType,
+      exported_at: new Date().toISOString(),
+      data: currentToolData,
+    };
+    const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `devtoo-${toolType}-${new Date().toISOString().slice(0, 10)}.devtoo`;
+    a.click();
+    URL.revokeObjectURL(url);
+    if (onShowToast) onShowToast('Proje dosyası (.devtoo) indirildi.');
+  };
+
+  const handleImportJson = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const parsed = JSON.parse(event.target?.result as string);
+        if (parsed.format === 'devtoo-project' && parsed.tool_type && parsed.data) {
+          onLoadProject(parsed.tool_type as ToolType, parsed.data);
+          onClose();
+          if (onShowToast) onShowToast('Proje dosyası başarıyla yüklendi.');
+        } else if (parsed.screens) {
+          onLoadProject('mockup', parsed);
+          onClose();
+          if (onShowToast) onShowToast('Tasarım yüklendi.');
+        } else {
+          if (onShowToast) onShowToast('Geçersiz proje dosyası formatı.');
+        }
+      } catch {
+        if (onShowToast) onShowToast('Dosya okunurken hata oluştu.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
 
   const getToolTypeFromId = (toolId: string): ToolType => {
     switch (toolId) {
@@ -303,7 +355,60 @@ export const ProjectsModal: React.FC<ProjectsModalProps> = ({
               }}
             >
               <Save size={14} />
-              <span>{showSaveForm ? 'İptal' : 'Mevcut Tasarımı Kaydet'}</span>
+              <span>{showSaveForm ? 'İptal' : 'Buluta Kaydet'}</span>
+            </button>
+          </div>
+
+          {/* Offline File Backup Actions */}
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept=".json,.devtoo"
+              onChange={handleImportJson}
+              style={{ display: 'none' }}
+            />
+            <button
+              type="button"
+              onClick={handleExportJson}
+              style={{
+                padding: '5px 10px',
+                borderRadius: '6px',
+                border: '1px solid #CBD5E1',
+                backgroundColor: '#FFFFFF',
+                fontSize: '11px',
+                fontWeight: 600,
+                color: '#334155',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+              }}
+              title="Aktif tasarımı bilgisayarınıza .devtoo dosyası olarak indirir"
+            >
+              <Download size={13} color="#D90429" />
+              <span>Dosya Olarak İndir (.devtoo)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              style={{
+                padding: '5px 10px',
+                borderRadius: '6px',
+                border: '1px solid #CBD5E1',
+                backgroundColor: '#FFFFFF',
+                fontSize: '11px',
+                fontWeight: 600,
+                color: '#334155',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+              }}
+              title="Bilgisayarınızdaki .devtoo veya JSON dosyasını içeri aktarır"
+            >
+              <Upload size={13} color="#475569" />
+              <span>Dosyadan Aç</span>
             </button>
           </div>
 

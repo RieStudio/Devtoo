@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { toPng, toJpeg, toSvg } from 'html-to-image';
 import JSZip from 'jszip';
 import { AlertCircle, X } from 'lucide-react';
@@ -100,8 +100,27 @@ const INITIAL_CONFIG: MockupConfig = {
 
 export function App() {
   const [activeTool, setActiveTool] = useState<string>('mockup-editor');
-  const [screens, setScreens] = useState<MockupConfig[]>([INITIAL_CONFIG]);
-  const [activeScreenId, setActiveScreenId] = useState<string>(INITIAL_CONFIG.id || 'screen-1');
+  const [screens, setScreens] = useState<MockupConfig[]>(() => {
+    try {
+      const saved = localStorage.getItem('devtoo_mockup_screens');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {
+      // Fallback
+    }
+    return [INITIAL_CONFIG];
+  });
+  const [activeScreenId, setActiveScreenId] = useState<string>(() => {
+    try {
+      const savedId = localStorage.getItem('devtoo_mockup_active_id');
+      if (savedId) return savedId;
+    } catch {
+      // Fallback
+    }
+    return INITIAL_CONFIG.id || 'screen-1';
+  });
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
   const [isCropModalOpen, setIsCropModalOpen] = useState<boolean>(false);
@@ -116,13 +135,37 @@ export function App() {
   const [isIconExporting, setIsIconExporting] = useState<boolean>(false);
   const [hasIconImage, setHasIconImage] = useState<boolean>(false);
 
-  // Store Banner Maker Header Integration
+  // Store Banner Maker Header Integration & Data Registration
   const bannerExportRef = useRef<(() => void) | null>(null);
   const bannerUploadRef = useRef<(() => void) | null>(null);
+  const bannerGetDataRef = useRef<(() => Record<string, unknown>) | null>(null);
+  const bannerLoadDataRef = useRef<((data: any) => void) | null>(null);
   const [isBannerExporting, setIsBannerExporting] = useState<boolean>(false);
 
-  // Privacy Policy Studio Header Integration
+  // Privacy Policy Studio Header Integration & Data Registration
   const privacyExportRef = useRef<(() => void) | null>(null);
+  const privacyGetDataRef = useRef<(() => Record<string, unknown>) | null>(null);
+  const privacyLoadDataRef = useRef<((data: any) => void) | null>(null);
+
+  // Mockup Auto-Save to LocalStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('devtoo_mockup_screens', JSON.stringify(screens));
+      localStorage.setItem('devtoo_mockup_active_id', activeScreenId);
+    } catch {
+      // Ignore quota errors if storage full
+    }
+  }, [screens, activeScreenId]);
+
+  const getCurrentToolData = useCallback((): Record<string, unknown> => {
+    if (activeTool === 'store-banner-maker') {
+      return (bannerGetDataRef.current?.() as Record<string, unknown>) || {};
+    }
+    if (activeTool === 'privacy-policy-studio') {
+      return (privacyGetDataRef.current?.() as Record<string, unknown>) || {};
+    }
+    return { screens, activeScreenId };
+  }, [activeTool, screens, activeScreenId]);
 
   const toastTimeoutRef = useRef<any>(null);
   const showToast = (msg: string) => {
@@ -1139,6 +1182,8 @@ export function App() {
           onRegisterUpload={(fn) => { bannerUploadRef.current = fn; }}
           onRegisterUndo={(fn) => { bannerUndoRef.current = fn; }}
           onRegisterRedo={(fn) => { bannerRedoRef.current = fn; }}
+          onRegisterGetData={(fn) => { bannerGetDataRef.current = fn as any; }}
+          onRegisterLoadData={(fn) => { bannerLoadDataRef.current = fn as any; }}
           onHistoryStateChange={(undoable, redoable) => {
             setCanBannerUndo(undoable);
             setCanBannerRedo(redoable);
@@ -1151,6 +1196,8 @@ export function App() {
         <PrivacyPolicyStudio
           isVisible={activeTool === 'privacy-policy-studio'}
           onRegisterExport={(fn) => { privacyExportRef.current = fn; }}
+          onRegisterGetData={(fn) => { privacyGetDataRef.current = fn as any; }}
+          onRegisterLoadData={(fn) => { privacyLoadDataRef.current = fn as any; }}
           onShowToast={showToast}
         />
       </div>
@@ -1236,15 +1283,19 @@ export function App() {
         isOpen={isProjectsModalOpen}
         onClose={() => setIsProjectsModalOpen(false)}
         activeTool={activeTool}
-        currentToolData={{ screens, activeScreenId }}
+        currentToolData={getCurrentToolData()}
         onLoadProject={(toolType, data) => {
-          if (toolType === 'mockup' && data.screens) {
-            setScreens(data.screens as MockupConfig[]);
-            if (data.activeScreenId) setActiveScreenId(data.activeScreenId as string);
+          if (toolType === 'mockup') {
+            if (data.screens) {
+              setScreens(data.screens as MockupConfig[]);
+              if (data.activeScreenId) setActiveScreenId(data.activeScreenId as string);
+            }
             setActiveTool('mockup-editor');
           } else if (toolType === 'banner') {
+            bannerLoadDataRef.current?.(data);
             setActiveTool('store-banner-maker');
           } else if (toolType === 'privacy') {
+            privacyLoadDataRef.current?.(data);
             setActiveTool('privacy-policy-studio');
           } else if (toolType === 'icon') {
             setActiveTool('app-icon-resizer');

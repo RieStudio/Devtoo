@@ -8,12 +8,16 @@ import { generatePolicyHtml } from '../../utils/policyGenerator';
 interface PrivacyPolicyStudioProps {
   isVisible?: boolean;
   onRegisterExport?: (exportFn: () => void) => void;
+  onRegisterGetData?: (getDataFn: () => PrivacyPolicyConfig) => void;
+  onRegisterLoadData?: (loadDataFn: (data: PrivacyPolicyConfig) => void) => void;
   onShowToast?: (message: string) => void;
 }
 
 export const PrivacyPolicyStudio: React.FC<PrivacyPolicyStudioProps> = ({
   isVisible = true,
   onRegisterExport,
+  onRegisterGetData,
+  onRegisterLoadData,
   onShowToast,
 }) => {
   const [config, setConfig] = useState<PrivacyPolicyConfig>(() => {
@@ -61,6 +65,21 @@ export const PrivacyPolicyStudio: React.FC<PrivacyPolicyStudioProps> = ({
       onRegisterExport(handlePerformExport);
     }
   }, [isVisible, onRegisterExport, handlePerformExport]);
+
+  useEffect(() => {
+    onRegisterGetData?.(() => config);
+  }, [config, onRegisterGetData]);
+
+  useEffect(() => {
+    onRegisterLoadData?.((data: PrivacyPolicyConfig) => {
+      setConfig(data);
+      try {
+        localStorage.setItem('devtoo_privacy_config', JSON.stringify(data));
+      } catch {
+        // Ignore
+      }
+    });
+  }, [onRegisterLoadData]);
 
   if (!isVisible) return null;
 

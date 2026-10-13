@@ -15,6 +15,8 @@ interface StoreBannerMakerProps {
   onRegisterRedo?: (redoFn: () => void) => void;
   onHistoryStateChange?: (canUndo: boolean, canRedo: boolean) => void;
   onExportStateChange?: (isExporting: boolean) => void;
+  onRegisterGetData?: (getDataFn: () => StoreBannerConfig) => void;
+  onRegisterLoadData?: (loadDataFn: (data: StoreBannerConfig) => void) => void;
   onShowToast?: (message: string) => void;
 }
 
@@ -26,9 +28,19 @@ export const StoreBannerMaker: React.FC<StoreBannerMakerProps> = ({
   onRegisterRedo,
   onHistoryStateChange,
   onExportStateChange,
+  onRegisterGetData,
+  onRegisterLoadData,
   onShowToast,
 }) => {
-  const [config, setConfig] = useState<StoreBannerConfig>(INITIAL_BANNER_CONFIG);
+  const [config, setConfig] = useState<StoreBannerConfig>(() => {
+    try {
+      const saved = localStorage.getItem('devtoo_banner_config');
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // Fallback
+    }
+    return INITIAL_BANNER_CONFIG;
+  });
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
 
@@ -332,6 +344,29 @@ export const StoreBannerMaker: React.FC<StoreBannerMakerProps> = ({
       notifyHistoryState();
     }
   }, [isVisible, onRegisterUndo, onRegisterRedo, notifyHistoryState, handleUndo, handleRedo]);
+
+  // LocalStorage Auto-Save
+  useEffect(() => {
+    try {
+      localStorage.setItem('devtoo_banner_config', JSON.stringify(config));
+    } catch {
+      // Ignore
+    }
+  }, [config]);
+
+  // Data Get & Load Registration for Cloud Projects
+  useEffect(() => {
+    onRegisterGetData?.(() => config);
+  }, [config, onRegisterGetData]);
+
+  useEffect(() => {
+    onRegisterLoadData?.((data: StoreBannerConfig) => {
+      setConfig(data);
+      historyRef.current = [JSON.parse(JSON.stringify(data))];
+      historyIndexRef.current = 0;
+      notifyHistoryState();
+    });
+  }, [onRegisterLoadData, notifyHistoryState]);
 
   // Global Keyboard Shortcuts (Undo / Redo) for Store Banner Maker
   useEffect(() => {
