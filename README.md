@@ -50,3 +50,19 @@ Build for production:
 ```bash
 npm run build
 ```
+
+## Kalite Kontrolleri
+
+Projede kod kalitesini ve derleme bütünlüğünü doğrulamak için aşağıdaki komutları kullanabilirsiniz:
+
+Kod standartlarını, olası hataları ve stil uyumsuzluklarını denetlemek için:
+
+```bash
+npm run lint
+```
+
+TypeScript tip kontrollerini (`tsc -b`) gerçekleştirmek ve uygulamanın üretim derlemesini (`vite build`) hatasız oluşturduğunu doğrulamak için:
+
+```bash
+npm run build
+```
