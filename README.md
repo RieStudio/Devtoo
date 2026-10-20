@@ -66,3 +66,4 @@ TypeScript tip kontrollerini (`tsc -b`) gerçekleştirmek ve uygulamanın üreti
 ```bash
 npm run build
 ```
+
