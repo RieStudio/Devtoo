@@ -1,6 +1,5 @@
 import React from 'react';
-import { Download, Upload, Smartphone, Image as ImageIcon, Layout, ShieldCheck, Undo2, Redo2, FolderKanban, LogIn } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { Download, Upload, Smartphone, Image as ImageIcon, Layout, ShieldCheck, Undo2, Redo2 } from 'lucide-react';
 import { DevtooLogo } from './common/DevtooLogo';
 
 interface HeaderProps {
@@ -16,8 +15,6 @@ interface HeaderProps {
   canRedo?: boolean;
   isExporting: boolean;
   hasIconImage?: boolean;
-  onOpenAuthModal?: () => void;
-  onOpenProjectsModal?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({ 
@@ -32,10 +29,7 @@ export const Header: React.FC<HeaderProps> = ({
   canRedo = true,
   isExporting,
   hasIconImage = false,
-  onOpenAuthModal,
-  onOpenProjectsModal,
 }) => {
-  const { user } = useAuth();
 
   return (
     <header className={`devtoo-header ${activeTool === 'dashboard' ? 'floating-island-navbar' : ''}`}>
@@ -75,55 +69,6 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         )}
       </div>
-
-      {activeTool === 'dashboard' && (
-        <div className="header-actions">
-          {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {onOpenProjectsModal && (
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  onClick={onOpenProjectsModal}
-                  style={{ padding: '6px 14px', fontSize: '12px', borderRadius: '999px' }}
-                >
-                  <FolderKanban size={14} color="#D90429" />
-                  <span>Projelerim</span>
-                </button>
-              )}
-              <div
-                style={{
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: '50%',
-                  backgroundColor: '#D90429',
-                  color: '#FFFFFF',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                }}
-                title={user.email}
-              >
-                {user.email?.[0]?.toUpperCase() || 'U'}
-              </div>
-            </div>
-          ) : (
-            onOpenAuthModal && (
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={onOpenAuthModal}
-                style={{ padding: '7px 16px', fontSize: '12px', fontWeight: 600, borderRadius: '999px' }}
-              >
-                <LogIn size={14} color="#D90429" />
-                <span>Giriş Yap / Kaydol</span>
-              </button>
-            )
-          )}
-        </div>
-      )}
 
       {activeTool === 'mockup-editor' && (
         <div className="header-actions">

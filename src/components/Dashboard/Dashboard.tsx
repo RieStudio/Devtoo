@@ -12,12 +12,14 @@ import {
   ArrowRight,
   X,
   ExternalLink,
-  Layers,
-  FolderKanban,
-  Loader2
+  Layers
 } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import { supabase, type ToolType, type UserProject } from '../../lib/supabase';
+import { 
+  getLocalProjects, 
+  deleteLocalProject, 
+  LOCAL_PROJECTS_CHANGED_EVENT, 
+  type ToolType 
+} from '../../lib/storage';
 import './Dashboard.css';
 
 interface DashboardProject {
@@ -32,28 +34,36 @@ interface DashboardProject {
 interface DashboardProps {
   onSelectTool: (toolId: string) => void;
   onLoadProject: (toolType: ToolType, data: Record<string, unknown>) => void;
-  onOpenProjectsModal: () => void;
   onShowToast: (message: string) => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
   onSelectTool,
   onLoadProject,
-  onOpenProjectsModal,
   onShowToast,
 }) => {
-  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeFilter, setActiveFilter] = useState<'all' | ToolType>('all');
-  const [cloudProjects, setCloudProjects] = useState<UserProject[]>([]);
   const [localProjects, setLocalProjects] = useState<DashboardProject[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [projectToDelete, setProjectToDelete] = useState<DashboardProject | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load drafts saved in localStorage
   const loadLocalDrafts = useCallback(() => {
     const list: DashboardProject[] = [];
+
+    // 0. Saved local projects from ProjectsModal (Client-Only)
+    const savedProjects = getLocalProjects();
+    savedProjects.forEach((p) => {
+      list.push({
+        id: p.id,
+        name: p.name,
+        tool_type: p.tool_type,
+        data: p.data,
+        updated_at: p.updated_at,
+        isLocal: true,
+      });
+    });
 
     // 1. Mockup Editor local draft
     try {
@@ -119,62 +129,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
     setLocalProjects(list);
   }, []);
 
-  // Fetch Supabase cloud projects
-  const fetchCloudProjects = useCallback(async () => {
-    if (!supabase || !user) {
-      setCloudProjects([]);
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('user_projects')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false });
-
-      if (error) {
-        console.error('Cloud projeler yüklenirken hata:', error);
-      } else {
-        setCloudProjects((data as UserProject[]) || []);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user]);
-
   useEffect(() => {
     loadLocalDrafts();
-    if (user) {
-      fetchCloudProjects();
-    }
-  }, [user, loadLocalDrafts, fetchCloudProjects]);
+    const handleLocalChange = () => loadLocalDrafts();
+    window.addEventListener(LOCAL_PROJECTS_CHANGED_EVENT, handleLocalChange);
+    return () => window.removeEventListener(LOCAL_PROJECTS_CHANGED_EVENT, handleLocalChange);
+  }, [loadLocalDrafts]);
 
-  // Combine projects
-  const allProjects = useMemo(() => {
-    const combined: DashboardProject[] = [];
-
-    // Add Cloud projects first
-    cloudProjects.forEach((cp) => {
-      combined.push({
-        id: cp.id,
-        name: cp.name,
-        tool_type: cp.tool_type,
-        data: cp.data,
-        updated_at: cp.updated_at,
-        isLocal: false,
-      });
-    });
-
-    // Add local drafts if not already redundant
-    localProjects.forEach((lp) => {
-      combined.push(lp);
-    });
-
-    return combined;
-  }, [cloudProjects, localProjects]);
+  // Projects list
+  const allProjects = localProjects;
 
   // Filter & Search
   const filteredProjects = useMemo(() => {
@@ -203,35 +166,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const project = projectToDelete;
     setProjectToDelete(null);
 
-    if (project.isLocal) {
-      if (project.tool_type === 'mockup') {
-        localStorage.removeItem('devtoo_mockup_screens');
-        localStorage.removeItem('devtoo_mockup_active_id');
-      } else if (project.tool_type === 'banner') {
-        localStorage.removeItem('devtoo_banner_config');
-      } else if (project.tool_type === 'privacy') {
-        localStorage.removeItem('devtoo_privacy_config');
-      }
-      loadLocalDrafts();
-      onShowToast('Yerel taslak silindi.');
-    } else if (supabase && user) {
-      try {
-        const { error } = await supabase
-          .from('user_projects')
-          .delete()
-          .eq('id', project.id)
-          .eq('user_id', user.id);
-
-        if (error) {
-          onShowToast(`Silinemedi: ${error.message}`);
-        } else {
-          setCloudProjects((prev) => prev.filter((p) => p.id !== project.id));
-          onShowToast('Bulut projesi silindi.');
-        }
-      } catch {
-        onShowToast('Silinirken hata oluştu.');
-      }
+    if (project.id.startsWith('local-') && project.id !== 'local-mockup' && project.id !== 'local-banner' && project.id !== 'local-privacy') {
+      deleteLocalProject(project.id);
+    } else if (project.tool_type === 'mockup') {
+      localStorage.removeItem('devtoo_mockup_screens');
+      localStorage.removeItem('devtoo_mockup_active_id');
+    } else if (project.tool_type === 'banner') {
+      localStorage.removeItem('devtoo_banner_config');
+    } else if (project.tool_type === 'privacy') {
+      localStorage.removeItem('devtoo_privacy_config');
     }
+    loadLocalDrafts();
+    onShowToast('Yerel proje silindi.');
   };
 
   // Close delete modal on Escape key
@@ -318,7 +264,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <div className="dashboard-hero-header">
           <div className="dashboard-hero-title-group">
             <h1 className="dashboard-hero-title">
-              {user ? `Tekrar Hoş Geldiniz, ${user.email?.split('@')[0]}!` : 'Ne tasarlamak istiyorsunuz?'}
+              Ne tasarlamak istiyorsunuz?
             </h1>
             <p className="dashboard-hero-subtitle">
               Mobil uygulamalarınız ve web projeleriniz için ekran görüntüleri, mağaza bannerları, ikon paketleri ve yasal politikaları dakikalar içinde hazırlayın.
@@ -326,17 +272,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
 
           <div className="dashboard-hero-actions">
-            {user && (
-              <button
-                type="button"
-                className="dashboard-btn-import"
-                onClick={onOpenProjectsModal}
-                title="Tüm kayıtlı projelerinizi ve bulut yedeklerinizi yönetin"
-              >
-                <FolderKanban size={14} color="#D90429" />
-                <span>Projelerimi Yönet</span>
-              </button>
-            )}
             <button
               type="button"
               className="dashboard-btn-import"
@@ -519,12 +454,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Projects Grid or Empty State */}
-        {isLoading ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 0', gap: '8px', color: '#64748B' }}>
-            <Loader2 size={18} className="animate-spin" />
-            <span style={{ fontSize: '13px' }}>Projeler yükleniyor...</span>
-          </div>
-        ) : filteredProjects.length > 0 ? (
+        {filteredProjects.length > 0 ? (
           <div className="recent-projects-grid">
             {filteredProjects.map((project) => (
               <div
@@ -585,7 +515,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     <h4 className="project-card-title">{project.name}</h4>
                   </div>
                   <div className="project-card-meta">
-                    <span>{project.isLocal ? 'Yerel Taslak' : 'Bulut Kaydı'}</span>
+                    <span>Otomatik Taslak</span>
                     <span>{formatDate(project.updated_at)}</span>
                   </div>
                 </div>

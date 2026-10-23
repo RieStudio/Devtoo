@@ -12,9 +12,6 @@ export default defineConfig({
             if (id.includes('react') || id.includes('react-dom')) {
               return 'vendor-react';
             }
-            if (id.includes('@supabase')) {
-              return 'vendor-supabase';
-            }
             if (id.includes('jszip') || id.includes('html-to-image')) {
               return 'vendor-export';
             }

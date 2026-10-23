@@ -10,7 +10,7 @@ import { Header } from './components/Header';
 import { MockupCanvas } from './components/MockupEditor/MockupCanvas';
 import { InspectorPanel } from './components/MockupEditor/InspectorPanel';
 import type { ExportFormat } from './components/MockupEditor/ExportModal';
-import type { ToolType } from './lib/supabase';
+import type { ToolType } from './lib/storage';
 
 // Code Splitting / Lazy Loading for optimal initial load time
 const Dashboard = lazy(() => import('./components/Dashboard/Dashboard').then(m => ({ default: m.Dashboard })));
@@ -19,8 +19,6 @@ const ExportModal = lazy(() => import('./components/MockupEditor/ExportModal').t
 const AppIconResizer = lazy(() => import('./components/AppIconResizer/AppIconResizer').then(m => ({ default: m.AppIconResizer })));
 const StoreBannerMaker = lazy(() => import('./components/StoreBannerMaker/StoreBannerMaker').then(m => ({ default: m.StoreBannerMaker })));
 const PrivacyPolicyStudio = lazy(() => import('./components/PrivacyPolicyStudio/PrivacyPolicyStudio').then(m => ({ default: m.PrivacyPolicyStudio })));
-const AuthModal = lazy(() => import('./components/Auth/AuthModal').then(m => ({ default: m.AuthModal })));
-const ProjectsModal = lazy(() => import('./components/Projects/ProjectsModal').then(m => ({ default: m.ProjectsModal })));
 
 const INITIAL_CONFIG: MockupConfig = {
   id: 'screen-1',
@@ -129,8 +127,6 @@ export function App() {
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
   const [isCropModalOpen, setIsCropModalOpen] = useState<boolean>(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
-  const [isProjectsModalOpen, setIsProjectsModalOpen] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // App Icon Resizer Header Integration
@@ -161,16 +157,6 @@ export function App() {
       // Ignore quota errors if storage full
     }
   }, [screens, activeScreenId]);
-
-  const getCurrentToolData = useCallback((): Record<string, unknown> => {
-    if (activeTool === 'store-banner-maker') {
-      return (bannerGetDataRef.current?.() as Record<string, unknown>) || {};
-    }
-    if (activeTool === 'privacy-policy-studio') {
-      return (privacyGetDataRef.current?.() as Record<string, unknown>) || {};
-    }
-    return { screens, activeScreenId };
-  }, [activeTool, screens, activeScreenId]);
 
   const toastTimeoutRef = useRef<any>(null);
   const showToast = (msg: string) => {
@@ -1109,8 +1095,6 @@ export function App() {
         <Sidebar 
           activeTool={activeTool} 
           onSelectTool={setActiveTool} 
-          onOpenAuthModal={() => setIsAuthModalOpen(true)}
-          onOpenProjectsModal={() => setIsProjectsModalOpen(true)}
         />
       )}
 
@@ -1119,8 +1103,6 @@ export function App() {
         {/* Üst Navigasyon Barı */}
         <Header
           activeTool={activeTool}
-          onOpenAuthModal={() => setIsAuthModalOpen(true)}
-          onOpenProjectsModal={() => setIsProjectsModalOpen(true)}
           onExport={
             activeTool === 'app-icon-resizer'
               ? () => iconExportRef.current?.()
@@ -1164,7 +1146,6 @@ export function App() {
             <Dashboard
               onSelectTool={setActiveTool}
               onLoadProject={handleLoadProject}
-              onOpenProjectsModal={() => setIsProjectsModalOpen(true)}
               onShowToast={showToast}
             />
           </Suspense>
@@ -1317,27 +1298,6 @@ export function App() {
             canvasWidth={activeScreenConfig.width || 1080}
             canvasHeight={activeScreenConfig.height || 1920}
             isExporting={isExporting}
-          />
-        )}
-
-        {/* Auth Modal */}
-        {isAuthModalOpen && (
-          <AuthModal
-            isOpen={isAuthModalOpen}
-            onClose={() => setIsAuthModalOpen(false)}
-            onShowToast={showToast}
-          />
-        )}
-
-        {/* Projects Modal */}
-        {isProjectsModalOpen && (
-          <ProjectsModal
-            isOpen={isProjectsModalOpen}
-            onClose={() => setIsProjectsModalOpen(false)}
-            activeTool={activeTool}
-            currentToolData={getCurrentToolData()}
-            onLoadProject={handleLoadProject}
-            onShowToast={showToast}
           />
         )}
       </Suspense>

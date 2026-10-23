@@ -6,20 +6,14 @@ import {
   ShieldCheck,
   ChevronLeft,
   ChevronRight,
-  LogIn,
-  LogOut,
-  FolderKanban,
   LayoutGrid
 } from 'lucide-react';
 import type { ToolItem } from '../types/mockup';
-import { useAuth } from '../context/AuthContext';
 import { DevtooLogo } from './common/DevtooLogo';
 
 interface SidebarProps {
   activeTool: string;
   onSelectTool: (id: string) => void;
-  onOpenAuthModal: () => void;
-  onOpenProjectsModal: () => void;
 }
 
 const TOOLS: ToolItem[] = [
@@ -68,11 +62,8 @@ const TOOLS: ToolItem[] = [
 export const Sidebar: React.FC<SidebarProps> = ({ 
   activeTool, 
   onSelectTool,
-  onOpenAuthModal,
-  onOpenProjectsModal,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
-  const { user, signOut } = useAuth();
 
   const getIcon = (iconName: string) => {
     switch (iconName) {
@@ -148,157 +139,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         ))}
       </nav>
-
-      {/* Footer / User Profile & Auth */}
-      <div className="sidebar-footer">
-        {!user ? (
-          isCollapsed ? (
-            <button
-              type="button"
-              onClick={onOpenAuthModal}
-              title="Giriş Yap"
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                color: '#64748B',
-                padding: '6px',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <LogIn size={18} color="#D90429" />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={onOpenAuthModal}
-              style={{
-                width: '100%',
-                padding: '8px 12px',
-                borderRadius: '8px',
-                border: '1px solid #E2E8F0',
-                backgroundColor: '#FFFFFF',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                cursor: 'pointer',
-                fontSize: '12px',
-                fontWeight: 600,
-                color: '#0F172A',
-                boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
-              }}
-            >
-              <LogIn size={15} color="#D90429" />
-              <span>Giriş Yap / Kaydol</span>
-            </button>
-          )
-        ) : (
-          isCollapsed ? (
-            <button
-              type="button"
-              onClick={onOpenProjectsModal}
-              title={`Projelerim (${user.email})`}
-              style={{
-                width: '30px',
-                height: '30px',
-                borderRadius: '50%',
-                backgroundColor: '#D90429',
-                color: '#FFFFFF',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '12px',
-                fontWeight: 700,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              {user.email?.[0]?.toUpperCase() || 'U'}
-            </button>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
-                  <div
-                    style={{
-                      width: '26px',
-                      height: '26px',
-                      borderRadius: '50%',
-                      backgroundColor: '#D90429',
-                      color: '#FFFFFF',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      flexShrink: 0,
-                    }}
-                  >
-                    {user.email?.[0]?.toUpperCase() || 'U'}
-                  </div>
-                  <span
-                    style={{
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      color: '#334155',
-                      textOverflow: 'ellipsis',
-                      overflow: 'hidden',
-                      whiteSpace: 'nowrap',
-                      maxWidth: '120px',
-                    }}
-                    title={user.email}
-                  >
-                    {user.email?.split('@')[0]}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => signOut()}
-                  title="Çıkış Yap"
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: '#94A3B8',
-                    padding: '4px',
-                    borderRadius: '6px',
-                    display: 'flex',
-                    alignItems: 'center',
-                  }}
-                >
-                  <LogOut size={14} />
-                </button>
-              </div>
-              <button
-                type="button"
-                onClick={onOpenProjectsModal}
-                style={{
-                  width: '100%',
-                  padding: '6px 10px',
-                  borderRadius: '6px',
-                  border: '1px solid #E2E8F0',
-                  backgroundColor: '#FFFFFF',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                  cursor: 'pointer',
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  color: '#0F172A',
-                  boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
-                }}
-              >
-                <FolderKanban size={13} color="#D90429" />
-                <span>Projelerim</span>
-              </button>
-            </div>
-          )
-        )}
-      </div>
     </aside>
   );
 };
