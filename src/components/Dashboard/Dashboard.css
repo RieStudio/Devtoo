@@ -579,7 +579,7 @@
 }
 
 [data-theme='dark'] .dashboard-search-input {
-  background-color: rgba(15, 23, 42, 0.95);
+  background-color: rgba(16, 16, 16, 0.95);
   border-color: rgba(255, 255, 255, 0.15);
   color: #F8FAFC;
 }
@@ -590,14 +590,14 @@
 }
 
 [data-theme='dark'] .dashboard-btn-import {
-  background-color: #131C2E;
+  background-color: #161616;
   color: #F8FAFC;
   border-color: rgba(255, 255, 255, 0.12);
 }
 
 [data-theme='dark'] .dashboard-btn-import:hover {
-  background-color: #1E293B;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  background-color: #242424;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
 }
 
 [data-theme='dark'] .quick-create-card {
@@ -625,7 +625,7 @@
 }
 
 [data-theme='dark'] .project-card-thumbnail {
-  background-color: #0B111E;
+  background-color: #0D0D0D;
   border-color: var(--border-subtle);
 }
 
