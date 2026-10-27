@@ -507,6 +507,43 @@ export const Dashboard: React.FC<DashboardProps> = ({
         )}
       </section>
 
+      {/* Footer Branding - a RieStudio product */}
+      <footer className="dashboard-footer">
+        <span className="dashboard-footer-prefix">a</span>
+        <a
+          href="https://www.riestudio.com.tr"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="dashboard-footer-logo-link"
+          title="RieStudio'yu Ziyaret Et (riestudio.com.tr)"
+        >
+          <img
+            src="/riestudio-light.png"
+            alt="RieStudio"
+            className="dashboard-footer-logo riestudio-light-logo"
+            onError={(e) => {
+              (e.currentTarget as HTMLElement).style.display = 'none';
+              const fallback = e.currentTarget.parentElement?.querySelector('.dashboard-footer-fallback') as HTMLElement;
+              if (fallback) fallback.style.display = 'inline-block';
+            }}
+          />
+          <img
+            src="/riestudio-dark.png"
+            alt="RieStudio"
+            className="dashboard-footer-logo riestudio-dark-logo"
+            onError={(e) => {
+              (e.currentTarget as HTMLElement).style.display = 'none';
+              const fallback = e.currentTarget.parentElement?.querySelector('.dashboard-footer-fallback') as HTMLElement;
+              if (fallback) fallback.style.display = 'inline-block';
+            }}
+          />
+          <span className="dashboard-footer-fallback" style={{ display: 'none' }}>
+            RieStudio
+          </span>
+        </a>
+        <span className="dashboard-footer-suffix">product</span>
+      </footer>
+
       {/* Custom In-App Delete Confirmation Modal */}
       {projectToDelete && (
         <div
