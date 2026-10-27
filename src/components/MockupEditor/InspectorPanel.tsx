@@ -493,7 +493,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
           <span>Çıktı Modu</span>
         </div>
 
-        <div style={{ display: 'flex', gap: '4px', backgroundColor: '#F1F3F5', padding: '3px', borderRadius: '8px' }}>
+        <div className="export-mode-tab-group">
           <button
             type="button"
             className={`export-mode-tab ${!isDeviceOnly ? 'active' : ''}`}
@@ -766,7 +766,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
           </div>
 
           {/* Brand Tabs with 'Diğer' Button */}
-          <div style={{ position: 'relative', display: 'flex', gap: '4px', backgroundColor: '#F1F3F5', padding: '3px', borderRadius: '8px' }}>
+          <div className="brand-tabs-group">
             {[
               { id: 'apple', label: 'Apple' },
               { id: 'samsung', label: 'Samsung' },
@@ -776,18 +776,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               return (
                 <button
                   key={tab.id}
-                  style={{
-                    flex: 1,
-                    padding: '6px 2px',
-                    fontSize: '11px',
-                    fontWeight: isTabActive ? 700 : 500,
-                    borderRadius: '6px',
-                    border: isTabActive ? '1px solid #D90429' : '1px solid transparent',
-                    backgroundColor: isTabActive ? '#D90429' : 'transparent',
-                    color: isTabActive ? '#FFFFFF' : '#475569',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                  }}
+                  className={`brand-tab-btn ${isTabActive ? 'active' : ''}`}
                   onClick={() => {
                     setIsOtherOpen(false);
                     setSelectedCategory('phone');
@@ -803,25 +792,10 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             <div style={{ flex: 1, position: 'relative' }} ref={otherPopoverRef}>
               <button
                 type="button"
+                className={`brand-tab-btn-other ${isOtherOpen || selectedCategory !== 'phone' ? 'active' : ''}`}
                 style={{
-                  width: '100%',
-                  padding: '6px 2px',
                   fontSize: selectedCategory === 'watch' ? '10px' : '11px',
                   letterSpacing: selectedCategory === 'watch' ? '-0.2px' : 'normal',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  fontWeight: isOtherOpen || selectedCategory !== 'phone' ? 700 : 500,
-                  borderRadius: '6px',
-                  border: isOtherOpen || selectedCategory !== 'phone' ? '1px solid #D90429' : '1px solid transparent',
-                  backgroundColor: isOtherOpen || selectedCategory !== 'phone' ? '#D90429' : 'transparent',
-                  color: isOtherOpen || selectedCategory !== 'phone' ? '#FFFFFF' : '#475569',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '2px',
-                  transition: 'all 0.15s ease',
                 }}
                 onClick={() => setIsOtherOpen((prev) => !prev)}
               >
@@ -833,36 +807,8 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
 
               {/* Diğer Cihazlar Küçük Pencere / Popover */}
               {isOtherOpen && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 'calc(100% + 6px)',
-                    right: 0,
-                    width: '190px',
-                    backgroundColor: '#FFFFFF',
-                    borderRadius: '10px',
-                    boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.2), 0 8px 10px -6px rgba(15, 23, 42, 0.15)',
-                    border: '1px solid #E2E8F0',
-                    padding: '6px',
-                    zIndex: 50,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '3px',
-                    animation: 'fadeIn 0.15s ease-out',
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: '10px',
-                      fontWeight: 700,
-                      color: '#94A3B8',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                      padding: '4px 6px 6px',
-                      borderBottom: '1px solid #F1F5F9',
-                      marginBottom: '2px',
-                    }}
-                  >
+                <div className="other-devices-popover">
+                  <div className="other-devices-popover-header">
                     Diğer Cihaz Türleri
                   </div>
 
@@ -877,32 +823,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                       <button
                         key={item.id}
                         type="button"
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          width: '100%',
-                          padding: '7px 9px',
-                          border: 'none',
-                          borderRadius: '6px',
-                          backgroundColor: selectedCategory === item.id ? '#FFF1F2' : '#F8FAFC',
-                          color: selectedCategory === item.id ? '#D90429' : '#334155',
-                          fontSize: '12px',
-                          fontWeight: selectedCategory === item.id ? 700 : 500,
-                          cursor: 'pointer',
-                          transition: 'all 0.15s ease',
-                          textAlign: 'left',
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#FFF1F2';
-                          e.currentTarget.style.color = '#D90429';
-                        }}
-                        onMouseLeave={(e) => {
-                          if (selectedCategory !== item.id) {
-                            e.currentTarget.style.backgroundColor = '#F8FAFC';
-                            e.currentTarget.style.color = '#334155';
-                          }
-                        }}
+                        className={`other-device-category-btn ${selectedCategory === item.id ? 'active' : ''}`}
                         onClick={() => {
                           const catId = item.id as OtherCategory;
                           setSelectedCategory(catId);
@@ -933,22 +854,11 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                   <div
                     key={model.id}
                     onClick={() => handleSelectModel(model.id)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '9px 12px',
-                      borderRadius: '8px',
-                      border: isSelected ? '1px solid #D90429' : '1px solid #E2E8F0',
-                      backgroundColor: isSelected ? '#D90429' : '#FFFFFF',
-                      color: isSelected ? '#FFFFFF' : '#0F172A',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease',
-                    }}
+                    className={`device-model-card ${isSelected ? 'is-selected' : ''}`}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <Smartphone size={16} color={isSelected ? '#FFFFFF' : '#64748B'} />
-                      <div style={{ fontSize: '13px', fontWeight: isSelected ? 700 : 600, color: isSelected ? '#FFFFFF' : '#0F172A' }}>
+                      <Smartphone size={16} className="device-model-card-icon" />
+                      <div className="device-model-card-name">
                         {model.name}
                       </div>
                     </div>
@@ -967,22 +877,11 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                   <div
                     key={model.id}
                     onClick={() => handleSelectModel(model.id)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '9px 12px',
-                      borderRadius: '8px',
-                      border: isSelected ? '1px solid #D90429' : '1px solid #E2E8F0',
-                      backgroundColor: isSelected ? '#D90429' : '#FFFFFF',
-                      color: isSelected ? '#FFFFFF' : '#0F172A',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease',
-                    }}
+                    className={`device-model-card ${isSelected ? 'is-selected' : ''}`}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <CategoryIcon size={16} color={isSelected ? '#FFFFFF' : '#64748B'} />
-                      <div style={{ fontSize: '13px', fontWeight: isSelected ? 700 : 600, color: isSelected ? '#FFFFFF' : '#0F172A' }}>
+                      <CategoryIcon size={16} className="device-model-card-icon" />
+                      <div className="device-model-card-name">
                         {model.name}
                       </div>
                     </div>
@@ -1008,20 +907,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 {/* Butona Basarak Renk Seçme Tetikleyici Butonu */}
                 <button
                   type="button"
-                  style={{
-                    width: '100%',
-                    padding: '8px 10px',
-                    backgroundColor: isColorDropdownOpen ? '#FFF1F2' : '#FFFFFF',
-                    border: isColorDropdownOpen ? '1.5px solid #D90429' : '1px solid #E2E8F0',
-                    borderRadius: '8px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                    boxShadow: isColorDropdownOpen ? '0 0 0 3px rgba(217, 4, 41, 0.1)' : 'none',
-                    gap: '8px',
-                  }}
+                  className={`device-color-trigger-btn ${isColorDropdownOpen ? 'is-open' : ''}`}
                   onClick={() => setIsColorDropdownOpen((prev) => !prev)}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1 }}>
@@ -1041,7 +927,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                       style={{
                         fontSize: isSmartWatch ? '11px' : '12px',
                         fontWeight: 600,
-                        color: '#0F172A',
+                        color: 'var(--text-primary)',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -1055,7 +941,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                   </div>
                   <ChevronDown
                     size={14}
-                    color={isColorDropdownOpen ? '#D90429' : '#64748B'}
+                    color={isColorDropdownOpen ? 'var(--chili-primary)' : 'var(--text-muted)'}
                     style={{
                       flexShrink: 0,
                       transform: isColorDropdownOpen ? 'rotate(180deg)' : 'none',
@@ -1066,59 +952,16 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
 
                 {/* Açılır Renk Seçenekleri Menüsü */}
                 {isColorDropdownOpen && (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: 'calc(100% + 4px)',
-                      left: 0,
-                      right: 0,
-                      maxHeight: '220px',
-                      overflowY: 'auto',
-                      backgroundColor: '#FFFFFF',
-                      borderRadius: '8px',
-                      boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.2), 0 8px 10px -6px rgba(15, 23, 42, 0.15)',
-                      border: '1px solid #E2E8F0',
-                      padding: '4px',
-                      zIndex: 60,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '2px',
-                      animation: 'fadeIn 0.12s ease-out',
-                    }}
-                  >
+                  <div className="device-color-dropdown-menu">
                     {currentDeviceModel.colors.map((c) => {
                       const isColorActive = (activeDevice.deviceColor || currentDeviceModel.colors[0].id) === c.id;
                       return (
                         <button
                           key={c.id}
                           type="button"
+                          className={`device-color-option-btn ${isColorActive ? 'active' : ''}`}
                           style={{
-                            width: '100%',
-                            padding: '6px 8px',
                             fontSize: isSmartWatch ? '10.5px' : '11.5px',
-                            lineHeight: '1.2',
-                            fontWeight: isColorActive ? 700 : 500,
-                            borderRadius: '6px',
-                            border: 'none',
-                            backgroundColor: isColorActive ? '#FFF1F2' : '#FFFFFF',
-                            color: isColorActive ? '#D90429' : '#334155',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            cursor: 'pointer',
-                            transition: 'all 0.1s ease',
-                            textAlign: 'left',
-                            gap: '6px',
-                          }}
-                          onMouseEnter={(e) => {
-                            if (!isColorActive) {
-                              e.currentTarget.style.backgroundColor = '#F8FAFC';
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isColorActive) {
-                              e.currentTarget.style.backgroundColor = '#FFFFFF';
-                            }
                           }}
                           onClick={() => {
                             handleUpdateActiveDevice({ deviceColor: c.id });
@@ -1149,7 +992,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                               {c.name}
                             </span>
                           </div>
-                          {isColorActive && <Check size={13} color="#D90429" style={{ flexShrink: 0 }} />}
+                          {isColorActive && <Check size={13} color="var(--chili-primary)" style={{ flexShrink: 0 }} />}
                         </button>
                       );
                     })}
