@@ -3,7 +3,6 @@ import {
   ZoomIn, 
   ZoomOut, 
   Maximize2, 
-  ShieldCheck, 
   Upload, 
   Crop, 
   Trash2, 
@@ -203,7 +202,6 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
   const [panOffset, setPanOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState<boolean>(false);
   const [isReady, setIsReady] = useState<boolean>(false);
-  const [showSafeZone, setShowSafeZone] = useState<boolean>(false);
 
   // Device & text canvas interaction states
   const [dragMode, setDragMode] = useState<CanvasDragMode>('none');
@@ -2028,46 +2026,6 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
         cursor: isPanning ? 'grabbing' : 'grab',
       }}
     >
-      {/* Floating Top-Right Controls (Safe Zone Guide Toggle) */}
-      <div 
-        className="canvas-top-right-toolbar" 
-        onClick={(e) => e.stopPropagation()}
-        onPointerDown={(e) => e.stopPropagation()}
-        style={{
-          position: 'absolute',
-          top: '16px',
-          right: '16px',
-          zIndex: 100,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => setShowSafeZone(!showSafeZone)}
-          title="Google Play / App Store Güvenli Alan Kılavuzunu Göster/Gizle"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '7px 14px',
-            borderRadius: '8px',
-            fontSize: '12px',
-            fontWeight: 600,
-            backgroundColor: '#FFFFFF',
-            color: showSafeZone ? '#D90429' : '#475569',
-            border: showSafeZone ? '1.5px solid #D90429' : '1px solid #CBD5E1',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-            cursor: 'pointer',
-            transition: 'all 0.15s ease',
-          }}
-        >
-          <ShieldCheck size={14} color={showSafeZone ? '#D90429' : '#64748B'} />
-          <span>Güvenli Alan</span>
-        </button>
-      </div>
-
       {/* Floating Bottom-Center Zoom Toolbar (Identical to MockupEditor) */}
       <div 
         className="canvas-bottom-zoom-toolbar" 
@@ -2197,44 +2155,6 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
             <div style={{ position: 'absolute', inset: 0, zIndex: 3 }}>
               {renderPatternOverlay()}
             </div>
-
-            {/* Google Play / App Store Safe Zone Overlay Guide */}
-            {showSafeZone && !isExporting && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: `${Math.round(config.height * 0.055)}px`,
-                  bottom: `${Math.round(config.height * 0.055)}px`,
-                  left: `${Math.round(config.width * 0.045)}px`,
-                  right: `${Math.round(config.width * 0.045)}px`,
-                  border: '2px dashed rgba(217, 4, 41, 0.75)',
-                  backgroundColor: 'rgba(217, 4, 41, 0.03)',
-                  borderRadius: '10px',
-                  pointerEvents: 'none',
-                  zIndex: 90,
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  justifyContent: 'flex-start',
-                  padding: '8px 12px',
-                }}
-              >
-                <div style={{
-                  backgroundColor: 'rgba(217, 4, 41, 0.88)',
-                  color: '#FFFFFF',
-                  fontSize: '10.5px',
-                  fontWeight: 600,
-                  padding: '2px 8px',
-                  borderRadius: '4px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
-                }}>
-                  <ShieldCheck size={12} />
-                  <span>Güvenli Alan (Önemli metin ve logolar bu sınır içinde kalmalıdır)</span>
-                </div>
-              </div>
-            )}
 
             {/* Symmetrical Center Alignment Guide Lines (Mockup Editor Style) */}
             {!isExporting && alignmentGuides.showVertical && (
