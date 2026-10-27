@@ -1212,7 +1212,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                     animation: 'toastSlideDown 0.15s cubic-bezier(0.16, 1, 0.3, 1)',
                   }}
                 >
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', marginBottom: '8px', paddingBottom: '4px', borderBottom: '1px solid #F1F5F9' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px', paddingBottom: '4px', borderBottom: '1px solid var(--border-subtle)' }}>
                     <span>Temel Şekiller</span>
                   </div>
 
@@ -1337,7 +1337,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '5px' }}>
                   <Shapes size={12} color="#D90429" />
                   <span>Seçili Bileşen Ayarları</span>
                 </span>

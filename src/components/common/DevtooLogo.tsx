@@ -26,7 +26,7 @@ export const DevtooLogo: React.FC<DevtooLogoProps> = ({
   variant = 'swift',
   color = '#D90429',
   facetColor = '#A00C24',
-  stemColor = '#0F172A',
+  stemColor = 'var(--logo-stem, #0F172A)',
   className = '',
   showText = false,
   textClassName = '',
@@ -42,10 +42,11 @@ export const DevtooLogo: React.FC<DevtooLogoProps> = ({
       aria-label="Devtoo Logo"
       className={className}
     >
-      {/* 1. Geometric Angled Stem (Dark Slate) */}
+      {/* 1. Geometric Angled Stem (Adaptive to Light/Dark) */}
       <path
         d="M36 8C39 8 42 10.5 43 13C40 13.5 37 15 35 17.5L32 15C33.5 12 34.5 9 36 8Z"
         fill={stemColor}
+        className="devtoo-logo-stem"
       />
       {/* 2. Solid Chili Main Hull (Chili Red) */}
       <path

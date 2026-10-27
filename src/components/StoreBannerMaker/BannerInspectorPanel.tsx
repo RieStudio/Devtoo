@@ -412,7 +412,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
   return (
     <aside className="devtoo-inspector banner-inspector-panel">
       {/* Tab Navigation */}
-      <div className="inspector-tabs" style={{ display: 'flex', borderBottom: '1px solid #E2E8F0', padding: '6px 8px', gap: '4px', overflowX: 'auto' }}>
+      <div className="inspector-tabs" style={{ display: 'flex', borderBottom: '1px solid var(--border-default)', padding: '6px 8px', gap: '4px', overflowX: 'auto', backgroundColor: 'var(--bg-sidebar)' }}>
         <button
           type="button"
           className={`tab-btn ${activeTab === 'presets' ? 'is-active' : ''}`}
@@ -424,18 +424,18 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             fontSize: '11px',
             fontWeight: 600,
             borderRadius: '6px',
-            border: activeTab === 'presets' ? '1.5px solid #0F172A' : '1.5px solid transparent',
+            border: activeTab === 'presets' ? '1.5px solid var(--chili-primary)' : '1.5px solid transparent',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             gap: '3px',
             cursor: 'pointer',
-            backgroundColor: activeTab === 'presets' ? '#FFFFFF' : 'transparent',
-            color: activeTab === 'presets' ? '#0F172A' : '#64748B',
+            backgroundColor: activeTab === 'presets' ? 'var(--bg-card)' : 'transparent',
+            color: activeTab === 'presets' ? 'var(--text-primary)' : 'var(--text-secondary)',
             transition: 'all 0.15s ease',
           }}
         >
-          <Maximize2 size={15} />
+          <Maximize2 size={15} color={activeTab === 'presets' ? 'var(--chili-primary)' : 'inherit'} />
           <span>Boyut</span>
         </button>
 
@@ -450,18 +450,18 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             fontSize: '11px',
             fontWeight: 600,
             borderRadius: '6px',
-            border: activeTab === 'background' ? '1.5px solid #0F172A' : '1.5px solid transparent',
+            border: activeTab === 'background' ? '1.5px solid var(--chili-primary)' : '1.5px solid transparent',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             gap: '3px',
             cursor: 'pointer',
-            backgroundColor: activeTab === 'background' ? '#FFFFFF' : 'transparent',
-            color: activeTab === 'background' ? '#0F172A' : '#64748B',
+            backgroundColor: activeTab === 'background' ? 'var(--bg-card)' : 'transparent',
+            color: activeTab === 'background' ? 'var(--text-primary)' : 'var(--text-secondary)',
             transition: 'all 0.15s ease',
           }}
         >
-          <Palette size={15} />
+          <Palette size={15} color={activeTab === 'background' ? 'var(--chili-primary)' : 'inherit'} />
           <span>Arka Plan</span>
         </button>
 
@@ -476,18 +476,18 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             fontSize: '11px',
             fontWeight: 600,
             borderRadius: '6px',
-            border: activeTab === 'devices' ? '1.5px solid #0F172A' : '1.5px solid transparent',
+            border: activeTab === 'devices' ? '1.5px solid var(--chili-primary)' : '1.5px solid transparent',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             gap: '3px',
             cursor: 'pointer',
-            backgroundColor: activeTab === 'devices' ? '#FFFFFF' : 'transparent',
-            color: activeTab === 'devices' ? '#0F172A' : '#64748B',
+            backgroundColor: activeTab === 'devices' ? 'var(--bg-card)' : 'transparent',
+            color: activeTab === 'devices' ? 'var(--text-primary)' : 'var(--text-secondary)',
             transition: 'all 0.15s ease',
           }}
         >
-          <Smartphone size={15} />
+          <Smartphone size={15} color={activeTab === 'devices' ? 'var(--chili-primary)' : 'inherit'} />
           <span>Cihazlar</span>
         </button>
 
@@ -502,18 +502,18 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             fontSize: '11px',
             fontWeight: 600,
             borderRadius: '6px',
-            border: activeTab === 'text' ? '1.5px solid #0F172A' : '1.5px solid transparent',
+            border: activeTab === 'text' ? '1.5px solid var(--chili-primary)' : '1.5px solid transparent',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             gap: '3px',
             cursor: 'pointer',
-            backgroundColor: activeTab === 'text' ? '#FFFFFF' : 'transparent',
-            color: activeTab === 'text' ? '#0F172A' : '#64748B',
+            backgroundColor: activeTab === 'text' ? 'var(--bg-card)' : 'transparent',
+            color: activeTab === 'text' ? 'var(--text-primary)' : 'var(--text-secondary)',
             transition: 'all 0.15s ease',
           }}
         >
-          <Type size={15} />
+          <Type size={15} color={activeTab === 'text' ? 'var(--chili-primary)' : 'inherit'} />
           <span>Metin</span>
         </button>
 
@@ -528,18 +528,18 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             fontSize: '11px',
             fontWeight: 600,
             borderRadius: '6px',
-            border: activeTab === 'branding' ? '1.5px solid #0F172A' : '1.5px solid transparent',
+            border: activeTab === 'branding' ? '1.5px solid var(--chili-primary)' : '1.5px solid transparent',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             gap: '3px',
             cursor: 'pointer',
-            backgroundColor: activeTab === 'branding' ? '#FFFFFF' : 'transparent',
-            color: activeTab === 'branding' ? '#0F172A' : '#64748B',
+            backgroundColor: activeTab === 'branding' ? 'var(--bg-card)' : 'transparent',
+            color: activeTab === 'branding' ? 'var(--text-primary)' : 'var(--text-secondary)',
             transition: 'all 0.15s ease',
           }}
         >
-          <Award size={15} />
+          <Award size={15} color={activeTab === 'branding' ? 'var(--chili-primary)' : 'inherit'} />
           <span>Rozetler</span>
         </button>
       </div>
@@ -552,7 +552,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
           <div className="inspector-tab-pane" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {/* Presets */}
             <div className="inspector-section">
-              <div className="section-title" style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px' }}>
+              <div className="section-title" style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px' }}>
                 Mağaza Boyut Önayarı
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -568,17 +568,17 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                         justifyContent: 'space-between',
                         padding: '8px 12px',
                         borderRadius: '8px',
-                        border: isSelected ? '1.5px solid #D90429' : '1px solid #E2E8F0',
-                        backgroundColor: '#FFFFFF',
+                        border: isSelected ? '1.5px solid var(--chili-primary)' : '1px solid var(--border-default)',
+                        backgroundColor: isSelected ? 'var(--bg-subtle)' : 'var(--bg-card)',
                         cursor: 'pointer',
                         transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
                       }}
                     >
                       <div>
-                        <div style={{ fontSize: '12px', fontWeight: 600, color: '#0F172A' }}>
+                        <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
                           {p.name}
                         </div>
-                        <div style={{ fontSize: '10.5px', color: '#64748B', marginTop: '2px' }}>
+                        <div style={{ fontSize: '10.5px', color: 'var(--text-secondary)', marginTop: '2px' }}>
                           {p.description}
                         </div>
                       </div>
@@ -588,8 +588,8 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                           fontWeight: 600,
                           padding: '3px 8px',
                           borderRadius: '4px',
-                          backgroundColor: '#F1F5F9',
-                          color: '#475569',
+                          backgroundColor: 'var(--bg-subtle)',
+                          color: 'var(--text-secondary)',
                           fontFamily: 'monospace',
                           whiteSpace: 'nowrap',
                         }}
@@ -607,13 +607,13 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                   style={{ 
                     marginTop: '12px', 
                     padding: '12px', 
-                    backgroundColor: '#F8FAFC', 
-                    border: '1px solid #E2E8F0', 
+                    backgroundColor: 'var(--bg-subtle)', 
+                    border: '1px solid var(--border-default)', 
                     borderRadius: '8px' 
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#334155' }}>
+                    <span style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
                       Özel Boyut Ayarı
                     </span>
                     <button
@@ -624,9 +624,9 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                         display: 'inline-flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: '#64748B',
-                        backgroundColor: '#FFFFFF',
-                        border: '1px solid #CBD5E1',
+                        color: 'var(--text-secondary)',
+                        backgroundColor: 'var(--bg-card)',
+                        border: '1px solid var(--border-default)',
                         borderRadius: '5px',
                         padding: '4px',
                         cursor: 'pointer',
@@ -700,7 +700,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
           <div className="inspector-tab-pane" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {/* Background Type */}
             <div className="inspector-section">
-              <label style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+              <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
                 Arka Plan Türü
               </label>
               <div style={{ display: 'flex', backgroundColor: '#F1F5F9', padding: '3px', borderRadius: '8px', gap: '4px' }}>
@@ -731,7 +731,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             {/* Gradient Options */}
             {config.bgType === 'gradient' && (
               <div className="inspector-section">
-                <label style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
                   Hazır Gradyan Paletleri
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '14px' }}>
@@ -835,7 +835,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             {/* Solid Color Options */}
             {config.bgType === 'solid' && (
               <div className="inspector-section">
-                <label style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
                   Renk Seçimi
                 </label>
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -858,7 +858,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             {/* Image Background */}
             {config.bgType === 'image' && (
               <div className="inspector-section">
-                <label style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
                   Özel Arka Plan Görseli
                 </label>
                 <button
@@ -910,7 +910,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
 
             {/* Pattern Overlays */}
             <div className="inspector-section" style={{ borderTop: '1px solid #E2E8F0', paddingTop: '14px' }}>
-              <label style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+              <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
                 Doku & Işıltı Deseni
               </label>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px', marginBottom: '12px' }}>
@@ -968,7 +968,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             {/* Background Shapes / Şekiller (Mockup Editor Özelliği) */}
             <div id="section-banner-shapes" className="inspector-section" style={{ borderTop: '1px solid #E2E8F0', paddingTop: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', position: 'relative' }}>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase' }}>
                   Arka Plan Şekilleri
                 </span>
                 <div style={{ position: 'relative' }}>
@@ -1003,15 +1003,15 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                         top: 'calc(100% + 6px)',
                         right: 0,
                         width: '210px',
-                        backgroundColor: '#FFFFFF',
-                        border: '1px solid #E2E8F0',
+                        backgroundColor: 'var(--bg-card)',
+                        border: '1px solid var(--border-default)',
                         borderRadius: '8px',
                         padding: '10px',
-                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
+                        boxShadow: 'var(--shadow-md)',
                         zIndex: 100,
                       }}
                     >
-                      <div style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', marginBottom: '8px', paddingBottom: '4px', borderBottom: '1px solid #F1F5F9' }}>
+                      <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px', paddingBottom: '4px', borderBottom: '1px solid var(--border-subtle)' }}>
                         <span>Temel Şekiller</span>
                       </div>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
@@ -1117,7 +1117,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                               border: '1px solid rgba(0,0,0,0.15)',
                             }}
                           />
-                          <span style={{ fontWeight: isSelected ? 600 : 400, color: '#0F172A' }}>
+                          <span style={{ fontWeight: isSelected ? 600 : 400, color: 'var(--text-primary)' }}>
                             {labelMap[shape.type] || `Şekil ${index + 1}`}
                           </span>
                           <span
@@ -1152,7 +1152,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '5px' }}>
                       <Shapes size={12} color="#D90429" />
                       <span>Seçili Şekil Ayarları</span>
                     </span>
@@ -1319,7 +1319,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             {/* Devices on Screen & Add Device Button */}
             <div id="section-banner-devices" className="inspector-section">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase' }}>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase' }}>
                   Ekrandaki Cihazlar ({enabledDevices.length})
                 </label>
                 {enabledDevices.length < 5 && (
@@ -1385,7 +1385,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <Smartphone size={16} color={isSelected ? '#0F172A' : '#64748B'} />
                           <div>
-                            <div style={{ fontSize: '12px', fontWeight: 600, color: '#0F172A' }}>
+                            <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
                               Cihaz {enabledDevices.findIndex((d) => d.id === dev.id) + 1}
                             </div>
                             <div style={{ fontSize: '10.5px', color: '#64748B' }}>
@@ -1431,7 +1431,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
 
                 {/* Device Model Selector */}
                 <div className="inspector-section">
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
                     Cihaz Modeli
                   </label>
                   <select
@@ -1457,7 +1457,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
 
                 {/* Screenshot Upload & Crop */}
                 <div className="inspector-section">
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
                     Ekran Görüntüsü
                   </label>
                   <div style={{ display: 'flex', gap: '8px' }}>
@@ -1499,7 +1499,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
 
                 {/* Shadow Depth */}
                 <div className="inspector-section">
-                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
                     Gölge Derinliği
                   </label>
                   <select
@@ -1528,7 +1528,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             {/* Header with "+ Metin Ekle" button */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid #E2E8F0' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   Metin Katmanları
                 </span>
                 <span style={{ fontSize: '10px', backgroundColor: '#F1F5F9', color: '#64748B', padding: '1px 6px', borderRadius: '10px', fontWeight: 700 }}>
@@ -1826,7 +1826,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                           className="stepper-mini-btn"
                           title="Varsayılana Sıfırla (28px)"
                           onClick={() => handleUpdateTextLayer({ fontSize: 28 })}
-                          style={{ padding: '2px 8px', fontSize: '11px', borderRadius: '4px', border: '1px solid #CBD5E1', backgroundColor: '#FFFFFF', cursor: 'pointer' }}
+                          style={{ padding: '2px 8px', fontSize: '11px', borderRadius: '4px', border: '1px solid var(--border-default)', backgroundColor: 'var(--bg-subtle)', color: 'var(--text-secondary)', cursor: 'pointer' }}
                         >
                           28
                         </button>
@@ -1835,9 +1835,9 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
 
                     {/* Satır Aralığı */}
                     <div className="control-group">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>
                         <span>Satır Aralığı</span>
-                        <span style={{ fontFamily: 'monospace', color: '#64748B' }}>
+                        <span style={{ fontFamily: 'monospace', color: 'var(--text-secondary)' }}>
                           {selectedTextLayer.lineHeight !== undefined ? selectedTextLayer.lineHeight : 1.2}
                         </span>
                       </div>
@@ -1856,7 +1856,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                           className="stepper-mini-btn"
                           title="Varsayılana Sıfırla (1.2)"
                           onClick={() => handleUpdateTextLayer({ lineHeight: 1.2 })}
-                          style={{ padding: '2px 8px', fontSize: '11px', borderRadius: '4px', border: '1px solid #CBD5E1', backgroundColor: '#FFFFFF', cursor: 'pointer' }}
+                          style={{ padding: '2px 8px', fontSize: '11px', borderRadius: '4px', border: '1px solid var(--border-default)', backgroundColor: 'var(--bg-subtle)', color: 'var(--text-secondary)', cursor: 'pointer' }}
                         >
                           1.2
                         </button>
@@ -1952,7 +1952,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                           className="stepper-mini-btn"
                           title="Döndürmeyi Sıfırla (0°)"
                           onClick={() => handleUpdateTextLayer({ rotation: 0 })}
-                          style={{ padding: '2px 8px', fontSize: '11px', borderRadius: '4px', border: '1px solid #CBD5E1', backgroundColor: '#FFFFFF', cursor: 'pointer' }}
+                          style={{ padding: '2px 8px', fontSize: '11px', borderRadius: '4px', border: '1px solid var(--border-default)', backgroundColor: 'var(--bg-subtle)', color: 'var(--text-secondary)', cursor: 'pointer' }}
                         >
                           0°
                         </button>
@@ -2050,7 +2050,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             {/* App Icon Badge */}
             <div id="section-banner-app-icon" className="inspector-section">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase' }}>Uygulama İkonu</span>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase' }}>Uygulama İkonu</span>
                 <input
                   type="checkbox"
                   checked={config.showAppIcon}
@@ -2123,7 +2123,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             {/* Eyebrow Pill Tag */}
             <div id="section-banner-eyebrow" className="inspector-section" style={{ borderTop: '1px solid #E2E8F0', paddingTop: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase' }}>Vurgu Etiketi (Pill)</span>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase' }}>Vurgu Etiketi (Pill)</span>
                 <input
                   type="checkbox"
                   checked={config.showEyebrow}
@@ -2172,7 +2172,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             {/* Store Badges */}
             <div id="section-banner-store-badges" className="inspector-section" style={{ borderTop: '1px solid #E2E8F0', paddingTop: '14px' }}>
               <div style={{ marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase' }}>Mağaza Rozetleri</span>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase' }}>Mağaza Rozetleri</span>
               </div>
 
               <div style={{ display: 'flex', gap: '8px' }}>
@@ -2293,16 +2293,16 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                             fontSize: '11px',
                             fontWeight: isRow ? 600 : 500,
                             borderRadius: '6px',
-                            border: isRow ? '1.5px solid #000000' : '1px solid #CBD5E1',
-                            backgroundColor: '#FFFFFF',
-                            color: isRow ? '#000000' : '#64748B',
+                            border: isRow ? '1.5px solid var(--text-primary)' : '1px solid var(--border-default)',
+                            backgroundColor: isRow ? 'var(--bg-subtle)' : 'var(--bg-card)',
+                            color: isRow ? 'var(--text-primary)' : 'var(--text-secondary)',
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             gap: '6px',
                             transition: 'all 0.15s ease',
-                            boxShadow: isRow ? '0 1px 3px rgba(0, 0, 0, 0.08)' : 'none',
+                            boxShadow: isRow ? 'var(--shadow-xs)' : 'none',
                           }}
                           title="Rozetleri yan yana yerleştir"
                         >
@@ -2326,16 +2326,16 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                             fontSize: '11px',
                             fontWeight: isCol ? 600 : 500,
                             borderRadius: '6px',
-                            border: isCol ? '1.5px solid #000000' : '1px solid #CBD5E1',
-                            backgroundColor: '#FFFFFF',
-                            color: isCol ? '#000000' : '#64748B',
+                            border: isCol ? '1.5px solid var(--text-primary)' : '1px solid var(--border-default)',
+                            backgroundColor: isCol ? 'var(--bg-subtle)' : 'var(--bg-card)',
+                            color: isCol ? 'var(--text-primary)' : 'var(--text-secondary)',
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             gap: '6px',
                             transition: 'all 0.15s ease',
-                            boxShadow: isCol ? '0 1px 3px rgba(0, 0, 0, 0.08)' : 'none',
+                            boxShadow: isCol ? 'var(--shadow-xs)' : 'none',
                           }}
                           title="Rozetleri üst üste yerleştir"
                         >
@@ -2355,7 +2355,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             {/* Rating Badge */}
             <div id="section-banner-rating" className="inspector-section" style={{ borderTop: '1px solid #E2E8F0', paddingTop: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase' }}>Kullanıcı Puanı Rozeti</span>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase' }}>Kullanıcı Puanı Rozeti</span>
                 <input
                   type="checkbox"
                   checked={config.showRating}

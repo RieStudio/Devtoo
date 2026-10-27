@@ -29,6 +29,7 @@
   --text-secondary: #475569;
   --text-muted: #94A3B8;
   --text-on-chili: #FFFFFF;
+  --logo-stem: #0F172A;
 
   /* Shadows - Minimal & Flat Professional */
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
@@ -78,6 +79,7 @@
   --text-secondary: #9E9E9E;
   --text-muted: #666666;
   --text-on-chili: #FFFFFF;
+  --logo-stem: #FFFFFF;
 
   /* Shadows - Minimal & Deep Flat Shadows */
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.7);
@@ -3419,9 +3421,48 @@ input[type="range"] {
   border-color: var(--bg-card);
 }
 
+/* Devtoo Logo Stem in Dark Mode */
+[data-theme='dark'] .devtoo-logo-stem {
+  fill: #FFFFFF !important;
+}
+
+/* Banner Inspector Panel in Dark Mode */
 [data-theme='dark'] .banner-inspector-panel {
   background-color: var(--bg-card);
   border-left-color: var(--border-default);
+  color: var(--text-primary);
+}
+
+[data-theme='dark'] .banner-inspector-panel .section-title {
+  color: var(--text-primary) !important;
+}
+
+[data-theme='dark'] .banner-inspector-panel label {
+  color: var(--text-primary) !important;
+}
+
+[data-theme='dark'] .banner-inspector-panel .inspector-tabs {
+  border-bottom-color: var(--border-default) !important;
+  background-color: var(--bg-sidebar) !important;
+}
+
+[data-theme='dark'] .banner-inspector-panel .tab-btn {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme='dark'] .banner-inspector-panel .tab-btn.is-active {
+  background-color: var(--bg-subtle) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--chili-primary) !important;
+}
+
+[data-theme='dark'] .banner-inspector-panel .tab-btn.is-active svg {
+  color: var(--chili-primary) !important;
+}
+
+[data-theme='dark'] .banner-inspector-panel .tab-btn:hover {
+  background-color: var(--bg-hover) !important;
+  color: var(--text-primary) !important;
 }
 
 /* App Icon Resizer in Dark Mode */
