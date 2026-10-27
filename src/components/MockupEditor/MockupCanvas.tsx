@@ -1862,7 +1862,7 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
               {!isExporting && (
                 <div className="mockup-screen-header">
                   <div className="mockup-screen-title">
-                    <Smartphone size={13} color="#64748B" />
+                    <Smartphone size={13} className="screen-header-device-icon" />
                     {editingScreenId === (screenCfg.id || `screen-${screenIndex}`) ? (
                       <input
                         type="text"
@@ -1908,7 +1908,7 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                     )}
 
                     {isThisActiveScreen && (
-                      <span style={{ fontSize: '10px', backgroundColor: '#0F172A', color: '#FFF', padding: '1px 5px', borderRadius: '4px', fontWeight: 600 }}>
+                      <span className="screen-active-badge">
                         Seçili
                       </span>
                     )}

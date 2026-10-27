@@ -655,6 +655,21 @@ body {
   color: var(--text-primary);
 }
 
+.screen-header-device-icon {
+  color: var(--text-muted);
+  transition: color 0.15s ease;
+}
+
+.screen-active-badge {
+  font-size: 10px;
+  background-color: var(--chili-primary);
+  color: #000000;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
 .screen-title-clickable {
   cursor: pointer;
   padding: 1px 4px;
@@ -664,8 +679,8 @@ body {
 }
 
 .screen-title-clickable:hover {
-  background-color: #F1F3F5;
-  border-color: #CBD5E1;
+  background-color: var(--bg-hover);
+  border-color: var(--border-strong);
   color: var(--chili-primary);
 }
 
@@ -702,8 +717,18 @@ body {
   transition: all 0.15s ease;
 }
 
+.mockup-screen-wrapper.is-active-screen .screen-action-btn {
+  color: var(--text-primary);
+}
+
 .screen-action-btn:hover {
-  background-color: #F1F3F5;
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.screen-action-btn:active,
+.screen-action-btn:focus-visible {
+  background-color: var(--bg-active);
   color: var(--text-primary);
 }
 
@@ -3321,6 +3346,56 @@ input[type="range"] {
   border-color: var(--border-default);
 }
 
+[data-theme='dark'] .screen-header-device-icon {
+  color: var(--text-secondary);
+}
+
+[data-theme='dark'] .screen-active-badge {
+  background-color: var(--chili-primary);
+  color: #000000;
+  border: none;
+}
+
+[data-theme='dark'] .screen-title-clickable:hover {
+  background-color: var(--bg-hover);
+  border-color: var(--border-strong);
+  color: var(--chili-primary);
+}
+
+[data-theme='dark'] .screen-action-btn {
+  color: var(--text-secondary);
+}
+
+[data-theme='dark'] .mockup-screen-wrapper.is-active-screen .screen-action-btn {
+  color: var(--text-primary);
+}
+
+[data-theme='dark'] .screen-action-btn:hover {
+  background-color: var(--bg-hover);
+  color: #FFFFFF;
+}
+
+[data-theme='dark'] .screen-action-btn:active,
+[data-theme='dark'] .screen-action-btn:focus-visible {
+  background-color: var(--bg-active);
+  color: #FFFFFF;
+}
+
+[data-theme='dark'] .screen-action-btn.rotate-btn:hover {
+  background-color: var(--chili-subtle);
+  color: var(--chili-primary);
+}
+
+[data-theme='dark'] .screen-action-btn.delete:hover {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #EF4444;
+}
+
+[data-theme='dark'] .screen-action-btn.add-btn-highlight:hover {
+  background-color: var(--chili-primary);
+  color: #FFFFFF;
+}
+
 [data-theme='dark'] .canvas-bottom-zoom-toolbar {
   background: var(--bg-card);
   border-color: var(--border-default);
@@ -3338,10 +3413,47 @@ input[type="range"] {
   color: var(--text-secondary);
 }
 
+[data-theme='dark'] .screen-gap-snap-btn:hover {
+  background-color: var(--chili-subtle);
+  border-color: var(--chili-primary);
+  color: var(--chili-primary);
+}
+
 [data-theme='dark'] .screen-gap-snap-btn.is-snapped {
   background-color: var(--bg-subtle);
   border-color: var(--border-strong);
   color: #FFFFFF;
+}
+
+[data-theme='dark'] .layer-drag-bar {
+  background-color: rgba(26, 26, 26, 0.96);
+  border-color: var(--border-default);
+  color: var(--text-secondary);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme='dark'] .layer-move-handle {
+  color: var(--text-secondary);
+}
+
+[data-theme='dark'] .layer-move-handle:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+[data-theme='dark'] .layer-rotate-btn {
+  color: var(--text-secondary);
+}
+
+[data-theme='dark'] .layer-rotate-btn:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+[data-theme='dark'] .layer-rotate-btn.active,
+[data-theme='dark'] .layer-drag-bar.is-rotating .layer-rotate-btn {
+  color: var(--chili-primary);
+  background-color: var(--chili-subtle);
 }
 
 [data-theme='dark'] .device-rotate-pill,
@@ -3349,6 +3461,18 @@ input[type="range"] {
   background-color: var(--bg-card);
   border-color: var(--border-default);
   color: var(--text-primary);
+}
+
+[data-theme='dark'] .device-rotate-pill:hover {
+  background-color: var(--chili-subtle);
+  border-color: var(--chili-primary);
+  color: var(--chili-primary);
+}
+
+[data-theme='dark'] .device-delete-pill:hover {
+  background-color: rgba(239, 68, 68, 0.2);
+  border-color: var(--chili-primary);
+  color: var(--chili-primary);
 }
 
 [data-theme='dark'] .layer-chip-btn {
