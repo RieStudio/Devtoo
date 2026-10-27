@@ -435,7 +435,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             transition: 'all 0.15s ease',
           }}
         >
-          <Maximize2 size={15} color={activeTab === 'presets' ? 'var(--chili-primary)' : 'inherit'} />
+          <Maximize2 size={15} color={activeTab === 'presets' ? 'var(--chili-primary)' : 'var(--text-secondary)'} />
           <span>Boyut</span>
         </button>
 
@@ -461,7 +461,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             transition: 'all 0.15s ease',
           }}
         >
-          <Palette size={15} color={activeTab === 'background' ? 'var(--chili-primary)' : 'inherit'} />
+          <Palette size={15} color={activeTab === 'background' ? 'var(--chili-primary)' : 'var(--text-secondary)'} />
           <span>Arka Plan</span>
         </button>
 
@@ -487,7 +487,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             transition: 'all 0.15s ease',
           }}
         >
-          <Smartphone size={15} color={activeTab === 'devices' ? 'var(--chili-primary)' : 'inherit'} />
+          <Smartphone size={15} color={activeTab === 'devices' ? 'var(--chili-primary)' : 'var(--text-secondary)'} />
           <span>Cihazlar</span>
         </button>
 
@@ -513,7 +513,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             transition: 'all 0.15s ease',
           }}
         >
-          <Type size={15} color={activeTab === 'text' ? 'var(--chili-primary)' : 'inherit'} />
+          <Type size={15} color={activeTab === 'text' ? 'var(--chili-primary)' : 'var(--text-secondary)'} />
           <span>Metin</span>
         </button>
 
@@ -539,7 +539,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             transition: 'all 0.15s ease',
           }}
         >
-          <Award size={15} color={activeTab === 'branding' ? 'var(--chili-primary)' : 'inherit'} />
+          <Award size={15} color={activeTab === 'branding' ? 'var(--chili-primary)' : 'var(--text-secondary)'} />
           <span>Rozetler</span>
         </button>
       </div>
@@ -703,7 +703,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
               <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
                 Arka Plan Türü
               </label>
-              <div style={{ display: 'flex', backgroundColor: '#F1F5F9', padding: '3px', borderRadius: '8px', gap: '4px' }}>
+              <div style={{ display: 'flex', backgroundColor: 'var(--bg-subtle)', padding: '3px', borderRadius: '8px', gap: '4px', border: '1px solid var(--border-default)' }}>
                 {(['gradient', 'solid', 'image'] as const).map((bgType) => (
                   <button
                     key={bgType}
@@ -717,9 +717,9 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                       borderRadius: '6px',
                       border: 'none',
                       cursor: 'pointer',
-                      backgroundColor: config.bgType === bgType ? '#FFFFFF' : 'transparent',
-                      color: config.bgType === bgType ? '#D90429' : '#64748B',
-                      boxShadow: config.bgType === bgType ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                      backgroundColor: config.bgType === bgType ? 'var(--bg-card)' : 'transparent',
+                      color: config.bgType === bgType ? 'var(--chili-primary)' : 'var(--text-secondary)',
+                      boxShadow: config.bgType === bgType ? 'var(--shadow-xs)' : 'none',
                     }}
                   >
                     {bgType === 'gradient' ? 'Gradyan' : bgType === 'solid' ? 'Düz Renk' : 'Görsel'}
@@ -753,14 +753,14 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                         padding: '6px',
                         borderRadius: '6px',
                         border: '2px solid',
-                        borderColor: config.bgGradient.from === g.from && config.bgGradient.to === g.to ? '#D90429' : '#E2E8F0',
+                        borderColor: config.bgGradient.from === g.from && config.bgGradient.to === g.to ? 'var(--chili-primary)' : 'var(--border-default)',
                         boxSizing: 'border-box',
                         cursor: 'pointer',
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
                         gap: '4px',
-                        background: '#FFFFFF',
+                        background: 'var(--bg-card)',
                         transition: 'border-color 0.15s ease',
                       }}
                       title={g.name}
@@ -773,7 +773,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                           background: `linear-gradient(${g.angle}deg, ${g.from}, ${g.to})`,
                         }}
                       />
-                      <span style={{ fontSize: '10px', color: '#475569', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%', textAlign: 'center' }}>
+                      <span style={{ fontSize: '10px', color: 'var(--text-secondary)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%', textAlign: 'center' }}>
                         {g.name}
                       </span>
                     </button>
@@ -930,9 +930,9 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                       style={{
                         padding: '6px 8px',
                         borderRadius: '6px',
-                        border: isSelected ? '1px solid #D90429' : '1px solid #E2E8F0',
-                        backgroundColor: isSelected ? '#D90429' : '#FFFFFF',
-                        color: isSelected ? '#FFFFFF' : '#475569',
+                        border: isSelected ? '1px solid var(--chili-primary)' : '1px solid var(--border-default)',
+                        backgroundColor: isSelected ? 'var(--chili-primary)' : 'var(--bg-card)',
+                        color: isSelected ? '#FFFFFF' : 'var(--text-secondary)',
                         fontSize: '11px',
                         fontWeight: 600,
                         cursor: 'pointer',

@@ -64,13 +64,13 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
       <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '22px' }}>
         {/* Bölüm 1: Temel Bilgiler */}
         <div>
-          <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>
+          <div style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>
             Temel Bilgiler
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <div>
-              <label style={{ fontSize: '11px', fontWeight: 600, color: '#475569', display: 'block', marginBottom: '4px' }}>
+              <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
                 Uygulama / Oyun Adı
               </label>
               <div style={{ position: 'relative' }}>
@@ -83,7 +83,9 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
                     width: '100%',
                     padding: '8px 10px',
                     borderRadius: '6px',
-                    border: '1px solid #CBD5E1',
+                    border: '1px solid var(--border-default)',
+                    backgroundColor: 'var(--bg-input)',
+                    color: 'var(--text-primary)',
                     fontSize: '12.5px',
                     boxSizing: 'border-box',
                     outline: 'none',
@@ -93,7 +95,7 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
             </div>
 
             <div>
-              <label style={{ fontSize: '11px', fontWeight: 600, color: '#475569', display: 'block', marginBottom: '4px' }}>
+              <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
                 Geliştirici / Şirket Adı
               </label>
               <div style={{ position: 'relative' }}>
@@ -106,7 +108,9 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
                     width: '100%',
                     padding: '8px 10px',
                     borderRadius: '6px',
-                    border: '1px solid #CBD5E1',
+                    border: '1px solid var(--border-default)',
+                    backgroundColor: 'var(--bg-input)',
+                    color: 'var(--text-primary)',
                     fontSize: '12.5px',
                     boxSizing: 'border-box',
                     outline: 'none',
@@ -116,7 +120,7 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
             </div>
 
             <div>
-              <label style={{ fontSize: '11px', fontWeight: 600, color: '#475569', display: 'block', marginBottom: '4px' }}>
+              <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
                 İletişim / Destek E-postası
               </label>
               <div style={{ position: 'relative' }}>
@@ -129,7 +133,9 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
                     width: '100%',
                     padding: '8px 10px',
                     borderRadius: '6px',
-                    border: '1px solid #CBD5E1',
+                    border: '1px solid var(--border-default)',
+                    backgroundColor: 'var(--bg-input)',
+                    color: 'var(--text-primary)',
                     fontSize: '12.5px',
                     boxSizing: 'border-box',
                     outline: 'none',
@@ -215,8 +221,8 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
                     justifyContent: 'space-between',
                     padding: '8px 12px',
                     borderRadius: '8px',
-                    border: '1px solid var(--border-default)',
-                    backgroundColor: 'var(--bg-card)',
+                    border: isChecked ? '1px solid var(--chili-primary)' : '1px solid var(--border-default)',
+                    backgroundColor: isChecked ? 'var(--bg-subtle)' : 'var(--bg-card)',
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
                   }}
@@ -235,10 +241,10 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
                       {isChecked && <Check size={12} color="#FFFFFF" strokeWidth={3} />}
                     </div>
                     <div>
-                      <div style={{ fontSize: '12px', fontWeight: 600, color: isChecked ? '#0F172A' : '#334155' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
                         {srv.name}
                       </div>
-                      <div style={{ fontSize: '10px', color: '#64748B' }}>
+                      <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
                         {srv.category === 'ads' ? 'Reklam' : srv.category === 'analytics' ? 'Analitik / Çökme' : srv.category === 'iap' ? 'Ödeme / Satın Alma' : 'Oyun Servisi'}
                       </div>
                     </div>

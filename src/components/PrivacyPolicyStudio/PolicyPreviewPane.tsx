@@ -190,7 +190,7 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
                   )}
                 </ul>
 
-                <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A', marginTop: '10px' }}>
+                <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '10px' }}>
                   2. {config.language === 'tr' ? 'Üçüncü Taraf Kütüphaneler ve Ortaklar' : 'Third-Party SDKs'}
                 </h3>
                 <p>
@@ -199,26 +199,26 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
                     : 'The application integrates vetted third-party SDKs to facilitate core features and analytics:'}
                 </p>
 
-                <div style={{ backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '14px 18px' }}>
+                <div style={{ backgroundColor: 'var(--bg-subtle)', border: '1px solid var(--border-default)', borderRadius: '10px', padding: '14px 18px' }}>
                   {Object.entries(config.services).filter(([, val]) => val).length > 0 ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       {Object.entries(config.services)
                         .filter(([, val]) => val)
                         .map(([id]) => (
                           <div key={id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12.5px' }}>
-                            <span style={{ fontWeight: 600, color: '#0F172A' }}>• {id.replace('-', ' ').toUpperCase()}</span>
-                            <span style={{ color: '#D90429', fontSize: '11.5px', fontWeight: 600 }}>Entegre Edildi</span>
+                            <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>• {id.replace('-', ' ').toUpperCase()}</span>
+                            <span style={{ color: 'var(--chili-primary)', fontSize: '11.5px', fontWeight: 600 }}>Entegre Edildi</span>
                           </div>
                         ))}
                     </div>
                   ) : (
-                    <div style={{ color: '#64748B', fontSize: '12px' }}>
+                    <div style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>
                       {config.language === 'tr' ? 'Harici üçüncü taraf kütüphane seçilmedi.' : 'No third-party SDKs selected.'}
                     </div>
                   )}
                 </div>
 
-                <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A', marginTop: '10px' }}>
+                <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '10px' }}>
                   3. {config.language === 'tr' ? 'Çocukların Gizliliği (COPPA)' : "Children's Privacy"}
                 </h3>
                 <p>
@@ -227,12 +227,12 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
                     : (config.language === 'tr' ? 'Uygulamamız 13 yaşın altındaki çocuklara doğrudan hitap etmemektedir. Bilerek 13 yaşından küçük çocuklardan kişisel veri toplamıyoruz.' : 'We do not knowingly collect personal data from children under 13.')}
                 </p>
 
-                <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A', marginTop: '10px' }}>
+                <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '10px' }}>
                   4. {config.language === 'tr' ? 'İletişim ve Veri Talepleri' : 'Contact Us'}
                 </h3>
                 <p>
                   {config.language === 'tr' ? 'Gizlilik politikamız veya veri silme talepleriniz için bize ulaşabilirsiniz:' : 'For any privacy inquiries or data requests, please reach out:'}<br />
-                  <strong>{config.companyName}</strong> — <a href={`mailto:${config.contactEmail}`} style={{ color: '#D90429', textDecoration: 'none', fontWeight: 600 }}>{config.contactEmail}</a>
+                  <strong>{config.companyName}</strong> — <a href={`mailto:${config.contactEmail}`} style={{ color: 'var(--chili-primary)', textDecoration: 'none', fontWeight: 600 }}>{config.contactEmail}</a>
                 </p>
               </div>
             </div>
@@ -245,20 +245,20 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {/* Bilgilendirme Başlığı */}
               <div style={{
-                backgroundColor: '#EFF6FF',
-                border: '1px solid #BFDBFE',
+                backgroundColor: 'var(--bg-subtle)',
+                border: '1px solid var(--border-default)',
                 borderRadius: '12px',
                 padding: '16px 20px',
                 display: 'flex',
                 gap: '12px',
                 alignItems: 'flex-start',
               }}>
-                <Info size={18} color="#2563EB" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <Info size={18} color="var(--chili-primary)" style={{ flexShrink: 0, marginTop: '2px' }} />
                 <div>
-                  <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#1E3A8A', marginBottom: '2px' }}>
+                  <div style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '2px' }}>
                     Google Play Console "Veri Güvenliği" (Data Safety) Form Rehberi
                   </div>
-                  <div style={{ fontSize: '12px', color: '#1E40AF', lineHeight: '1.5' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
                     Google Play Console'daki Veri Güvenliği formunu doldururken aşağıdaki sorulara birebir bu yanıtları verin. Bu sayede politikanız ile mağaza anketiniz %100 uyuşur ve mağaza reddi (rejection) yaşamazsınız.
                   </div>
                 </div>

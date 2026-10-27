@@ -3450,6 +3450,10 @@ input[type="range"] {
   color: var(--text-secondary) !important;
 }
 
+[data-theme='dark'] .banner-inspector-panel .tab-btn svg {
+  stroke: var(--text-secondary) !important;
+}
+
 [data-theme='dark'] .banner-inspector-panel .tab-btn.is-active {
   background-color: var(--bg-subtle) !important;
   color: var(--text-primary) !important;
@@ -3458,11 +3462,16 @@ input[type="range"] {
 
 [data-theme='dark'] .banner-inspector-panel .tab-btn.is-active svg {
   color: var(--chili-primary) !important;
+  stroke: var(--chili-primary) !important;
 }
 
 [data-theme='dark'] .banner-inspector-panel .tab-btn:hover {
   background-color: var(--bg-hover) !important;
   color: var(--text-primary) !important;
+}
+
+[data-theme='dark'] .banner-inspector-panel .tab-btn:hover svg {
+  stroke: var(--text-primary) !important;
 }
 
 /* App Icon Resizer in Dark Mode */
