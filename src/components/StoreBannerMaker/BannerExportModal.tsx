@@ -92,9 +92,9 @@ export const BannerExportModal: React.FC<BannerExportModalProps> = ({
     >
       <div
         style={{
-          backgroundColor: '#FFFFFF',
+          backgroundColor: 'var(--bg-card)',
           borderRadius: '16px',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--border-default)',
           width: '100%',
           maxWidth: '520px',
           overflow: 'hidden',
@@ -107,20 +107,20 @@ export const BannerExportModal: React.FC<BannerExportModalProps> = ({
         <div
           style={{
             padding: '18px 24px',
-            borderBottom: '1px solid #EDF2F7',
+            borderBottom: '1px solid var(--border-subtle)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: '#FFFFFF',
+            backgroundColor: 'var(--bg-card)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Download size={20} color="#D90429" />
+            <Download size={20} color="var(--chili-primary)" />
             <div>
-              <div style={{ fontSize: '16px', fontWeight: 700, color: '#0F172A', lineHeight: 1.2 }}>
+              <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>
                 Banner'ı İndir
               </div>
-              <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
                 Mağaza boyut ve kalite standartlarına uygun görsel çıktısı
               </div>
             </div>
@@ -132,7 +132,7 @@ export const BannerExportModal: React.FC<BannerExportModalProps> = ({
               background: 'none',
               border: 'none',
               cursor: isExporting ? 'not-allowed' : 'pointer',
-              color: '#94A3B8',
+              color: 'var(--text-muted)',
               padding: '6px',
               borderRadius: '8px',
               display: 'flex',
@@ -149,8 +149,8 @@ export const BannerExportModal: React.FC<BannerExportModalProps> = ({
         <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
           {/* Format Selection */}
           <div>
-            <div style={{ fontSize: '12.5px', fontWeight: 600, color: '#334155', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <FileImage size={14} color="#64748B" />
+            <div style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <FileImage size={14} color="var(--text-muted)" />
               <span>Dosya Formatı</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
@@ -167,9 +167,9 @@ export const BannerExportModal: React.FC<BannerExportModalProps> = ({
                     style={{
                       padding: '10px 12px',
                       borderRadius: '10px',
-                      border: isSelected ? '1px solid #D90429' : '1px solid #E2E8F0',
-                      backgroundColor: isSelected ? '#D90429' : '#FFFFFF',
-                      color: isSelected ? '#FFFFFF' : '#0F172A',
+                      border: isSelected ? '1px solid var(--chili-primary)' : '1px solid var(--border-default)',
+                      backgroundColor: isSelected ? 'var(--chili-primary)' : 'var(--bg-card)',
+                      color: isSelected ? '#FFFFFF' : 'var(--text-primary)',
                       cursor: 'pointer',
                       display: 'flex',
                       flexDirection: 'column',
@@ -180,10 +180,10 @@ export const BannerExportModal: React.FC<BannerExportModalProps> = ({
                       boxShadow: isSelected ? '0 2px 4px rgba(217, 4, 41, 0.2)' : 'none',
                     }}
                   >
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: isSelected ? '#FFFFFF' : '#0F172A' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: isSelected ? '#FFFFFF' : 'var(--text-primary)' }}>
                       {item.label}
                     </span>
-                    <span style={{ fontSize: '10px', fontWeight: 500, color: isSelected ? 'rgba(255, 255, 255, 0.85)' : '#94A3B8' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 500, color: isSelected ? 'rgba(255, 255, 255, 0.85)' : 'var(--text-muted)' }}>
                       {item.badge}
                     </span>
                   </button>
@@ -194,12 +194,12 @@ export const BannerExportModal: React.FC<BannerExportModalProps> = ({
 
           {/* Dosya Adı */}
           <div>
-            <div style={{ fontSize: '12.5px', fontWeight: 600, color: '#334155', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Tag size={14} color="#64748B" />
+                <Tag size={14} color="var(--text-muted)" />
                 <span>Dosya Adı</span>
               </div>
-              <span style={{ fontSize: '11px', color: '#94A3B8' }}>İsteğe bağlı</span>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>İsteğe bağlı</span>
             </div>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <input
@@ -211,7 +211,9 @@ export const BannerExportModal: React.FC<BannerExportModalProps> = ({
                   width: '100%',
                   padding: '9px 65px 9px 12px',
                   borderRadius: '8px',
-                  border: '1px solid #CBD5E1',
+                  border: '1px solid var(--border-default)',
+                  backgroundColor: 'var(--bg-input)',
+                  color: 'var(--text-primary)',
                   fontSize: '13px',
                   outline: 'none',
                   boxSizing: 'border-box',
@@ -223,7 +225,7 @@ export const BannerExportModal: React.FC<BannerExportModalProps> = ({
                   right: '12px',
                   fontSize: '12px',
                   fontWeight: 600,
-                  color: '#94A3B8',
+                  color: 'var(--text-muted)',
                   pointerEvents: 'none',
                 }}
               >
@@ -234,8 +236,8 @@ export const BannerExportModal: React.FC<BannerExportModalProps> = ({
 
           {/* Dışa Aktarma Kalitesi / Çözünürlüğü */}
           <div>
-            <div style={{ fontSize: '12.5px', fontWeight: 600, color: '#334155', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Sparkles size={14} color="#64748B" />
+            <div style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Sparkles size={14} color="var(--text-muted)" />
               <span>Dışa Aktarma Kalitesi</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
@@ -249,9 +251,9 @@ export const BannerExportModal: React.FC<BannerExportModalProps> = ({
                     style={{
                       padding: '12px 8px',
                       borderRadius: '10px',
-                      border: isSelected ? '1px solid #D90429' : '1px solid #E2E8F0',
-                      backgroundColor: isSelected ? '#D90429' : '#FFFFFF',
-                      color: isSelected ? '#FFFFFF' : '#0F172A',
+                      border: isSelected ? '1px solid var(--chili-primary)' : '1px solid var(--border-default)',
+                      backgroundColor: isSelected ? 'var(--chili-primary)' : 'var(--bg-card)',
+                      color: isSelected ? '#FFFFFF' : 'var(--text-primary)',
                       cursor: 'pointer',
                       display: 'flex',
                       flexDirection: 'column',
@@ -263,7 +265,7 @@ export const BannerExportModal: React.FC<BannerExportModalProps> = ({
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span style={{ fontSize: '14px', fontWeight: 700, color: isSelected ? '#FFFFFF' : '#0F172A' }}>
+                      <span style={{ fontSize: '14px', fontWeight: 700, color: isSelected ? '#FFFFFF' : 'var(--text-primary)' }}>
                         {opt.label}
                       </span>
                       {isSelected && <Check size={14} color="#FFFFFF" />}
@@ -272,7 +274,7 @@ export const BannerExportModal: React.FC<BannerExportModalProps> = ({
                       style={{
                         fontSize: '11px',
                         fontFamily: 'monospace',
-                        color: isSelected ? 'rgba(255, 255, 255, 0.9)' : '#64748B',
+                        color: isSelected ? 'rgba(255, 255, 255, 0.9)' : 'var(--text-muted)',
                       }}
                     >
                       {opt.width}×{opt.height}
@@ -281,7 +283,7 @@ export const BannerExportModal: React.FC<BannerExportModalProps> = ({
                       style={{
                         fontSize: '9.5px',
                         fontWeight: 600,
-                        color: isSelected ? '#FFFFFF' : '#D90429',
+                        color: isSelected ? '#FFFFFF' : 'var(--chili-primary)',
                         marginTop: '2px',
                       }}
                     >
@@ -298,17 +300,17 @@ export const BannerExportModal: React.FC<BannerExportModalProps> = ({
             style={{
               padding: '12px',
               borderRadius: '8px',
-              backgroundColor: '#F8FAFC',
-              border: '1px solid #E2E8F0',
+              backgroundColor: 'var(--bg-subtle)',
+              border: '1px solid var(--border-default)',
               fontSize: '11.5px',
-              color: '#475569',
+              color: 'var(--text-secondary)',
               lineHeight: '1.5',
               display: 'flex',
               gap: '8px',
               alignItems: 'flex-start',
             }}
           >
-            <Info size={15} color="#D90429" style={{ flexShrink: 0, marginTop: '2px' }} />
+            <Info size={15} color="var(--chili-primary)" style={{ flexShrink: 0, marginTop: '2px' }} />
             <div>
               {isGooglePlay ? (
                 <span>
@@ -327,12 +329,12 @@ export const BannerExportModal: React.FC<BannerExportModalProps> = ({
         <div
           style={{
             padding: '16px 24px',
-            borderTop: '1px solid #EDF2F7',
+            borderTop: '1px solid var(--border-subtle)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'flex-end',
             gap: '10px',
-            backgroundColor: '#FAFAFA',
+            backgroundColor: 'var(--bg-subtle)',
           }}
         >
           <button

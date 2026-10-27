@@ -102,20 +102,20 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
         <div
           style={{
             padding: '18px 24px',
-            borderBottom: '1px solid #EDF2F7',
+            borderBottom: '1px solid var(--border-subtle)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: '#FFFFFF',
+            backgroundColor: 'var(--bg-card)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Download size={20} color="#D90429" />
+            <Download size={20} color="var(--chili-primary)" />
             <div>
-              <div style={{ fontSize: '16px', fontWeight: 700, color: '#0F172A', lineHeight: 1.2 }}>
+              <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>
                 İkon Paketlerini Dışa Aktar
               </div>
-              <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
                 iOS ve Android için optimize edilmiş simge setleri
               </div>
             </div>
@@ -128,7 +128,7 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
               background: 'none',
               border: 'none',
               cursor: isExporting ? 'not-allowed' : 'pointer',
-              color: '#94A3B8',
+              color: 'var(--text-muted)',
               padding: '6px',
               borderRadius: '8px',
               display: 'flex',
@@ -151,9 +151,9 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
               alignItems: 'center',
               justifyContent: 'space-between',
               padding: '12px 14px',
-              backgroundColor: '#F8FAFC',
+              backgroundColor: 'var(--bg-subtle)',
               borderRadius: '10px',
-              border: '1px solid #E2E8F0',
+              border: '1px solid var(--border-default)',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -165,7 +165,7 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
                     borderRadius: '8px',
                     overflow: 'hidden',
                     backgroundColor: config.bgColor,
-                    border: '1px solid #E2E8F0',
+                    border: '1px solid var(--border-default)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -180,10 +180,10 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
                 </div>
               )}
               <div>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>
                   {config.appName || 'Devtoo App'}
                 </div>
-                <div style={{ fontSize: '11px', color: '#64748B' }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                   {config.sourceImageWidth > 0 ? `${config.sourceImageWidth} × ${config.sourceImageHeight} px` : '1024 × 1024 px'} • %{config.paddingPercent} Boşluk
                 </div>
               </div>
@@ -193,7 +193,7 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
               style={{
                 fontSize: '12px',
                 fontWeight: 600,
-                color: '#64748B',
+                color: 'var(--text-muted)',
                 whiteSpace: 'nowrap',
               }}
             >
@@ -203,8 +203,8 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
 
           {/* Platform Selections */}
           <div>
-            <div style={{ fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Layers size={13} color="#D90429" />
+            <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Layers size={13} color="var(--chili-primary)" />
               <span>Dışa Aktarılacak Platformlar</span>
             </div>
 
@@ -214,8 +214,8 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
                 style={{
                   padding: '12px 14px',
                   borderRadius: '10px',
-                  border: '1px solid #E2E8F0',
-                  backgroundColor: config.selectedPlatforms.ios ? '#FFFBFB' : '#FFFFFF',
+                  border: '1px solid var(--border-default)',
+                  backgroundColor: config.selectedPlatforms.ios ? 'var(--chili-subtle)' : 'var(--bg-card)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
@@ -240,17 +240,17 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
                         selectedPlatforms: { ...config.selectedPlatforms, ios: e.target.checked },
                       })
                     }
-                    style={{ accentColor: '#D90429', width: '16px', height: '16px', cursor: 'pointer' }}
+                    style={{ accentColor: 'var(--chili-primary)', width: '16px', height: '16px', cursor: 'pointer' }}
                   />
                   <img src={appleSvg} alt="Apple" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />
                   <div>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <span>iOS & iPadOS (Xcode)</span>
-                      <span style={{ fontSize: '10px', fontWeight: 700, color: '#64748B', backgroundColor: '#F1F5F9', padding: '1px 6px', borderRadius: '4px' }}>
+                      <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', backgroundColor: 'var(--bg-subtle)', padding: '1px 6px', borderRadius: '4px' }}>
                         {IOS_ICON_SIZES.length} Boyut
                       </span>
                     </div>
-                    <div style={{ fontSize: '11px', color: '#64748B', marginTop: '1px' }}>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '1px' }}>
                       AppIcon.appiconset klasörü ve resmi Contents.json dosyası
                     </div>
                   </div>
@@ -274,8 +274,8 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
                 style={{
                   padding: '12px 14px',
                   borderRadius: '10px',
-                  border: '1px solid #E2E8F0',
-                  backgroundColor: config.selectedPlatforms.android ? '#FFFBFB' : '#FFFFFF',
+                  border: '1px solid var(--border-default)',
+                  backgroundColor: config.selectedPlatforms.android ? 'var(--chili-subtle)' : 'var(--bg-card)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
@@ -300,17 +300,17 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
                         selectedPlatforms: { ...config.selectedPlatforms, android: e.target.checked },
                       })
                     }
-                    style={{ accentColor: '#D90429', width: '16px', height: '16px', cursor: 'pointer' }}
+                    style={{ accentColor: 'var(--chili-primary)', width: '16px', height: '16px', cursor: 'pointer' }}
                   />
                   <img src={androidSvg} alt="Android" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />
                   <div>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <span>Android (Android Studio)</span>
-                      <span style={{ fontSize: '10px', fontWeight: 700, color: '#64748B', backgroundColor: '#F1F5F9', padding: '1px 6px', borderRadius: '4px' }}>
+                      <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', backgroundColor: 'var(--bg-subtle)', padding: '1px 6px', borderRadius: '4px' }}>
                         {ANDROID_ICON_SIZES.length} Boyut
                       </span>
                     </div>
-                    <div style={{ fontSize: '11px', color: '#64748B', marginTop: '1px' }}>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '1px' }}>
                       res/mipmap-* (mdpi ... xxxhdpi) + Google Play 512px
                     </div>
                   </div>
@@ -333,8 +333,8 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
 
           {/* Dosya Adı Ayarı */}
           <div>
-            <div style={{ fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Settings2 size={13} color="#D90429" />
+            <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Settings2 size={13} color="var(--chili-primary)" />
               <span>Dosya Adı</span>
             </div>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
@@ -352,7 +352,7 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
                   right: '12px',
                   fontSize: '11px',
                   fontWeight: 600,
-                  color: '#94A3B8',
+                  color: 'var(--text-muted)',
                   pointerEvents: 'none',
                 }}
               >
@@ -367,8 +367,8 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
               style={{
                 padding: '12px 14px',
                 borderRadius: '10px',
-                backgroundColor: '#FFF0F3',
-                border: '1px solid #FECDD3',
+                backgroundColor: 'var(--chili-subtle)',
+                border: '1px solid var(--chili-border)',
               }}
             >
               <div
@@ -378,7 +378,7 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
                   alignItems: 'center',
                   fontSize: '12px',
                   fontWeight: 600,
-                  color: '#D90429',
+                  color: 'var(--chili-primary)',
                   marginBottom: '6px',
                 }}
               >
@@ -389,7 +389,7 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
                 style={{
                   width: '100%',
                   height: '6px',
-                  backgroundColor: '#FECDD3',
+                  backgroundColor: 'var(--border-default)',
                   borderRadius: '3px',
                   overflow: 'hidden',
                 }}
@@ -398,7 +398,7 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
                   style={{
                     width: `${exportPercent}%`,
                     height: '100%',
-                    backgroundColor: '#D90429',
+                    backgroundColor: 'var(--chili-primary)',
                     transition: 'width 0.2s ease',
                   }}
                 />
@@ -411,12 +411,12 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
         <div
           style={{
             padding: '16px 24px',
-            borderTop: '1px solid #EDF2F7',
+            borderTop: '1px solid var(--border-subtle)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'flex-end',
             gap: '10px',
-            backgroundColor: '#FAFAFA',
+            backgroundColor: 'var(--bg-subtle)',
           }}
         >
           <button

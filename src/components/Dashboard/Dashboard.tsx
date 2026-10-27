@@ -530,13 +530,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
         >
           <div
             style={{
-              backgroundColor: '#FFFFFF',
+              backgroundColor: 'var(--bg-card)',
               borderRadius: '16px',
               width: '100%',
               maxWidth: '420px',
               overflow: 'hidden',
-              boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.25)',
-              border: '1px solid #E2E8F0',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.45)',
+              border: '1px solid var(--border-default)',
               display: 'flex',
               flexDirection: 'column',
               animation: 'slideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
@@ -558,18 +558,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   alignItems: 'center',
                   justifyContent: 'center',
                   flexShrink: 0,
-                  color: '#D90429',
+                  color: 'var(--chili-primary)',
                   paddingTop: '2px',
                 }}
               >
                 <Trash2 size={24} strokeWidth={2} />
               </div>
               <div style={{ flex: 1 }}>
-                <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: '#0F172A', letterSpacing: '-0.01em' }}>
+                <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
                   Tasarımı Sil
                 </h3>
-                <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#64748B', lineHeight: 1.5 }}>
-                  <strong style={{ color: '#0F172A' }}>"{projectToDelete.name}"</strong> adlı tasarımı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
+                <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                  <strong style={{ color: 'var(--text-primary)' }}>"{projectToDelete.name}"</strong> adlı tasarımı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
                 </p>
               </div>
             </div>
@@ -582,8 +582,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 alignItems: 'center',
                 justifyContent: 'flex-end',
                 gap: '10px',
-                backgroundColor: '#F8FAFC',
-                borderTop: '1px solid #F1F5F9',
+                backgroundColor: 'var(--bg-subtle)',
+                borderTop: '1px solid var(--border-subtle)',
               }}
             >
               <button
@@ -592,11 +592,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 style={{
                   padding: '8px 16px',
                   borderRadius: '8px',
-                  border: '1px solid #CBD5E1',
-                  backgroundColor: '#FFFFFF',
+                  border: '1px solid var(--border-default)',
+                  backgroundColor: 'var(--bg-card)',
                   fontSize: '13px',
                   fontWeight: 600,
-                  color: '#475569',
+                  color: 'var(--text-secondary)',
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',
                 }}
@@ -609,8 +609,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 style={{
                   padding: '8px 18px',
                   borderRadius: '8px',
-                  border: '1px solid #D90429',
-                  backgroundColor: '#D90429',
+                  border: '1px solid var(--chili-primary)',
+                  backgroundColor: 'var(--chili-primary)',
                   fontSize: '13px',
                   fontWeight: 600,
                   color: '#FFFFFF',

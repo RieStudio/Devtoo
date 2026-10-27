@@ -567,3 +567,89 @@
 .dashboard-empty-btn:hover {
   background-color: var(--chili-hover);
 }
+
+/* ========================================================================= */
+/* DASHBOARD DARK MODE STYLES                                               */
+/* ========================================================================= */
+
+[data-theme='dark'] .dashboard-hero {
+  background: linear-gradient(135deg, #7A0014 0%, #4D000C 100%);
+  border: 1px solid rgba(230, 28, 60, 0.4);
+  box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.6), 0 0 20px rgba(217, 4, 41, 0.15);
+}
+
+[data-theme='dark'] .dashboard-search-input {
+  background-color: rgba(15, 23, 42, 0.95);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #F8FAFC;
+}
+
+[data-theme='dark'] .dashboard-search-input:focus {
+  border-color: var(--chili-primary);
+  box-shadow: 0 0 0 3px rgba(230, 28, 60, 0.25);
+}
+
+[data-theme='dark'] .dashboard-btn-import {
+  background-color: #131C2E;
+  color: #F8FAFC;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme='dark'] .dashboard-btn-import:hover {
+  background-color: #1E293B;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme='dark'] .quick-create-card {
+  background-color: var(--bg-card);
+  border-color: var(--border-default);
+}
+
+[data-theme='dark'] .quick-create-card:hover {
+  border-color: var(--border-strong);
+  background-color: var(--bg-hover);
+}
+
+[data-theme='dark'] .quick-card-badge {
+  background-color: var(--bg-subtle);
+  color: var(--text-secondary);
+}
+
+[data-theme='dark'] .project-card {
+  background-color: var(--bg-card);
+  border-color: var(--border-default);
+}
+
+[data-theme='dark'] .project-card:hover {
+  border-color: var(--border-strong);
+}
+
+[data-theme='dark'] .project-card-thumbnail {
+  background-color: #0B111E;
+  border-color: var(--border-subtle);
+}
+
+[data-theme='dark'] .project-card-icon-btn {
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+}
+
+[data-theme='dark'] .project-card-icon-btn:hover {
+  background-color: var(--bg-hover);
+  color: var(--chili-primary);
+}
+
+[data-theme='dark'] .dashboard-empty-projects {
+  background-color: var(--bg-card);
+  border-color: var(--border-default);
+}
+
+[data-theme='dark'] .dashboard-empty-icon {
+  background-color: var(--bg-subtle);
+}
+
+[data-theme='dark'] .dashboard-cloud-banner {
+  background-color: var(--bg-card);
+  border-color: var(--border-default);
+}
+

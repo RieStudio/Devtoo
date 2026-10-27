@@ -291,9 +291,10 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
       padding: '20px'
     }}>
       <div style={{
-        backgroundColor: '#FFFFFF',
+        backgroundColor: 'var(--bg-card)',
         borderRadius: '16px',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.45)',
+        border: '1px solid var(--border-default)',
         width: '100%',
         maxWidth: '680px',
         maxHeight: '90vh',
@@ -304,22 +305,22 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
         {/* Modal Header */}
         <div style={{
           padding: '16px 20px',
-          borderBottom: '1px solid #EDF2F7',
+          borderBottom: '1px solid var(--border-subtle)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <CropIcon size={18} color="#D90429" />
-            <span style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A' }}>Görseli Kırp ve Düzenle</span>
+            <CropIcon size={18} color="var(--chili-primary)" />
+            <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>Görseli Kırp ve Düzenle</span>
             <span style={{
               fontSize: '11px',
-              backgroundColor: '#F1F5F9',
-              color: '#475569',
+              backgroundColor: 'var(--bg-subtle)',
+              color: 'var(--text-secondary)',
               padding: '2px 8px',
               borderRadius: '12px',
               fontWeight: 600,
-              border: '1px solid #E2E8F0',
+              border: '1px solid var(--border-default)',
             }}>
               Köşeler: Orantılı / Kenarlar: En-Boy
             </span>
@@ -330,7 +331,7 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              color: '#64748B',
+              color: 'var(--text-muted)',
               padding: '4px',
               borderRadius: '6px'
             }}
@@ -347,7 +348,7 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: '#F8F9FA',
+            backgroundColor: 'var(--bg-app)',
             minHeight: '320px',
             maxHeight: 'calc(80vh - 120px)'
           }}
@@ -379,11 +380,11 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
         {/* Modal Footer */}
         <div style={{
           padding: '16px 20px',
-          borderTop: '1px solid #EDF2F7',
+          borderTop: '1px solid var(--border-subtle)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          backgroundColor: '#FFFFFF'
+          backgroundColor: 'var(--bg-card)'
         }}>
           {/* Reset to Original Initial Fit Button */}
           <button

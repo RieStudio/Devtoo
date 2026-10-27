@@ -203,9 +203,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     >
       <div
         style={{
-          backgroundColor: '#FFFFFF',
+          backgroundColor: 'var(--bg-card)',
           borderRadius: '16px',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--border-default)',
           width: '100%',
           maxWidth: '540px',
           overflow: 'hidden',
@@ -218,20 +218,20 @@ export const ExportModal: React.FC<ExportModalProps> = ({
         <div
           style={{
             padding: '18px 24px',
-            borderBottom: '1px solid #EDF2F7',
+            borderBottom: '1px solid var(--border-subtle)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            backgroundColor: '#FFFFFF',
+            backgroundColor: 'var(--bg-card)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Download size={20} color="#D90429" />
+            <Download size={20} color="var(--chili-primary)" />
             <div>
-              <div style={{ fontSize: '16px', fontWeight: 700, color: '#0F172A', lineHeight: 1.2 }}>
+              <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>
                 Görseli İndir
               </div>
-              <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
                 App Store ve Play Store için optimize edilmiş hazır şablonlar
               </div>
             </div>
@@ -243,7 +243,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               background: 'none',
               border: 'none',
               cursor: isExporting ? 'not-allowed' : 'pointer',
-              color: '#94A3B8',
+              color: 'var(--text-muted)',
               padding: '6px',
               borderRadius: '8px',
               display: 'flex',
@@ -262,8 +262,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           {/* Scope Selector (Only if multiple screens exist) */}
           {screenCount > 1 && (
             <div>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: '#334155', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Layers size={14} color="#64748B" />
+              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Layers size={14} color="var(--text-muted)" />
                 <span>İndirme Kapsamı</span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
@@ -273,9 +273,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                   style={{
                     padding: '12px 14px',
                     borderRadius: '10px',
-                    border: exportScope === 'active' ? '1px solid #D90429' : '1px solid #E2E8F0',
-                    backgroundColor: exportScope === 'active' ? '#D90429' : '#FFFFFF',
-                    color: exportScope === 'active' ? '#FFFFFF' : '#0F172A',
+                    border: exportScope === 'active' ? '1px solid var(--chili-primary)' : '1px solid var(--border-default)',
+                    backgroundColor: exportScope === 'active' ? 'var(--chili-primary)' : 'var(--bg-card)',
+                    color: exportScope === 'active' ? '#FFFFFF' : 'var(--text-primary)',
                     cursor: 'pointer',
                     textAlign: 'left',
                     transition: 'all 0.15s ease',
@@ -285,12 +285,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: exportScope === 'active' ? '#FFFFFF' : '#0F172A' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: exportScope === 'active' ? '#FFFFFF' : 'var(--text-primary)' }}>
                       Seçili Ekran
                     </span>
                     {exportScope === 'active' && <Check size={16} color="#FFFFFF" />}
                   </div>
-                  <span style={{ fontSize: '11px', color: exportScope === 'active' ? 'rgba(255, 255, 255, 0.85)' : '#64748B' }}>
+                  <span style={{ fontSize: '11px', color: exportScope === 'active' ? 'rgba(255, 255, 255, 0.85)' : 'var(--text-muted)' }}>
                     {activeScreenTitle}
                   </span>
                 </button>
@@ -301,9 +301,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                   style={{
                     padding: '12px 14px',
                     borderRadius: '10px',
-                    border: exportScope === 'all' ? '1px solid #D90429' : '1px solid #E2E8F0',
-                    backgroundColor: exportScope === 'all' ? '#D90429' : '#FFFFFF',
-                    color: exportScope === 'all' ? '#FFFFFF' : '#0F172A',
+                    border: exportScope === 'all' ? '1px solid var(--chili-primary)' : '1px solid var(--border-default)',
+                    backgroundColor: exportScope === 'all' ? 'var(--chili-primary)' : 'var(--bg-card)',
+                    color: exportScope === 'all' ? '#FFFFFF' : 'var(--text-primary)',
                     cursor: 'pointer',
                     textAlign: 'left',
                     transition: 'all 0.15s ease',
@@ -313,12 +313,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: exportScope === 'all' ? '#FFFFFF' : '#0F172A' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: exportScope === 'all' ? '#FFFFFF' : 'var(--text-primary)' }}>
                       Tüm Ekranlar ({screenCount})
                     </span>
                     {exportScope === 'all' && <Check size={16} color="#FFFFFF" />}
                   </div>
-                  <span style={{ fontSize: '11px', color: exportScope === 'all' ? 'rgba(255, 255, 255, 0.85)' : '#64748B' }}>
+                  <span style={{ fontSize: '11px', color: exportScope === 'all' ? 'rgba(255, 255, 255, 0.85)' : 'var(--text-muted)' }}>
                     ZIP Arşivi Olarak
                   </span>
                 </button>
@@ -328,8 +328,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
           {/* Format Selection Grid */}
           <div>
-            <div style={{ fontSize: '13px', fontWeight: 600, color: '#334155', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <FileImage size={14} color="#64748B" />
+            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <FileImage size={14} color="var(--text-muted)" />
               <span>Dosya Formatı</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
@@ -343,9 +343,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                     style={{
                       padding: '10px 8px',
                       borderRadius: '10px',
-                      border: isSelected ? '1px solid #D90429' : '1px solid #E2E8F0',
-                      backgroundColor: isSelected ? '#D90429' : '#FFFFFF',
-                      color: isSelected ? '#FFFFFF' : '#0F172A',
+                      border: isSelected ? '1px solid var(--chili-primary)' : '1px solid var(--border-default)',
+                      backgroundColor: isSelected ? 'var(--chili-primary)' : 'var(--bg-card)',
+                      color: isSelected ? '#FFFFFF' : 'var(--text-primary)',
                       cursor: 'pointer',
                       textAlign: 'center',
                       position: 'relative',
@@ -358,10 +358,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                       boxShadow: isSelected ? '0 2px 4px rgba(217, 4, 41, 0.2)' : 'none',
                     }}
                   >
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: isSelected ? '#FFFFFF' : '#0F172A' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: isSelected ? '#FFFFFF' : 'var(--text-primary)' }}>
                       {item.label}
                     </span>
-                    <span style={{ fontSize: '10px', fontWeight: 500, color: isSelected ? 'rgba(255, 255, 255, 0.85)' : '#94A3B8' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 500, color: isSelected ? 'rgba(255, 255, 255, 0.85)' : 'var(--text-muted)' }}>
                       {item.badge ? item.badge : item.ext}
                     </span>
                   </button>
@@ -372,12 +372,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
           {/* Dosya Adı / Proje İsmi Girişi */}
           <div>
-            <div style={{ fontSize: '13px', fontWeight: 600, color: '#334155', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Tag size={14} color="#64748B" />
+                <Tag size={14} color="var(--text-muted)" />
                 <span>Dosya Adı</span>
               </div>
-              <span style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 400 }}>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 400 }}>
                 {exportScope === 'all' && screenCount > 1 ? 'ZIP ve dosya öneki' : 'Özel isim belirleyebilirsiniz'}
               </span>
             </div>
@@ -392,20 +392,18 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                   padding: '9px 12px',
                   paddingRight: selectedFormat === 'svg' ? '45px' : '55px',
                   borderRadius: '10px',
-                  border: '1px solid #E2E8F0',
+                  border: '1px solid var(--border-default)',
                   fontSize: '13px',
-                  color: '#0F172A',
+                  color: 'var(--text-primary)',
                   outline: 'none',
-                  backgroundColor: '#F8FAFC',
+                  backgroundColor: 'var(--bg-input)',
                   transition: 'all 0.15s ease',
                 }}
                 onFocus={(e) => {
-                  e.currentTarget.style.borderColor = '#D90429';
-                  e.currentTarget.style.backgroundColor = '#FFFFFF';
+                  e.currentTarget.style.borderColor = 'var(--chili-primary)';
                 }}
                 onBlur={(e) => {
-                  e.currentTarget.style.borderColor = '#E2E8F0';
-                  e.currentTarget.style.backgroundColor = '#F8FAFC';
+                  e.currentTarget.style.borderColor = 'var(--border-default)';
                 }}
               />
               <span
@@ -414,7 +412,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                   right: '12px',
                   fontSize: '12px',
                   fontWeight: 600,
-                  color: '#94A3B8',
+                  color: 'var(--text-muted)',
                   pointerEvents: 'none',
                 }}
               >
@@ -426,13 +424,13 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           {/* Preset Category Tabs & Resolution Grid (Disabled/Hidden if SVG is selected) */}
           {selectedFormat !== 'svg' && (
             <div>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: '#334155', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Sparkles size={14} color="#64748B" />
+              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Sparkles size={14} color="var(--text-muted)" />
                 <span>Mağaza & Çözünürlük Şablonları</span>
               </div>
 
               {/* Category Segmented Tabs */}
-              <div style={{ display: 'flex', gap: '4px', backgroundColor: '#F1F3F5', padding: '3px', borderRadius: '10px', marginBottom: '10px' }}>
+              <div style={{ display: 'flex', gap: '4px', backgroundColor: 'var(--bg-subtle)', padding: '3px', borderRadius: '10px', marginBottom: '10px' }}>
                 {[
                   {
                     id: 'playstore' as const,
@@ -486,16 +484,16 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                         fontSize: '11.5px',
                         fontWeight: isActive ? 700 : 500,
                         borderRadius: '7px',
-                        border: isActive ? '1px solid #D90429' : '1px solid transparent',
-                        backgroundColor: isActive ? '#FFFFFF' : 'transparent',
-                        color: isActive ? '#0F172A' : '#64748B',
+                        border: isActive ? '1px solid var(--chili-primary)' : '1px solid transparent',
+                        backgroundColor: isActive ? 'var(--bg-card)' : 'transparent',
+                        color: isActive ? 'var(--text-primary)' : 'var(--text-muted)',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '6px',
                         transition: 'all 0.15s ease',
-                        boxShadow: isActive ? '0 1px 3px rgba(0, 0, 0, 0.08)' : 'none',
+                        boxShadow: isActive ? '0 1px 3px rgba(0, 0, 0, 0.1)' : 'none',
                       }}
                     >
                       {tab.renderIcon()}
@@ -517,9 +515,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                       style={{
                         padding: '12px 10px',
                         borderRadius: '10px',
-                        border: isSelected ? '1px solid #D90429' : '1px solid #E2E8F0',
-                        backgroundColor: isSelected ? '#D90429' : '#FFFFFF',
-                        color: isSelected ? '#FFFFFF' : '#0F172A',
+                        border: isSelected ? '1px solid var(--chili-primary)' : '1px solid var(--border-default)',
+                        backgroundColor: isSelected ? 'var(--chili-primary)' : 'var(--bg-card)',
+                        color: isSelected ? '#FFFFFF' : 'var(--text-primary)',
                         cursor: 'pointer',
                         textAlign: 'center',
                         display: 'flex',
@@ -532,7 +530,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                        <span style={{ fontSize: '13.5px', fontWeight: 700, color: isSelected ? '#FFFFFF' : '#0F172A' }}>
+                        <span style={{ fontSize: '13.5px', fontWeight: 700, color: isSelected ? '#FFFFFF' : 'var(--text-primary)' }}>
                           {preset.title}
                         </span>
                       </div>
@@ -540,7 +538,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                         style={{
                           fontSize: '11.5px',
                           fontWeight: 700,
-                          color: isSelected ? '#FFFFFF' : '#D90429',
+                          color: isSelected ? '#FFFFFF' : 'var(--chili-primary)',
                           letterSpacing: '-0.2px',
                         }}
                       >
@@ -558,12 +556,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({
         <div
           style={{
             padding: '16px 24px',
-            borderTop: '1px solid #EDF2F7',
+            borderTop: '1px solid var(--border-subtle)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'flex-end',
             gap: '10px',
-            backgroundColor: '#FAFAFA',
+            backgroundColor: 'var(--bg-subtle)',
           }}
         >
           <button

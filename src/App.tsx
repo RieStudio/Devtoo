@@ -129,6 +129,34 @@ export function App() {
   const [isCropModalOpen, setIsCropModalOpen] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Dark / Light Mode State & Sync
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    try {
+      const saved = localStorage.getItem('devtoo_theme');
+      if (saved === 'dark' || saved === 'light') return saved;
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+      }
+    } catch {
+      // Fallback
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.style.colorScheme = theme;
+    try {
+      localStorage.setItem('devtoo_theme', theme);
+    } catch {
+      // Ignore
+    }
+  }, [theme]);
+
+  const toggleTheme = useCallback(() => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  }, []);
+
   // App Icon Resizer Header Integration
   const iconExportRef = useRef<(() => void) | null>(null);
   const iconUploadRef = useRef<(() => void) | null>(null);
@@ -1138,6 +1166,8 @@ export function App() {
               : isExporting
           }
           hasIconImage={hasIconImage}
+          theme={theme}
+          onToggleTheme={toggleTheme}
         />
 
         {/* Dashboard (Canva / Figma Style Ana Sayfa) */}

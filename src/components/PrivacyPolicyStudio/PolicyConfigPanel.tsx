@@ -43,7 +43,7 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
       width: '420px',
       minWidth: '380px',
       height: '100%',
-      backgroundColor: '#FFFFFF',
+      backgroundColor: 'var(--bg-sidebar)',
       borderRight: '1px solid var(--border-default)',
       display: 'flex',
       flexDirection: 'column',
@@ -53,10 +53,10 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
       {/* Panel Başlığı */}
       <div style={{
         padding: '16px 20px',
-        borderBottom: '1px solid #EDF2F7',
-        backgroundColor: '#FAFAFA',
+        borderBottom: '1px solid var(--border-default)',
+        backgroundColor: 'var(--bg-card)',
       }}>
-        <h2 style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A' }}>
+        <h2 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>
           Politika & Veri Ayarları
         </h2>
       </div>
@@ -147,9 +147,9 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
                   flex: 1,
                   padding: '7px 10px',
                   borderRadius: '6px',
-                  border: config.appType === 'game' ? '1.5px solid #D90429' : '1px solid #CBD5E1',
-                  backgroundColor: '#FFFFFF',
-                  color: config.appType === 'game' ? '#D90429' : '#334155',
+                  border: config.appType === 'game' ? '1.5px solid var(--chili-primary)' : '1px solid var(--border-default)',
+                  backgroundColor: 'var(--bg-card)',
+                  color: config.appType === 'game' ? 'var(--chili-primary)' : 'var(--text-primary)',
                   fontSize: '11.5px',
                   fontWeight: 600,
                   cursor: 'pointer',
@@ -159,7 +159,7 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
                   gap: '6px',
                 }}
               >
-                <Gamepad2 size={14} color={config.appType === 'game' ? '#D90429' : '#64748B'} />
+                <Gamepad2 size={14} color={config.appType === 'game' ? 'var(--chili-primary)' : 'var(--text-secondary)'} />
                 <span>Mobil Oyun</span>
               </button>
               <button
@@ -169,9 +169,9 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
                   flex: 1,
                   padding: '7px 10px',
                   borderRadius: '6px',
-                  border: config.appType === 'app' ? '1.5px solid #D90429' : '1px solid #CBD5E1',
-                  backgroundColor: '#FFFFFF',
-                  color: config.appType === 'app' ? '#D90429' : '#334155',
+                  border: config.appType === 'app' ? '1.5px solid var(--chili-primary)' : '1px solid var(--border-default)',
+                  backgroundColor: 'var(--bg-card)',
+                  color: config.appType === 'app' ? 'var(--chili-primary)' : 'var(--text-primary)',
                   fontSize: '11.5px',
                   fontWeight: 600,
                   cursor: 'pointer',
@@ -181,7 +181,7 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
                   gap: '6px',
                 }}
               >
-                <Smartphone size={14} color={config.appType === 'app' ? '#D90429' : '#64748B'} />
+                <Smartphone size={14} color={config.appType === 'app' ? 'var(--chili-primary)' : 'var(--text-secondary)'} />
                 <span>Mobil Uygulama</span>
               </button>
             </div>
@@ -191,14 +191,14 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
         {/* Bölüm 2: Kullanılan SDK'lar ve Servisler */}
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <span style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               Entegre Edilen SDK'lar
             </span>
-            <span style={{ fontSize: '10.5px', color: '#D90429', fontWeight: 600 }}>
+            <span style={{ fontSize: '10.5px', color: 'var(--chili-primary)', fontWeight: 600 }}>
               Kritik
             </span>
           </div>
-          <p style={{ fontSize: '11px', color: '#64748B', marginBottom: '10px' }}>
+          <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '10px' }}>
             Oyununuzda/uygulamanızda aktif olan kütüphaneleri seçin:
           </p>
 
@@ -215,8 +215,8 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
                     justifyContent: 'space-between',
                     padding: '8px 12px',
                     borderRadius: '8px',
-                    border: '1px solid #E2E8F0',
-                    backgroundColor: '#FFFFFF',
+                    border: '1px solid var(--border-default)',
+                    backgroundColor: 'var(--bg-card)',
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
                   }}
@@ -226,8 +226,8 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
                       width: '18px',
                       height: '18px',
                       borderRadius: '4px',
-                      border: isChecked ? 'none' : '1.5px solid #CBD5E1',
-                      backgroundColor: isChecked ? '#D90429' : '#FFFFFF',
+                      border: isChecked ? 'none' : '1.5px solid var(--border-default)',
+                      backgroundColor: isChecked ? 'var(--chili-primary)' : 'var(--bg-card)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -251,7 +251,7 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
 
         {/* Bölüm 3: Kullanıcı ve Mağaza Kuralları */}
         <div>
-          <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px' }}>
+          <div style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px' }}>
             Kullanıcı & İzin Kuralları
           </div>
 
@@ -260,24 +260,24 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
             <div style={{
               padding: '10px 12px',
               borderRadius: '8px',
-              border: '1px solid #E2E8F0',
-              backgroundColor: '#F8FAFC',
+              border: '1px solid var(--border-default)',
+              backgroundColor: 'var(--bg-subtle)',
             }}>
               <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
-                <span style={{ fontSize: '12px', fontWeight: 600, color: '#0F172A' }}>
+                <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
                   Kullanıcı Kaydı / Hesap Var mı?
                 </span>
                 <input
                   type="checkbox"
                   checked={config.features.hasUserAccounts}
                   onChange={(e) => handleUpdateFeature('hasUserAccounts', e.target.checked)}
-                  style={{ accentColor: '#D90429', width: '16px', height: '16px', cursor: 'pointer' }}
+                  style={{ accentColor: 'var(--chili-primary)', width: '16px', height: '16px', cursor: 'pointer' }}
                 />
               </label>
 
               {config.features.hasUserAccounts && (
-                <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px dashed #CBD5E1' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#B91C1C', fontSize: '11px', fontWeight: 600, marginBottom: '6px' }}>
+                <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px dashed var(--border-default)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--chili-primary)', fontSize: '11px', fontWeight: 600, marginBottom: '6px' }}>
                     <AlertTriangle size={13} />
                     <span>Google Play Şartı: Hesap Silme URL'i Zorunludur!</span>
                   </div>
@@ -291,7 +291,9 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
                         width: '100%',
                         padding: '6px 28px 6px 8px',
                         borderRadius: '6px',
-                        border: '1px solid #CBD5E1',
+                        border: '1px solid var(--border-default)',
+                        backgroundColor: 'var(--bg-card)',
+                        color: 'var(--text-primary)',
                         fontSize: '11.5px',
                         boxSizing: 'border-box',
                         outline: 'none',
@@ -311,7 +313,7 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
                         alignItems: 'center',
                         justifyContent: 'center',
                         cursor: 'pointer',
-                        color: showDeletionHelp ? '#D90429' : '#64748B',
+                        color: showDeletionHelp ? 'var(--chili-primary)' : 'var(--text-secondary)',
                         zIndex: 2,
                         transition: 'color 0.15s ease',
                       }}
@@ -325,19 +327,19 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
                       marginTop: '8px',
                       padding: '10px 12px',
                       borderRadius: '8px',
-                      backgroundColor: '#EFF6FF',
-                      border: '1px solid #BFDBFE',
+                      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                      border: '1px solid rgba(59, 130, 246, 0.25)',
                       fontSize: '11px',
-                      color: '#1E40AF',
+                      color: 'var(--text-primary)',
                       lineHeight: '1.5',
                     }}>
-                      <div style={{ fontWeight: 700, color: '#1E3A8A', marginBottom: '3px' }}>
+                      <div style={{ fontWeight: 700, color: 'var(--chili-primary)', marginBottom: '3px' }}>
                         Neden Web URL'si İsteniyor?
                       </div>
                       <div>
                         Google Play, kullanıcının uygulamayı telefonundan silmiş olsa bile hesabının ve verilerinin silinmesini web üzerinden talep edebilmesini zorunlu tutar.
                       </div>
-                      <div style={{ marginTop: '6px', fontWeight: 700, color: '#1E3A8A' }}>
+                      <div style={{ marginTop: '6px', fontWeight: 700, color: 'var(--chili-primary)' }}>
                         💡 Web siteniz yoksa:
                       </div>
                       <div>
@@ -353,15 +355,15 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
             <div style={{
               padding: '10px 12px',
               borderRadius: '8px',
-              border: '1px solid #E2E8F0',
-              backgroundColor: '#F8FAFC',
+              border: '1px solid var(--border-default)',
+              backgroundColor: 'var(--bg-subtle)',
             }}>
               <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
                 <div>
-                  <div style={{ fontSize: '12px', fontWeight: 600, color: '#0F172A' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
                     Çocuklara / Ailelere Yönelik mi?
                   </div>
-                  <div style={{ fontSize: '10.5px', color: '#64748B' }}>
+                  <div style={{ fontSize: '10.5px', color: 'var(--text-secondary)' }}>
                     13 yaş altı kitle (COPPA & Aileler Politikası)
                   </div>
                 </div>
@@ -369,17 +371,17 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
                   type="checkbox"
                   checked={config.features.isTargetingChildren}
                   onChange={(e) => handleUpdateFeature('isTargetingChildren', e.target.checked)}
-                  style={{ accentColor: '#D90429', width: '16px', height: '16px', cursor: 'pointer' }}
+                  style={{ accentColor: 'var(--chili-primary)', width: '16px', height: '16px', cursor: 'pointer' }}
                 />
               </label>
             </div>
 
             {/* Dil Seçeneği */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '6px' }}>
-              <span style={{ fontSize: '11.5px', fontWeight: 600, color: '#475569' }}>
+              <span style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--text-secondary)' }}>
                 Politika Dili
               </span>
-              <div style={{ display: 'flex', gap: '4px', backgroundColor: '#F1F5F9', padding: '3px', borderRadius: '6px' }}>
+              <div style={{ display: 'flex', gap: '4px', backgroundColor: 'var(--bg-card)', padding: '3px', borderRadius: '6px', border: '1px solid var(--border-default)' }}>
                 <button
                   type="button"
                   onClick={() => onChange({ language: 'tr' })}
@@ -389,9 +391,9 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
                     fontWeight: 600,
                     borderRadius: '4px',
                     border: 'none',
-                    backgroundColor: config.language === 'tr' ? '#FFFFFF' : 'transparent',
-                    color: config.language === 'tr' ? '#D90429' : '#64748B',
-                    boxShadow: config.language === 'tr' ? '0 1px 2px rgba(0,0,0,0.08)' : 'none',
+                    backgroundColor: config.language === 'tr' ? 'var(--chili-primary)' : 'transparent',
+                    color: config.language === 'tr' ? '#FFFFFF' : 'var(--text-secondary)',
+                    boxShadow: config.language === 'tr' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
                     cursor: 'pointer',
                   }}
                 >
@@ -406,9 +408,9 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
                     fontWeight: 600,
                     borderRadius: '4px',
                     border: 'none',
-                    backgroundColor: config.language === 'en' ? '#FFFFFF' : 'transparent',
-                    color: config.language === 'en' ? '#D90429' : '#64748B',
-                    boxShadow: config.language === 'en' ? '0 1px 2px rgba(0,0,0,0.08)' : 'none',
+                    backgroundColor: config.language === 'en' ? 'var(--chili-primary)' : 'transparent',
+                    color: config.language === 'en' ? '#FFFFFF' : 'var(--text-secondary)',
+                    boxShadow: config.language === 'en' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
                     cursor: 'pointer',
                   }}
                 >

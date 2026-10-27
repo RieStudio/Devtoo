@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, Upload, Smartphone, Image as ImageIcon, Layout, ShieldCheck, Undo2, Redo2 } from 'lucide-react';
+import { Download, Upload, Smartphone, Image as ImageIcon, Layout, ShieldCheck, Undo2, Redo2, Sun, Moon } from 'lucide-react';
 import { DevtooLogo } from './common/DevtooLogo';
 
 interface HeaderProps {
@@ -15,6 +15,8 @@ interface HeaderProps {
   canRedo?: boolean;
   isExporting: boolean;
   hasIconImage?: boolean;
+  theme?: 'light' | 'dark';
+  onToggleTheme?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({ 
@@ -29,6 +31,8 @@ export const Header: React.FC<HeaderProps> = ({
   canRedo = true,
   isExporting,
   hasIconImage = false,
+  theme = 'light',
+  onToggleTheme,
 }) => {
 
   return (
@@ -39,30 +43,30 @@ export const Header: React.FC<HeaderProps> = ({
             <div style={{ marginRight: '-4px', display: 'flex', alignItems: 'center' }}>
               <DevtooLogo size={38} variant="swift" />
             </div>
-            <span style={{ fontFamily: "'Outfit', 'Plus Jakarta Sans', sans-serif", fontSize: '24px', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em', display: 'inline-flex', lineHeight: 1 }}>
-              <span>Dev<span style={{ color: '#D90429' }}>too</span></span>
+            <span style={{ fontFamily: "'Outfit', 'Plus Jakarta Sans', sans-serif", fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.03em', display: 'inline-flex', lineHeight: 1 }}>
+              <span>Dev<span style={{ color: 'var(--chili-primary)' }}>too</span></span>
             </span>
           </div>
         ) : (
           <div className="tool-active-badge">
             {activeTool === 'app-icon-resizer' ? (
               <>
-                <ImageIcon size={18} color="#D90429" />
+                <ImageIcon size={18} color="var(--chili-primary)" />
                 <span>App Icon Resizer</span>
               </>
             ) : activeTool === 'store-banner-maker' ? (
               <>
-                <Layout size={18} color="#D90429" />
+                <Layout size={18} color="var(--chili-primary)" />
                 <span>Store Banner Maker</span>
               </>
             ) : activeTool === 'privacy-policy-studio' ? (
               <>
-                <ShieldCheck size={18} color="#D90429" />
+                <ShieldCheck size={18} color="var(--chili-primary)" />
                 <span>Privacy Policy Studio</span>
               </>
             ) : (
               <>
-                <Smartphone size={18} color="#D90429" />
+                <Smartphone size={18} color="var(--chili-primary)" />
                 <span>Mockup Editor</span>
               </>
             )}
@@ -70,10 +74,26 @@ export const Header: React.FC<HeaderProps> = ({
         )}
       </div>
 
+      {activeTool === 'dashboard' && (
+        <div className="header-actions">
+          {onToggleTheme && (
+            <button
+              type="button"
+              className="btn-theme-toggle"
+              onClick={onToggleTheme}
+              title={theme === 'dark' ? 'Açık Moda Geç' : 'Koyu Moda Geç'}
+              aria-label={theme === 'dark' ? 'Açık Moda Geç' : 'Koyu Moda Geç'}
+            >
+              {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+            </button>
+          )}
+        </div>
+      )}
+
       {activeTool === 'mockup-editor' && (
         <div className="header-actions">
         {onUndo && onRedo && (
-          <div style={{ display: 'flex', gap: '2px', backgroundColor: '#F1F3F5', padding: '2px', borderRadius: '8px', marginRight: '4px' }}>
+          <div style={{ display: 'flex', gap: '2px', backgroundColor: 'var(--bg-subtle)', padding: '2px', borderRadius: '8px', marginRight: '4px' }}>
             <button
               type="button"
               className="btn-secondary"
@@ -115,6 +135,18 @@ export const Header: React.FC<HeaderProps> = ({
           <Download size={14} />
           <span>{isExporting ? 'Dışa Aktarılıyor...' : 'İndir'}</span>
         </button>
+
+        {onToggleTheme && (
+          <button
+            type="button"
+            className="btn-theme-toggle"
+            onClick={onToggleTheme}
+            title={theme === 'dark' ? 'Açık Moda Geç' : 'Koyu Moda Geç'}
+            aria-label={theme === 'dark' ? 'Açık Moda Geç' : 'Koyu Moda Geç'}
+          >
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
+        )}
       </div>
       )}
 
@@ -134,13 +166,25 @@ export const Header: React.FC<HeaderProps> = ({
             <Download size={14} />
             <span>{isExporting ? 'Dışa Aktarılıyor...' : 'İndir'}</span>
           </button>
+
+          {onToggleTheme && (
+            <button
+              type="button"
+              className="btn-theme-toggle"
+              onClick={onToggleTheme}
+              title={theme === 'dark' ? 'Açık Moda Geç' : 'Koyu Moda Geç'}
+              aria-label={theme === 'dark' ? 'Açık Moda Geç' : 'Koyu Moda Geç'}
+            >
+              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+          )}
         </div>
       )}
 
       {activeTool === 'store-banner-maker' && (
         <div className="header-actions">
           {onUndo && onRedo && (
-            <div style={{ display: 'flex', gap: '2px', backgroundColor: '#F1F3F5', padding: '2px', borderRadius: '8px', marginRight: '4px' }}>
+            <div style={{ display: 'flex', gap: '2px', backgroundColor: 'var(--bg-subtle)', padding: '2px', borderRadius: '8px', marginRight: '4px' }}>
               <button
                 type="button"
                 className="btn-secondary"
@@ -178,6 +222,18 @@ export const Header: React.FC<HeaderProps> = ({
             <Download size={14} />
             <span>{isExporting ? 'Oluşturuluyor...' : 'İndir'}</span>
           </button>
+
+          {onToggleTheme && (
+            <button
+              type="button"
+              className="btn-theme-toggle"
+              onClick={onToggleTheme}
+              title={theme === 'dark' ? 'Açık Moda Geç' : 'Koyu Moda Geç'}
+              aria-label={theme === 'dark' ? 'Açık Moda Geç' : 'Koyu Moda Geç'}
+            >
+              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+          )}
         </div>
       )}
 
@@ -192,6 +248,18 @@ export const Header: React.FC<HeaderProps> = ({
             <Download size={14} />
             <span>HTML İndir</span>
           </button>
+
+          {onToggleTheme && (
+            <button
+              type="button"
+              className="btn-theme-toggle"
+              onClick={onToggleTheme}
+              title={theme === 'dark' ? 'Açık Moda Geç' : 'Koyu Moda Geç'}
+              aria-label={theme === 'dark' ? 'Açık Moda Geç' : 'Koyu Moda Geç'}
+            >
+              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+          )}
         </div>
       )}
     </header>

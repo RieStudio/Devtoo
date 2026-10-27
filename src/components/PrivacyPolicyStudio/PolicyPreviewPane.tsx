@@ -56,10 +56,10 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
   };
 
   return (
-    <div style={{
+    <div className="policy-preview-pane" style={{
       flex: 1,
       height: '100%',
-      backgroundColor: '#F8FAFC',
+      backgroundColor: 'var(--bg-app)',
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden',
@@ -67,15 +67,15 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
       {/* Üst Sekme Çubuğu */}
       <div style={{
         padding: '12px 24px',
-        backgroundColor: '#FFFFFF',
-        borderBottom: '1px solid #E2E8F0',
+        backgroundColor: 'var(--bg-card)',
+        borderBottom: '1px solid var(--border-default)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexShrink: 0,
       }}>
         {/* Sekmeler */}
-        <div style={{ display: 'flex', gap: '6px', backgroundColor: '#F1F5F9', padding: '4px', borderRadius: '10px' }}>
+        <div style={{ display: 'flex', gap: '6px', backgroundColor: 'var(--bg-subtle)', padding: '4px', borderRadius: '10px' }}>
           {[
             { id: 'preview' as const, label: 'Politika Önizlemesi' },
             { id: 'data-safety' as const, label: 'Play Store Veri Güvenliği', badge: 'Rehber' },
@@ -93,8 +93,8 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
                   padding: '6px 14px',
                   borderRadius: '7px',
                   border: 'none',
-                  backgroundColor: isSelected ? '#FFFFFF' : 'transparent',
-                  color: isSelected ? '#0F172A' : '#64748B',
+                  backgroundColor: isSelected ? 'var(--bg-card)' : 'transparent',
+                  color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)',
                   fontWeight: isSelected ? 700 : 500,
                   fontSize: '12px',
                   cursor: 'pointer',
@@ -107,8 +107,8 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
                   <span style={{
                     fontSize: '9.5px',
                     fontWeight: 700,
-                    backgroundColor: isSelected ? '#D90429' : '#E2E8F0',
-                    color: isSelected ? '#FFFFFF' : '#475569',
+                    backgroundColor: isSelected ? 'var(--chili-primary)' : 'var(--border-default)',
+                    color: isSelected ? '#FFFFFF' : 'var(--text-secondary)',
                     padding: '1px 6px',
                     borderRadius: '4px',
                     marginLeft: '6px',
@@ -151,29 +151,29 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
           {/* ========================================================================= */}
           {activeTab === 'preview' && (
             <div style={{
-              backgroundColor: '#FFFFFF',
-              border: '1px solid #E2E8F0',
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid var(--border-default)',
               borderRadius: '16px',
               padding: '36px 40px',
-              boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -2px rgba(0,0,0,0.02)',
+              boxShadow: 'var(--shadow-card)',
             }}>
-              <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#0F172A', marginBottom: '6px' }}>
+              <h1 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '6px' }}>
                 {config.appName} {config.language === 'tr' ? 'Gizlilik Politikası' : 'Privacy Policy'}
               </h1>
 
-              <div style={{ fontSize: '12px', color: '#64748B', marginBottom: '24px', paddingBottom: '16px', borderBottom: '1px solid #F1F5F9' }}>
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '24px', paddingBottom: '16px', borderBottom: '1px solid var(--border-default)' }}>
                 {config.language === 'tr' ? 'Son Güncelleme' : 'Last Updated'}: <strong>{config.effectiveDate}</strong> • {config.language === 'tr' ? 'Geliştirici' : 'Developer'}: <strong>{config.companyName}</strong>
               </div>
 
               {/* Politika Metni Blokları */}
-              <div style={{ fontSize: '13.5px', color: '#334155', lineHeight: '1.7', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ fontSize: '13.5px', color: 'var(--text-secondary)', lineHeight: '1.7', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <p>
                   {config.language === 'tr' 
                     ? `Bu Gizlilik Politikası, ${config.companyName} tarafından geliştirilen ${config.appName} ${config.appType === 'game' ? 'mobil oyunu' : 'mobil uygulaması'} için geçerlidir. Kullanıcılarımızın gizliliğini korumak en yüksek önceliğimizdir.`
                     : `This Privacy Policy governs your use of the application ${config.appName} developed by ${config.companyName}. Protecting user data is our top priority.`}
                 </p>
 
-                <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A', marginTop: '10px' }}>
+                <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '10px' }}>
                   1. {config.language === 'tr' ? 'Toplanan Veriler ve Cihaz Tanımlayıcıları' : 'Data Collection and Device Identifiers'}
                 </h3>
                 <p>
@@ -270,15 +270,15 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
                   <div
                     key={item.id}
                     style={{
-                      backgroundColor: '#FFFFFF',
-                      border: '1px solid #E2E8F0',
+                      backgroundColor: 'var(--bg-card)',
+                      border: '1px solid var(--border-default)',
                       borderRadius: '12px',
                       padding: '18px 20px',
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+                      boxShadow: 'var(--shadow-card)',
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#0F172A' }}>
+                      <div style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
                         {item.question}
                       </div>
                       <span
@@ -287,8 +287,8 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
                           fontWeight: 800,
                           padding: '3px 10px',
                           borderRadius: '6px',
-                          backgroundColor: item.badgeType === 'yes' ? '#DCFCE7' : '#F1F5F9',
-                          color: item.badgeType === 'yes' ? '#166534' : '#475569',
+                          backgroundColor: item.badgeType === 'yes' ? 'rgba(34, 197, 94, 0.15)' : 'var(--bg-subtle)',
+                          color: item.badgeType === 'yes' ? '#22C55E' : 'var(--text-secondary)',
                           letterSpacing: '0.5px',
                         }}
                       >
@@ -296,23 +296,23 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
                       </span>
                     </div>
 
-                    <div style={{ fontSize: '12px', color: '#475569', lineHeight: '1.5', marginBottom: item.details ? '10px' : '0' }}>
+                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.5', marginBottom: item.details ? '10px' : '0' }}>
                       {item.explanation}
                     </div>
 
                     {item.details && (
                       <div style={{
-                        backgroundColor: '#F8FAFC',
+                        backgroundColor: 'var(--bg-subtle)',
                         borderRadius: '6px',
                         padding: '10px 14px',
-                        border: '1px solid #EDF2F7',
+                        border: '1px solid var(--border-default)',
                         display: 'flex',
                         flexDirection: 'column',
                         gap: '4px',
                       }}>
                         {item.details.map((detail, idx) => (
-                          <div key={idx} style={{ fontSize: '11.5px', color: '#334155', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span style={{ color: '#D90429', fontWeight: 700 }}>›</span>
+                          <div key={idx} style={{ fontSize: '11.5px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ color: 'var(--chili-primary)', fontWeight: 700 }}>›</span>
                             <span>{detail}</span>
                           </div>
                         ))}
@@ -331,19 +331,19 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {/* Giriş Kartı */}
               <div style={{
-                backgroundColor: '#FFFFFF',
-                border: '1px solid #E2E8F0',
+                backgroundColor: 'var(--bg-card)',
+                border: '1px solid var(--border-default)',
                 borderRadius: '16px',
                 padding: '24px',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+                boxShadow: 'var(--shadow-card)',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <Sparkles size={18} color="#D90429" />
-                  <div style={{ fontSize: '16px', fontWeight: 700, color: '#0F172A' }}>
+                  <Sparkles size={18} color="var(--chili-primary)" />
+                  <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>
                     1 Dakikada Ücretsiz Canlı Gizlilik Politikası URL'i Alma
                   </div>
                 </div>
-                <p style={{ fontSize: '12.5px', color: '#64748B', lineHeight: '1.5' }}>
+                <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
                   Google Play ve App Store, gizlilik politikasının <strong>HTTPS://</strong> ile başlayan canlı bir web linkinde barındırılmasını zorunlu tutar. Alan adınız (domain) olmasa dahi aşağıdaki 2 ücretsiz yöntemle anında canlı URL edinebilirsiniz:
                 </p>
 
@@ -352,13 +352,13 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
                   <div style={{
                     padding: '16px',
                     borderRadius: '10px',
-                    border: '1px solid #E2E8F0',
-                    backgroundColor: '#F8FAFC',
+                    border: '1px solid var(--border-default)',
+                    backgroundColor: 'var(--bg-subtle)',
                   }}>
-                    <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A', marginBottom: '6px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
                       Yöntem 1: GitHub Pages (En Çok Tercih Edilen)
                     </div>
-                    <ol style={{ fontSize: '11.5px', color: '#475569', paddingLeft: '18px', lineHeight: '1.6', margin: 0 }}>
+                    <ol style={{ fontSize: '11.5px', color: 'var(--text-secondary)', paddingLeft: '18px', lineHeight: '1.6', margin: 0 }}>
                       <li>Yukarıdaki <strong>"HTML İndir"</strong> butonuyla dosyayı indirin.</li>
                       <li>Dosya adını <code>index.html</code> yapın.</li>
                       <li>GitHub'da <code>privacy-policy</code> adında genel (public) bir repo açıp dosyayı yükleyin.</li>
@@ -371,13 +371,13 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
                   <div style={{
                     padding: '16px',
                     borderRadius: '10px',
-                    border: '1px solid #E2E8F0',
-                    backgroundColor: '#F8FAFC',
+                    border: '1px solid var(--border-default)',
+                    backgroundColor: 'var(--bg-subtle)',
                   }}>
-                    <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A', marginBottom: '6px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
                       Yöntem 2: Netlify Drop (Sürükle & Bırak)
                     </div>
-                    <ol style={{ fontSize: '11.5px', color: '#475569', paddingLeft: '18px', lineHeight: '1.6', margin: 0 }}>
+                    <ol style={{ fontSize: '11.5px', color: 'var(--text-secondary)', paddingLeft: '18px', lineHeight: '1.6', margin: 0 }}>
                       <li>İndirdiğiniz HTML dosyasını bir klasöre koyun (adı <code>index.html</code> olsun).</li>
                       <li><strong>app.netlify.com/drop</strong> adresine gidin.</li>
                       <li>Klasörü ekrana sürükleyip bırakın.</li>
@@ -402,15 +402,15 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
 
               {/* Mağaza Konsollarına Ekleme İpucu */}
               <div style={{
-                backgroundColor: '#FFFFFF',
-                border: '1px solid #E2E8F0',
+                backgroundColor: 'var(--bg-card)',
+                border: '1px solid var(--border-default)',
                 borderRadius: '16px',
                 padding: '20px 24px',
               }}>
-                <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#0F172A', marginBottom: '8px' }}>
+                <div style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px' }}>
                   Bu URL Mağazada Nereye Girilir?
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px', color: '#475569' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px', color: 'var(--text-secondary)' }}>
                   <div>
                     <strong>Google Play Console:</strong> Sol menüden <em>Politika ve programlar ➔ Uygulama içeriği ➔ Gizlilik Politikası</em> alanına URL'i yapıştırıp kaydedin.
                   </div>
