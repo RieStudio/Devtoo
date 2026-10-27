@@ -279,36 +279,6 @@
   border-top: 1px dashed var(--border-subtle);
 }
 
-/* Filter Tabs */
-.dashboard-filter-tabs {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.dashboard-filter-pill {
-  border: 1px solid var(--border-default);
-  background-color: #FFFFFF;
-  color: var(--text-secondary);
-  padding: 6px 14px;
-  border-radius: var(--radius-full);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.dashboard-filter-pill:hover {
-  background-color: var(--bg-hover);
-  color: var(--text-primary);
-}
-
-.dashboard-filter-pill.active {
-  background-color: #0F172A;
-  border-color: #0F172A;
-  color: #FFFFFF;
-}
 
 /* Recent Projects Grid */
 .recent-projects-grid {

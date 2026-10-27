@@ -43,7 +43,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onShowToast,
 }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [activeFilter, setActiveFilter] = useState<'all' | ToolType>('all');
   const [localProjects, setLocalProjects] = useState<DashboardProject[]>([]);
   const [projectToDelete, setProjectToDelete] = useState<DashboardProject | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -139,14 +138,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
   // Projects list
   const allProjects = localProjects;
 
-  // Filter & Search
+  // Search
   const filteredProjects = useMemo(() => {
     return allProjects.filter((p) => {
-      const matchFilter = activeFilter === 'all' || p.tool_type === activeFilter;
-      const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchFilter && matchSearch;
+      return p.name.toLowerCase().includes(searchQuery.toLowerCase());
     });
-  }, [allProjects, activeFilter, searchQuery]);
+  }, [allProjects, searchQuery]);
 
   // Handle open project
   const handleOpenProject = (project: DashboardProject) => {
@@ -412,45 +409,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <div className="dashboard-section-title-wrap">
             <h2 className="dashboard-section-title">Son Tasarımlarım</h2>
           </div>
-
-          {/* Filter Tabs */}
-          <div className="dashboard-filter-tabs">
-            <button
-              type="button"
-              className={`dashboard-filter-pill ${activeFilter === 'all' ? 'active' : ''}`}
-              onClick={() => setActiveFilter('all')}
-            >
-              Tümü
-            </button>
-            <button
-              type="button"
-              className={`dashboard-filter-pill ${activeFilter === 'mockup' ? 'active' : ''}`}
-              onClick={() => setActiveFilter('mockup')}
-            >
-              Mockup
-            </button>
-            <button
-              type="button"
-              className={`dashboard-filter-pill ${activeFilter === 'banner' ? 'active' : ''}`}
-              onClick={() => setActiveFilter('banner')}
-            >
-              Banner
-            </button>
-            <button
-              type="button"
-              className={`dashboard-filter-pill ${activeFilter === 'icon' ? 'active' : ''}`}
-              onClick={() => setActiveFilter('icon')}
-            >
-              İkon
-            </button>
-            <button
-              type="button"
-              className={`dashboard-filter-pill ${activeFilter === 'privacy' ? 'active' : ''}`}
-              onClick={() => setActiveFilter('privacy')}
-            >
-              Gizlilik
-            </button>
-          </div>
         </div>
 
         {/* Projects Grid or Empty State */}
@@ -532,7 +490,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </h3>
             <p className="dashboard-empty-desc">
               {searchQuery 
-                ? 'Farklı bir arama terimi deneyin veya filtreleri temizleyin.'
+                ? 'Farklı bir arama terimi deneyin.'
                 : 'Yukarıdaki araçlardan birine tıklayarak hemen ilk tasarımınızı oluşturun veya bir .devtoo proje dosyasını içeri aktarın.'}
             </p>
             {!searchQuery && (
