@@ -68,6 +68,46 @@ const TEXT_PALETTE_PRESETS = [
   '#F59E0B', // Turuncu
 ];
 
+interface AppleVariant {
+  id: DeviceType;
+  name: string;
+}
+
+interface AppleFamily {
+  id: string;
+  name: string;
+  variants: AppleVariant[];
+}
+
+const APPLE_FAMILIES: AppleFamily[] = [
+  {
+    id: 'iphone-18',
+    name: 'iPhone 18',
+    variants: [
+      { id: 'iphone-18-pro-max', name: 'iPhone 18 Pro Max' },
+      { id: 'iphone-18-pro', name: 'iPhone 18 Pro' },
+    ],
+  },
+  {
+    id: 'iphone-17',
+    name: 'iPhone 17',
+    variants: [
+      { id: 'iphone-17-pro-max', name: 'iPhone 17 Pro Max' },
+      { id: 'iphone-17-pro', name: 'iPhone 17 Pro' },
+      { id: 'iphone-17', name: 'iPhone 17' },
+    ],
+  },
+  {
+    id: 'iphone-duo',
+    name: 'iPhone Duo',
+    variants: [
+      { id: 'iphone-duo', name: 'iPhone Duo (Açık Ekran)' },
+      { id: 'iphone-duo-closed', name: 'iPhone Duo (Kapak Ekranı)' },
+      { id: 'iphone-duo-outer-open', name: 'iPhone Duo (Dış Görünüm)' },
+    ],
+  },
+];
+
 interface NumericBadgeInputProps {
   value: number;
   min: number;
@@ -300,6 +340,9 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   // Color / Variant dropdown state
   const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
   const colorDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Apple Family accordion / dropdown state
+  const [expandedAppleFamily, setExpandedAppleFamily] = useState<string | null>(null);
 
   // Keep selectedCategory in sync if activeDevice changes
   useEffect(() => {
@@ -848,24 +891,94 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
           {/* Model Cards List */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px' }}>
             {selectedCategory === 'phone' ? (
-              brandModels.map((model) => {
-                const isSelected = activeDevice.deviceType === model.id;
-                return (
-                  <div
-                    key={model.id}
-                    onClick={() => handleSelectModel(model.id)}
-                    className={`device-model-card ${isSelected ? 'is-selected' : ''}`}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <Smartphone size={16} className="device-model-card-icon" />
-                      <div className="device-model-card-name">
-                        {model.name}
+              selectedBrand === 'apple' ? (
+                /* Grouped Apple Families with Dropdown Selection */
+                APPLE_FAMILIES.map((family) => {
+                  const isFamilyActive = family.variants.some((v) => v.id === activeDevice.deviceType);
+                  const activeVariant = family.variants.find((v) => v.id === activeDevice.deviceType) || family.variants[0];
+                  const isOpen = expandedAppleFamily !== null ? expandedAppleFamily === family.id : isFamilyActive;
+
+                  return (
+                    <div
+                      key={family.id}
+                      className={`apple-family-card ${isFamilyActive ? 'is-selected' : ''}`}
+                    >
+                      <div
+                        className="apple-family-header"
+                        onClick={() => {
+                          if (!isFamilyActive) {
+                            handleSelectModel(activeVariant.id);
+                            setExpandedAppleFamily(family.id);
+                          } else {
+                            setExpandedAppleFamily((prev) => (prev === family.id ? '' : family.id));
+                          }
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <Smartphone size={16} className="device-model-card-icon" />
+                          <div className="device-model-card-name">
+                            {family.name}
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <ChevronDown
+                            size={14}
+                            className="apple-chevron"
+                            style={{
+                              transform: isOpen ? 'rotate(180deg)' : 'none',
+                              transition: 'transform 0.2s ease',
+                            }}
+                          />
+                          {isFamilyActive && <Check size={16} color="#D90429" />}
+                        </div>
                       </div>
+
+                      {isOpen && (
+                        <div className="apple-family-dropdown">
+                          {family.variants.map((variant) => {
+                            const isVariantSelected = activeDevice.deviceType === variant.id;
+                            return (
+                              <button
+                                key={variant.id}
+                                type="button"
+                                className={`apple-variant-btn ${isVariantSelected ? 'active' : ''}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSelectModel(variant.id);
+                                }}
+                              >
+                                <span className="apple-variant-title">{variant.name}</span>
+                                {isVariantSelected && <Check size={14} color="#FFFFFF" />}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
-                    {isSelected && <Check size={16} color="#FFFFFF" />}
-                  </div>
-                );
-              })
+                  );
+                })
+              ) : (
+                /* Other Brands (Samsung, Google) standard card list */
+                brandModels.map((model) => {
+                  const isSelected = activeDevice.deviceType === model.id;
+                  return (
+                    <div
+                      key={model.id}
+                      onClick={() => handleSelectModel(model.id)}
+                      className={`device-model-card ${isSelected ? 'is-selected' : ''}`}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <Smartphone size={16} className="device-model-card-icon" />
+                        <div className="device-model-card-name">
+                          {model.name}
+                        </div>
+                      </div>
+                      {isSelected && <Check size={16} color="#FFFFFF" />}
+                    </div>
+                  );
+                })
+              )
             ) : (
               categoryModels.map((model) => {
                 const CategoryIcon = 

@@ -1980,6 +1980,111 @@ input[type="range"] {
   font-weight: 700;
 }
 
+/* Apple Family Cards & Dropdown Sub-menu */
+.apple-family-card {
+  border-radius: 8px;
+  border: 1px solid var(--border-default);
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  transition: all 0.15s ease;
+  overflow: hidden;
+}
+
+.apple-family-card:hover {
+  border-color: var(--border-strong);
+}
+
+.apple-family-card.is-selected {
+  border-color: var(--chili-primary);
+  box-shadow: 0 0 0 1px var(--chili-primary);
+}
+
+.apple-family-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  cursor: pointer;
+  background-color: transparent;
+  transition: background-color 0.15s ease;
+}
+
+.apple-family-header:hover {
+  background-color: var(--bg-hover);
+}
+
+.apple-family-card.is-selected .apple-family-header {
+  background-color: transparent;
+}
+
+.apple-family-card.is-selected .apple-family-header .device-model-card-icon {
+  color: var(--chili-primary);
+}
+
+.apple-family-dropdown {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 6px 8px;
+  background-color: var(--bg-canvas, #F8FAFC);
+  border-top: 1px solid var(--border-default);
+}
+
+[data-theme='dark'] .apple-family-dropdown {
+  background-color: rgba(0, 0, 0, 0.3);
+  border-top-color: var(--border-subtle);
+}
+
+.apple-variant-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.12s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.apple-variant-btn:hover {
+  background-color: var(--bg-hover);
+}
+
+.apple-variant-btn.active {
+  background-color: var(--chili-primary);
+  border-color: var(--chili-primary);
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.apple-variant-btn.active:hover {
+  background-color: var(--chili-hover);
+  border-color: var(--chili-hover);
+  color: #FFFFFF;
+}
+
+[data-theme='dark'] .apple-variant-btn.active {
+  background-color: var(--chili-primary);
+  border-color: var(--chili-primary);
+  color: #FFFFFF;
+}
+
+[data-theme='dark'] .apple-variant-btn.active:hover {
+  background-color: var(--chili-hover);
+  border-color: var(--chili-hover);
+  color: #FFFFFF;
+}
+
+.apple-variant-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: inherit;
+}
+
 /* Device Color Trigger & Dropdown */
 .device-color-trigger-btn {
   width: 100%;
