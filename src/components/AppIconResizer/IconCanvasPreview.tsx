@@ -232,7 +232,7 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
                         filter: config.previewDevice === 'iphone' ? 'brightness(0) invert(1)' : 'none',
                       }}
                     />
-                    <span>iPhone 17 Pro Max</span>
+                    <span>iPhone 18 Pro Max</span>
                   </button>
                   <button
                     type="button"
@@ -259,7 +259,7 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
 
               {/* Realistic Device Screen Viewports */}
               <div className="device-stage-wrapper">
-                {/* 1. iPhone 17 Pro Max Mockup */}
+                {/* 1. iPhone 18 Pro Max Mockup */}
                 {config.previewDevice === 'iphone' && (
                   <div
                     className="realistic-device-mockup"
@@ -274,12 +274,12 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
                     <div
                       style={{
                         position: 'absolute',
-                        top: '1.25%',
-                        left: '3.34%',
-                        width: '93.57%',
-                        height: '97.50%',
+                        top: '2.20%',
+                        left: '5.10%',
+                        width: '89.80%',
+                        height: '95.60%',
                         zIndex: 1,
-                        borderRadius: '42px',
+                        borderRadius: '16px',
                         overflow: 'hidden',
                         backgroundColor: '#000000',
                       }}
@@ -360,10 +360,10 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
                       </div>
                     </div>
 
-                    {/* iPhone 17 Pro Max Hardware Frame Overlay */}
+                    {/* iPhone 18 Pro Max Hardware Frame Overlay */}
                     <img
-                      src="/devices/phone/apple/iphone-17-pro-max.png"
-                      alt="iPhone 17 Pro Max"
+                      src="/devices/phone/apple/iphone-18-pro-max-black.png"
+                      alt="iPhone 18 Pro Max"
                       style={{
                         position: 'relative',
                         width: '100%',
