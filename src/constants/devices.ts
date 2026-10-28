@@ -7,15 +7,23 @@ export interface DeviceCutoutSpec {
   height: string;
   radiusRatio: number;
   topOnlyRadius?: boolean;
+  cornerRadiiRatios?: [number, number, number, number]; // [top-left, top-right, bottom-right, bottom-left]
 }
 
 export const DEVICE_CUTOUTS: Record<string, DeviceCutoutSpec> = {
   // PHONES
   'iphone-18-pro-max': { top: '2.20%', left: '5.10%', width: '89.80%', height: '95.60%', radiusRatio: 0.052 },
   'iphone-18-pro': { top: '2.50%', left: '5.33%', width: '89.33%', height: '95.00%', radiusRatio: 0.055 },
-  'iphone-duo': { top: '5.34%', left: '3.88%', width: '92.24%', height: '89.32%', radiusRatio: 0.038 },
-  'iphone-duo-closed': { top: '3.65%', left: '5.59%', width: '88.82%', height: '92.71%', radiusRatio: 0.014 },
-  'iphone-duo-outer-open': { top: '3.65%', left: '51.37%', width: '45.75%', height: '92.71%', radiusRatio: 0.007 },
+  // iphone-duo (açık iç ekran, 3093x2247 landscape)
+  // Ekran deliği: X=[120..2972], Y=[120..2126] → left=3.88%, width=92.21%, top=5.34%, height=89.28%
+  'iphone-duo': { top: '5.34%', left: '3.88%', width: '92.21%', height: '89.28%', radiusRatio: 0.048 },
+  // iphone-duo-closed (kapak/ön ekran, 1574x2194 portrait)
+  // Ekran deliği: X=[88..1485], Y=[80..2113] → sol düz kenar (menteşe), sağ köşe iç R=200px→33px ekranda
+  // cornerRadiiRatios: [TL, TR, BR, BL] = [menteşe-üst, dış-üst, dış-alt, menteşe-alt]
+  'iphone-duo-closed': { top: '3.65%', left: '5.59%', width: '88.82%', height: '92.71%', radiusRatio: 0.127, cornerRadiiRatios: [0.016, 0.127, 0.127, 0.016] },
+  // iphone-duo-outer-open (dış görünüm, 3056x2194 landscape – sağ yarıda ekran)
+  // Ekran deliği: X=[1570..2967], Y=[80..2113] → TR iç R=200px→17px ekranda
+  'iphone-duo-outer-open': { top: '3.65%', left: '51.37%', width: '45.75%', height: '92.71%', radiusRatio: 0.065, cornerRadiiRatios: [0.008, 0.065, 0.065, 0.008] },
   'iphone-17-pro-max': { top: '1.25%', left: '3.34%', width: '93.57%', height: '97.50%', radiusRatio: 0.14036 },
   'iphone-17-pro': { top: '1.25%', left: '3.34%', width: '93.57%', height: '97.50%', radiusRatio: 0.14036 },
   'iphone-17': { top: '1.25%', left: '3.09%', width: '93.81%', height: '97.50%', radiusRatio: 0.14072 },
@@ -45,7 +53,12 @@ export const DEVICE_CUTOUTS: Record<string, DeviceCutoutSpec> = {
 };
 
 export const getDeviceBorderRadius = (specs: DeviceCutoutSpec, displayWidth: number): string => {
-  if (!specs || specs.radiusRatio <= 0) return '0px';
+  if (!specs) return '0px';
+  if (specs.cornerRadiiRatios) {
+    const [tl, tr, br, bl] = specs.cornerRadiiRatios.map((ratio) => Math.round(displayWidth * ratio));
+    return `${tl}px ${tr}px ${br}px ${bl}px`;
+  }
+  if (specs.radiusRatio <= 0) return '0px';
   const r = Math.round(displayWidth * specs.radiusRatio);
   if (specs.topOnlyRadius) {
     return `${r}px ${r}px 0px 0px`;
