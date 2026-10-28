@@ -4034,6 +4034,11 @@ input[type="range"] {
   fill: #FFFFFF !important;
 }
 
+/* In Store Banner Maker design canvas, the Devtoo logo stem should stay dark (#0F172A) on the app badge */
+[data-theme='dark'] .banner-canvas-app-icon-default .devtoo-logo-stem {
+  fill: #0F172A !important;
+}
+
 /* Banner Inspector Panel in Dark Mode */
 [data-theme='dark'] .banner-inspector-panel {
   background-color: var(--bg-card);

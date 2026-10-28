@@ -1033,22 +1033,22 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                               justifyContent: 'center',
                               gap: '4px',
                               padding: '8px 4px',
-                              backgroundColor: '#F8FAFC',
-                              border: '1px solid #E2E8F0',
+                              backgroundColor: 'var(--bg-subtle)',
+                              border: '1px solid var(--border-default)',
                               borderRadius: '8px',
-                              color: '#334155',
+                              color: 'var(--text-secondary)',
                               cursor: 'pointer',
                               transition: 'all 0.15s ease',
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = '#F1F5F9';
-                              e.currentTarget.style.borderColor = '#0F172A';
-                              e.currentTarget.style.color = '#0F172A';
+                              e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+                              e.currentTarget.style.borderColor = 'var(--chili-primary)';
+                              e.currentTarget.style.color = 'var(--text-primary)';
                             }}
                             onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = '#F8FAFC';
-                              e.currentTarget.style.borderColor = '#E2E8F0';
-                              e.currentTarget.style.color = '#334155';
+                              e.currentTarget.style.backgroundColor = 'var(--bg-subtle)';
+                              e.currentTarget.style.borderColor = 'var(--border-default)';
+                              e.currentTarget.style.color = 'var(--text-secondary)';
                             }}
                             onClick={() => handleAddShape(item.type)}
                           >
@@ -1101,8 +1101,8 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                             gap: '6px',
                             padding: '4px 8px',
                             borderRadius: '6px',
-                            border: isSelected ? '1.5px solid #0F172A' : '1px solid #CBD5E1',
-                            backgroundColor: isSelected ? '#F8FAFC' : '#FFFFFF',
+                            border: isSelected ? '1.5px solid var(--chili-primary)' : '1px solid var(--border-default)',
+                            backgroundColor: isSelected ? 'var(--bg-subtle)' : 'var(--bg-card)',
                             cursor: 'pointer',
                             fontSize: '11px',
                             flexShrink: 0,
@@ -1141,8 +1141,8 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
               {selectedShape && (
                 <div
                   style={{
-                    backgroundColor: '#F8FAFC',
-                    border: '1px solid #E2E8F0',
+                    backgroundColor: 'var(--bg-subtle)',
+                    border: '1px solid var(--border-default)',
                     borderRadius: '8px',
                     padding: '10px',
                     marginBottom: '12px',
@@ -1349,8 +1349,8 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
               </div>
 
               {enabledDevices.length === 0 ? (
-                <div style={{ padding: '16px', textAlign: 'center', backgroundColor: '#F8FAFC', borderRadius: '8px', border: '1px dashed #CBD5E1' }}>
-                  <p style={{ fontSize: '12px', color: '#64748B', margin: 0 }}>
+                <div style={{ padding: '16px', textAlign: 'center', backgroundColor: 'var(--bg-subtle)', borderRadius: '8px', border: '1px dashed var(--border-default)' }}>
+                  <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
                     Henüz bir cihaz bulunmuyor.
                   </p>
                 </div>
@@ -1376,19 +1376,19 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                           justifyContent: 'space-between',
                           padding: '8px 12px',
                           borderRadius: '8px',
-                          border: isSelected ? '1.5px solid #0F172A' : '1px solid #E2E8F0',
-                          backgroundColor: isSelected ? '#F8FAFC' : '#FFFFFF',
+                          border: isSelected ? '1.5px solid var(--chili-primary)' : '1px solid var(--border-default)',
+                          backgroundColor: isSelected ? 'var(--bg-subtle)' : 'var(--bg-card)',
                           cursor: 'pointer',
                           transition: 'all 0.15s ease',
                         }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <Smartphone size={16} color={isSelected ? '#0F172A' : '#64748B'} />
+                          <Smartphone size={16} color={isSelected ? 'var(--chili-primary)' : 'var(--text-secondary)'} />
                           <div>
                             <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
                               Cihaz {enabledDevices.findIndex((d) => d.id === dev.id) + 1}
                             </div>
-                            <div style={{ fontSize: '10.5px', color: '#64748B' }}>
+                            <div style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>
                               {modelInfo?.name || dev.deviceType}
                             </div>
                           </div>
@@ -1526,12 +1526,12 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
         {activeTab === 'text' && (
           <div id="section-banner-text-layers" className="inspector-tab-pane" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {/* Header with "+ Metin Ekle" button */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid #E2E8F0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-default)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   Metin Katmanları
                 </span>
-                <span style={{ fontSize: '10px', backgroundColor: '#F1F5F9', color: '#64748B', padding: '1px 6px', borderRadius: '10px', fontWeight: 700 }}>
+                <span style={{ fontSize: '10px', backgroundColor: 'var(--bg-subtle)', color: 'var(--text-secondary)', padding: '1px 6px', borderRadius: '10px', fontWeight: 700 }}>
                   {textLayers.length}
                 </span>
               </div>
@@ -1578,9 +1578,9 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                           gap: '6px',
                           padding: '5px 10px',
                           borderRadius: '6px',
-                          border: isSelected ? '1.5px solid #D90429' : '1px solid #CBD5E1',
-                          backgroundColor: isSelected ? '#D90429' : '#FFFFFF',
-                          color: isSelected ? '#FFFFFF' : '#334155',
+                          border: isSelected ? '1.5px solid #D90429' : '1px solid var(--border-default)',
+                          backgroundColor: isSelected ? '#D90429' : 'var(--bg-card)',
+                          color: isSelected ? '#FFFFFF' : 'var(--text-primary)',
                           fontSize: '11px',
                           fontWeight: isSelected ? 700 : 500,
                           cursor: 'pointer',
@@ -1598,8 +1598,8 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                           });
                         }}
                       >
-                        <Type size={11} color={isSelected ? '#FFFFFF' : '#64748B'} />
-                        <span style={{ maxWidth: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: isSelected ? '#FFFFFF' : '#334155' }}>
+                        <Type size={11} color={isSelected ? '#FFFFFF' : 'var(--text-secondary)'} />
+                        <span style={{ maxWidth: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: isSelected ? '#FFFFFF' : 'var(--text-primary)' }}>
                           {layer.text.trim() ? layer.text : `Metin ${index + 1}`}
                         </span>
                         {textLayers.length > 1 && (
@@ -1611,7 +1611,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                             title="Bu metni sil"
                             style={{
                               marginLeft: '2px',
-                              color: isSelected ? 'rgba(255, 255, 255, 0.8)' : '#94A3B8',
+                              color: isSelected ? 'rgba(255, 255, 255, 0.8)' : 'var(--text-muted)',
                               fontWeight: 700,
                               fontSize: '13px',
                               lineHeight: 1,
@@ -1619,7 +1619,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                               padding: '0 2px',
                             }}
                             onMouseEnter={(e) => (e.currentTarget.style.color = '#FFFFFF')}
-                            onMouseLeave={(e) => (e.currentTarget.style.color = isSelected ? 'rgba(255, 255, 255, 0.8)' : '#94A3B8')}
+                            onMouseLeave={(e) => (e.currentTarget.style.color = isSelected ? 'rgba(255, 255, 255, 0.8)' : 'var(--text-muted)')}
                           >
                             ×
                           </span>
@@ -1633,7 +1633,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                     {/* Text Input */}
                     <div className="control-group">
-                      <div className="control-label" style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
+                      <div className="control-label" style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>
                         Metin İçeriği
                       </div>
                       <textarea
@@ -1644,7 +1644,9 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                           width: '100%',
                           padding: '8px 10px',
                           borderRadius: '6px',
-                          border: '1px solid #CBD5E1',
+                          border: '1px solid var(--border-default)',
+                          backgroundColor: 'var(--bg-card)',
+                          color: 'var(--text-primary)',
                           fontSize: '12px',
                           resize: 'vertical',
                           fontFamily: 'inherit',
@@ -1659,10 +1661,10 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
 
                     {/* Word Format Ribbon */}
                     <div className="control-group">
-                      <div className="control-label" style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
+                      <div className="control-label" style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>
                         Biçimlendirme
                       </div>
-                      <div style={{ display: 'flex', gap: '4px', backgroundColor: '#F1F5F9', padding: '4px', borderRadius: '8px' }}>
+                      <div style={{ display: 'flex', gap: '4px', backgroundColor: 'var(--bg-subtle)', border: '1px solid var(--border-default)', padding: '4px', borderRadius: '8px' }}>
                         <button
                           type="button"
                           title="Kalın (Bold)"
@@ -1675,7 +1677,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                             borderRadius: '6px',
                             border: 'none',
                             backgroundColor: selectedTextLayer.isBold ? '#D90429' : 'transparent',
-                            color: selectedTextLayer.isBold ? '#FFFFFF' : '#475569',
+                            color: selectedTextLayer.isBold ? '#FFFFFF' : 'var(--text-secondary)',
                             boxShadow: selectedTextLayer.isBold ? '0 1px 3px rgba(217, 4, 41, 0.25)' : 'none',
                             cursor: 'pointer',
                           }}
@@ -1695,7 +1697,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                             borderRadius: '6px',
                             border: 'none',
                             backgroundColor: selectedTextLayer.isItalic ? '#D90429' : 'transparent',
-                            color: selectedTextLayer.isItalic ? '#FFFFFF' : '#475569',
+                            color: selectedTextLayer.isItalic ? '#FFFFFF' : 'var(--text-secondary)',
                             boxShadow: selectedTextLayer.isItalic ? '0 1px 3px rgba(217, 4, 41, 0.25)' : 'none',
                             cursor: 'pointer',
                           }}
@@ -1715,7 +1717,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                             borderRadius: '6px',
                             border: 'none',
                             backgroundColor: selectedTextLayer.isUnderline ? '#D90429' : 'transparent',
-                            color: selectedTextLayer.isUnderline ? '#FFFFFF' : '#475569',
+                            color: selectedTextLayer.isUnderline ? '#FFFFFF' : 'var(--text-secondary)',
                             boxShadow: selectedTextLayer.isUnderline ? '0 1px 3px rgba(217, 4, 41, 0.25)' : 'none',
                             cursor: 'pointer',
                           }}
@@ -1724,7 +1726,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                           <Underline size={14} />
                         </button>
 
-                        <div style={{ width: '1px', backgroundColor: '#CBD5E1', margin: '2px 2px' }} />
+                        <div style={{ width: '1px', backgroundColor: 'var(--border-default)', margin: '2px 2px' }} />
 
                         <button
                           type="button"
@@ -1738,7 +1740,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                             borderRadius: '6px',
                             border: 'none',
                             backgroundColor: selectedTextLayer.textAlign === 'left' ? '#D90429' : 'transparent',
-                            color: selectedTextLayer.textAlign === 'left' ? '#FFFFFF' : '#475569',
+                            color: selectedTextLayer.textAlign === 'left' ? '#FFFFFF' : 'var(--text-secondary)',
                             boxShadow: selectedTextLayer.textAlign === 'left' ? '0 1px 3px rgba(217, 4, 41, 0.25)' : 'none',
                             cursor: 'pointer',
                           }}
@@ -1758,7 +1760,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                             borderRadius: '6px',
                             border: 'none',
                             backgroundColor: (!selectedTextLayer.textAlign || selectedTextLayer.textAlign === 'center') ? '#D90429' : 'transparent',
-                            color: (!selectedTextLayer.textAlign || selectedTextLayer.textAlign === 'center') ? '#FFFFFF' : '#475569',
+                            color: (!selectedTextLayer.textAlign || selectedTextLayer.textAlign === 'center') ? '#FFFFFF' : 'var(--text-secondary)',
                             boxShadow: (!selectedTextLayer.textAlign || selectedTextLayer.textAlign === 'center') ? '0 1px 3px rgba(217, 4, 41, 0.25)' : 'none',
                             cursor: 'pointer',
                           }}
@@ -1778,7 +1780,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                             borderRadius: '6px',
                             border: 'none',
                             backgroundColor: selectedTextLayer.textAlign === 'right' ? '#D90429' : 'transparent',
-                            color: selectedTextLayer.textAlign === 'right' ? '#FFFFFF' : '#475569',
+                            color: selectedTextLayer.textAlign === 'right' ? '#FFFFFF' : 'var(--text-secondary)',
                             boxShadow: selectedTextLayer.textAlign === 'right' ? '0 1px 3px rgba(217, 4, 41, 0.25)' : 'none',
                             cursor: 'pointer',
                           }}
@@ -1791,14 +1793,14 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
 
                     {/* Yazı Tipi Ailesi */}
                     <div className="control-group">
-                      <div className="control-label" style={{ fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
+                      <div className="control-label" style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>
                         Yazı Tipi
                       </div>
                       <select
                         className="select-field"
                         value={selectedTextLayer.fontFamily || 'outfit'}
                         onChange={(e) => handleUpdateTextLayer({ fontFamily: e.target.value })}
-                        style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px' }}
+                        style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--border-default)', backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)', fontSize: '12px' }}
                       >
                         {FONTS.map((f) => (
                           <option key={f.id} value={f.id}>{f.name}</option>
@@ -1808,7 +1810,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
 
                     {/* Metin Boyutu (Punto) */}
                     <div className="control-group">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>
                         <span>Metin Boyutu</span>
                         <span style={{ fontFamily: 'monospace', color: '#D90429' }}>{selectedTextLayer.fontSize}px</span>
                       </div>
@@ -1865,9 +1867,9 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
 
                     {/* Metin Rengi */}
                     <div className="control-group">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>
                         <span>Metin Rengi</span>
-                        <span style={{ fontFamily: 'monospace', color: '#64748B' }}>{selectedTextLayer.color?.toUpperCase()}</span>
+                        <span style={{ fontFamily: 'monospace', color: 'var(--text-muted)' }}>{selectedTextLayer.color?.toUpperCase()}</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'nowrap', overflowX: 'auto', paddingBottom: '4px', scrollbarWidth: 'none' }}>
                         {PALETTE_PRESETS.map((color) => {
@@ -1882,7 +1884,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                                 height: '20px',
                                 borderRadius: '50%',
                                 backgroundColor: color,
-                                border: isColorSelected ? '2px solid #D90429' : '1px solid rgba(0,0,0,0.15)',
+                                border: isColorSelected ? '2px solid #D90429' : '1px solid var(--border-default)',
                                 boxShadow: isColorSelected ? '0 0 0 2px rgba(217, 4, 41, 0.25)' : 'none',
                                 cursor: 'pointer',
                                 padding: 0,
@@ -1905,7 +1907,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                             alignItems: 'center',
                             justifyContent: 'center',
                             backgroundColor: selectedTextLayer.color,
-                            border: '1px solid rgba(0,0,0,0.2)',
+                            border: '1px solid var(--border-default)',
                             cursor: 'pointer',
                             overflow: 'hidden',
                             flexShrink: 0,
@@ -1934,9 +1936,9 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
 
                     {/* Döndürme Açısı */}
                     <div className="control-group">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>
                         <span>Döndürme Açısı</span>
-                        <span style={{ fontFamily: 'monospace', color: '#64748B' }}>{selectedTextLayer.rotation || 0}°</span>
+                        <span style={{ fontFamily: 'monospace', color: 'var(--text-muted)' }}>{selectedTextLayer.rotation || 0}°</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <input
@@ -1971,10 +1973,10 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                           alignItems: 'center',
                           justifyContent: 'center',
                           gap: '5px',
-                          backgroundColor: '#F8FAFC',
-                          border: '1px solid #CBD5E1',
+                          backgroundColor: 'var(--bg-subtle)',
+                          border: '1px solid var(--border-default)',
                           borderRadius: '6px',
-                          color: '#334155',
+                          color: 'var(--text-secondary)',
                           fontWeight: 600,
                           cursor: 'pointer',
                         }}
@@ -2013,8 +2015,8 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                 ) : null}
               </>
             ) : (
-              <div style={{ padding: '24px 16px', textAlign: 'center', backgroundColor: '#F8FAFC', borderRadius: '8px', border: '1px dashed #CBD5E1' }}>
-                <p style={{ fontSize: '12px', color: '#64748B', margin: '0 0 10px 0' }}>
+              <div style={{ padding: '24px 16px', textAlign: 'center', backgroundColor: 'var(--bg-subtle)', borderRadius: '8px', border: '1px dashed var(--border-default)' }}>
+                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '0 0 10px 0' }}>
                   Henüz bir metin katmanı bulunmuyor.
                 </p>
                 <button

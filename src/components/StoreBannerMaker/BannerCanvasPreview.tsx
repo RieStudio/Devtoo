@@ -2538,6 +2538,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                       />
                     ) : (
                       <div
+                        className="banner-canvas-app-icon-default"
                         style={{
                           width: '100%',
                           height: '100%',
@@ -2552,6 +2553,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
                         <DevtooLogo
                           size={Math.round(config.appIconSize * 0.65)}
                           variant="swift"
+                          stemColor="#0F172A"
                         />
                       </div>
                     )}
