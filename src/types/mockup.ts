@@ -2,6 +2,11 @@ export type DeviceCategory = 'phone' | 'pc' | 'tab' | 'tv' | 'watch';
 
 export type DeviceType = 
   // Phones
+  | 'iphone-18-pro-max'
+  | 'iphone-18-pro'
+  | 'iphone-duo'
+  | 'iphone-duo-closed'
+  | 'iphone-duo-outer-open'
   | 'iphone-17'
   | 'iphone-17-pro'
   | 'iphone-17-pro-max' 

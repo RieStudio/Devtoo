@@ -11,6 +11,11 @@ export interface DeviceCutoutSpec {
 
 export const DEVICE_CUTOUTS: Record<string, DeviceCutoutSpec> = {
   // PHONES
+  'iphone-18-pro-max': { top: '7.23%', left: '5.10%', width: '89.80%', height: '90.57%', radiusRatio: 0.135 },
+  'iphone-18-pro': { top: '7.97%', left: '5.33%', width: '89.33%', height: '89.53%', radiusRatio: 0.135 },
+  'iphone-duo': { top: '5.34%', left: '3.88%', width: '92.24%', height: '89.32%', radiusRatio: 0.04 },
+  'iphone-duo-closed': { top: '3.65%', left: '5.59%', width: '88.82%', height: '92.71%', radiusRatio: 0.11 },
+  'iphone-duo-outer-open': { top: '3.65%', left: '51.37%', width: '45.75%', height: '92.71%', radiusRatio: 0.055 },
   'iphone-17-pro-max': { top: '1.25%', left: '3.34%', width: '93.57%', height: '97.50%', radiusRatio: 0.14036 },
   'iphone-17-pro': { top: '1.25%', left: '3.34%', width: '93.57%', height: '97.50%', radiusRatio: 0.14036 },
   'iphone-17': { top: '1.25%', left: '3.09%', width: '93.81%', height: '97.50%', radiusRatio: 0.14072 },
@@ -50,6 +55,70 @@ export const getDeviceBorderRadius = (specs: DeviceCutoutSpec, displayWidth: num
 
 export const DEVICE_MODELS: DeviceModelInfo[] = [
   // ==================== PHONE ====================
+  {
+    id: 'iphone-18-pro-max',
+    category: 'phone',
+    brand: 'apple',
+    name: 'iPhone 18 Pro Max',
+    tag: 'Flagship 6.9"',
+    defaultRatio: 1470 / 3000,
+    colors: [
+      { id: 'black', name: 'Siyah', hex: '#232324', borderHex: '#38383B', imagePath: '/devices/phone/apple/iphone-18-pro-max-black.png' },
+      { id: 'burgundy', name: 'Bordo', hex: '#5A2530', borderHex: '#441822', imagePath: '/devices/phone/apple/iphone-18-pro-max-burgundy.png' },
+      { id: 'glacier', name: 'Buz Mavisi', hex: '#D5E0EA', borderHex: '#B8C9D8', imagePath: '/devices/phone/apple/iphone-18-pro-max-glacier.png' },
+      { id: 'silver', name: 'Gümüş', hex: '#E4E4E6', borderHex: '#CBCBCF', imagePath: '/devices/phone/apple/iphone-18-pro-max-silver.png' },
+    ],
+  },
+  {
+    id: 'iphone-18-pro',
+    category: 'phone',
+    brand: 'apple',
+    name: 'iPhone 18 Pro',
+    tag: 'Pro 6.3"',
+    defaultRatio: 1350 / 2760,
+    colors: [
+      { id: 'black', name: 'Siyah', hex: '#232324', borderHex: '#38383B', imagePath: '/devices/phone/apple/iphone-18-pro-black.png' },
+      { id: 'burgundy', name: 'Bordo', hex: '#5A2530', borderHex: '#441822', imagePath: '/devices/phone/apple/iphone-18-pro-burgundy.png' },
+      { id: 'glacier', name: 'Buz Mavisi', hex: '#D5E0EA', borderHex: '#B8C9D8', imagePath: '/devices/phone/apple/iphone-18-pro-glacier.png' },
+      { id: 'silver', name: 'Gümüş', hex: '#E4E4E6', borderHex: '#CBCBCF', imagePath: '/devices/phone/apple/iphone-18-pro-silver.png' },
+    ],
+  },
+  {
+    id: 'iphone-duo',
+    category: 'phone',
+    brand: 'apple',
+    name: 'iPhone Duo (Açık)',
+    tag: 'Foldable 7.9"',
+    defaultRatio: 3093 / 2247,
+    colors: [
+      { id: 'star-white', name: 'Yıldız Beyazı', hex: '#F4F4F6', borderHex: '#DCDDE0', imagePath: '/devices/phone/apple/iphone-duo-star-white.png' },
+      { id: 'night-sky', name: 'Gece Göğü', hex: '#1D2026', borderHex: '#2B303A', imagePath: '/devices/phone/apple/iphone-duo-night-sky.png' },
+    ],
+  },
+  {
+    id: 'iphone-duo-closed',
+    category: 'phone',
+    brand: 'apple',
+    name: 'iPhone Duo (Kapak)',
+    tag: 'Cover 5.8"',
+    defaultRatio: 1574 / 2194,
+    colors: [
+      { id: 'star-white', name: 'Yıldız Beyazı', hex: '#F4F4F6', borderHex: '#DCDDE0', imagePath: '/devices/phone/apple/iphone-duo-closed-star-white.png' },
+      { id: 'night-sky', name: 'Gece Göğü', hex: '#1D2026', borderHex: '#2B303A', imagePath: '/devices/phone/apple/iphone-duo-closed-night-sky.png' },
+    ],
+  },
+  {
+    id: 'iphone-duo-outer-open',
+    category: 'phone',
+    brand: 'apple',
+    name: 'iPhone Duo (Dış Görünüm)',
+    tag: 'Arka Kasa & Ekran',
+    defaultRatio: 3056 / 2194,
+    colors: [
+      { id: 'star-white', name: 'Yıldız Beyazı', hex: '#F4F4F6', borderHex: '#DCDDE0', imagePath: '/devices/phone/apple/iphone-duo-outer-open-star-white.png' },
+      { id: 'night-sky', name: 'Gece Göğü', hex: '#1D2026', borderHex: '#2B303A', imagePath: '/devices/phone/apple/iphone-duo-outer-open-night-sky.png' },
+    ],
+  },
   {
     id: 'iphone-17-pro-max',
     category: 'phone',
