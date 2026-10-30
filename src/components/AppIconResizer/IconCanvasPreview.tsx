@@ -31,6 +31,7 @@ import gmailSvg from '../../assets/google-gmail.svg';
 import type { IconResizerConfig, IconSizeSpec, PreviewTab, CornerRadiusType } from '../../types/iconResizer';
 import { ALL_ICON_SIZES, IOS_ICON_SIZES, ANDROID_ICON_SIZES } from '../../constants/iconSizes';
 import { exportSingleIcon, renderIconToCanvas } from '../../utils/iconGenerator';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface IconCanvasPreviewProps {
   config: IconResizerConfig;
@@ -46,6 +47,7 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
   onChangeConfig,
   onFileSelect,
 }) => {
+  const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState<PreviewTab>('device-preview');
   const [selectedGalleryPlatform, setSelectedGalleryPlatform] = useState<'all' | 'ios' | 'android'>('all');
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
@@ -167,9 +169,9 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
               <Upload size={38} color="#D90429" />
             </div>
 
-            <h2 className="icon-empty-title">Uygulama İkonunu Yükleyin veya Sürükleyin</h2>
+            <h2 className="icon-empty-title">{t.iconResizer.emptyDropTitle}</h2>
             <p className="icon-empty-subtitle">
-              iOS ve Android için tek tıkla eksiksiz simge paketleri oluşturun.
+              {t.iconResizer.emptyDropSubtitle}
             </p>
 
             <div className="icon-empty-actions" onClick={(e) => e.stopPropagation()}>
@@ -180,7 +182,7 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
                 onClick={() => fileInputRef.current?.click()}
               >
                 <Upload size={16} />
-                <span>Görsel Seç</span>
+                <span>{t.iconResizer.selectImage}</span>
               </button>
             </div>
           </div>
@@ -198,7 +200,7 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
                 onClick={() => setActiveTab('device-preview')}
               >
                 <Smartphone size={14} />
-                <span>Cihaz Önizleme</span>
+                <span>{t.iconResizer.devicePreview}</span>
               </button>
               <button
                 type="button"
@@ -206,7 +208,7 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
                 onClick={() => setActiveTab('all-sizes')}
               >
                 <Layers size={14} />
-                <span>Tüm Boyutlar Galerisi ({ALL_ICON_SIZES.length})</span>
+                <span>{t.iconResizer.allSizesGallery(ALL_ICON_SIZES.length)}</span>
               </button>
             </div>
           </div>
@@ -249,8 +251,8 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
                     type="button"
                     className="dark-mode-toggle-btn"
                     onClick={() => onChangeConfig({ previewDarkMode: !config.previewDarkMode })}
-                    title={config.previewDarkMode ? 'Açık Duvar Kağıdına Geç' : 'Koyu Duvar Kağıdına Geç'}
-                    aria-label={config.previewDarkMode ? 'Açık Duvar Kağıdı' : 'Koyu Duvar Kağıdı'}
+                    title={config.previewDarkMode ? t.iconResizer.switchWallpaperLight : t.iconResizer.switchWallpaperDark}
+                    aria-label={config.previewDarkMode ? t.iconResizer.switchWallpaperLight : t.iconResizer.switchWallpaperDark}
                   >
                     {config.previewDarkMode ? <Sun size={15} /> : <Moon size={15} />}
                   </button>
@@ -320,7 +322,7 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
                         {/* Dock Container */}
                         <div className="iphone-dock-glass">
                           {/* Custom User App Icon */}
-                          <div className="iphone-app-item dock-item highlighted" title={config.appName || 'Uygulama'}>
+                          <div className="iphone-app-item dock-item highlighted" title={config.appName || (language === 'tr' ? 'Uygulama' : 'App')}>
                             <div
                               className="iphone-app-icon-wrapper"
                               style={{
@@ -339,21 +341,21 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
                           </div>
 
                           {/* Companion Apps */}
-                          <div className="iphone-app-item dock-item mock" title="Fotoğraflar">
+                          <div className="iphone-app-item dock-item mock" title={language === 'tr' ? 'Fotoğraflar' : 'Photos'}>
                             <div className="iphone-app-icon-wrapper">
-                              <img src={photosIcon} alt="Fotoğraflar" className="iphone-icon-img" />
+                              <img src={photosIcon} alt={language === 'tr' ? 'Fotoğraflar' : 'Photos'} className="iphone-icon-img" />
                             </div>
                           </div>
 
-                          <div className="iphone-app-item dock-item mock" title="Kamera">
+                          <div className="iphone-app-item dock-item mock" title={language === 'tr' ? 'Kamera' : 'Camera'}>
                             <div className="iphone-app-icon-wrapper">
-                              <img src={cameraIcon} alt="Kamera" className="iphone-icon-img" />
+                              <img src={cameraIcon} alt={language === 'tr' ? 'Kamera' : 'Camera'} className="iphone-icon-img" />
                             </div>
                           </div>
 
-                          <div className="iphone-app-item dock-item mock" title="Harita">
+                          <div className="iphone-app-item dock-item mock" title={language === 'tr' ? 'Harita' : 'Maps'}>
                             <div className="iphone-app-icon-wrapper">
-                              <img src={mapsIcon} alt="Harita" className="iphone-icon-img" />
+                              <img src={mapsIcon} alt={language === 'tr' ? 'Harita' : 'Maps'} className="iphone-icon-img" />
                             </div>
                           </div>
                         </div>
@@ -439,7 +441,7 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
                         {/* Google Search Pill */}
                         <div className="android-search-pill">
                           <span className="g-logo">G</span>
-                          <span className="search-placeholder">Uygulama ve internette ara</span>
+                          <span className="search-placeholder">{language === 'tr' ? 'Uygulama ve internette ara' : 'Search apps & web'}</span>
                         </div>
 
                         {/* App Grid */}
@@ -454,7 +456,7 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
                                 <img src={previewDataUrl} alt={config.appName} className="android-icon-img" />
                               )}
                             </div>
-                            <span className="android-app-label active-app-label">{config.appName || 'Uygulama'}</span>
+                            <span className="android-app-label active-app-label">{config.appName || (language === 'tr' ? 'Uygulama' : 'App')}</span>
                           </div>
 
                           {/* Companion Apps */}
@@ -516,7 +518,7 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
                   className={`gallery-filter-btn ${selectedGalleryPlatform === 'all' ? 'active' : ''}`}
                   onClick={() => setSelectedGalleryPlatform('all')}
                 >
-                  <span>Tümü</span>
+                  <span>{t.iconResizer.all}</span>
                   <span className="count-badge">{ALL_ICON_SIZES.length}</span>
                 </button>
                 <button
@@ -599,10 +601,10 @@ export const IconCanvasPreview: React.FC<IconCanvasPreviewProps> = ({
                         type="button"
                         className="btn-download-icon"
                         onClick={() => handleDownloadSingle(spec)}
-                        title={`${spec.fileName} dosyasını tekli PNG olarak indir`}
+                        title={t.iconResizer.downloadSingle(spec.fileName)}
                       >
                         <Download size={13} />
-                        <span>İndir</span>
+                        <span>{t.iconResizer.download}</span>
                       </button>
                     </div>
                   </div>

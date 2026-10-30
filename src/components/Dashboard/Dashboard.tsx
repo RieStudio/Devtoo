@@ -20,6 +20,7 @@ import {
   LOCAL_PROJECTS_CHANGED_EVENT, 
   type ToolType 
 } from '../../lib/storage';
+import { useLanguage } from '../../i18n/LanguageContext';
 import './Dashboard.css';
 
 interface DashboardProject {
@@ -42,6 +43,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onLoadProject,
   onShowToast,
 }) => {
+  const { t, language } = useLanguage();
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [localProjects, setLocalProjects] = useState<DashboardProject[]>([]);
   const [projectToDelete, setProjectToDelete] = useState<DashboardProject | null>(null);
@@ -206,7 +208,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     a.download = `${project.name.toLowerCase().replace(/[^a-z0-9]/g, '-') || 'proje'}.devtoo`;
     a.click();
     URL.revokeObjectURL(url);
-    onShowToast('Proje dosyası (.devtoo) indirildi.');
+    onShowToast(t.toasts.projectFileDownloaded);
   };
 
   // Handle import JSON file
@@ -220,15 +222,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
         const parsed = JSON.parse(event.target?.result as string);
         if (parsed.format === 'devtoo-project' && parsed.tool_type && parsed.data) {
           onLoadProject(parsed.tool_type as ToolType, parsed.data);
-          onShowToast('Proje başarıyla yüklendi.');
+          onShowToast(t.toasts.projectLoaded);
         } else if (parsed.screens) {
           onLoadProject('mockup', parsed);
-          onShowToast('Mockup projesi yüklendi.');
+          onShowToast(t.toasts.mockupLoaded);
         } else {
-          onShowToast('Geçersiz proje dosyası formatı.');
+          onShowToast(t.toasts.invalidFormat);
         }
       } catch {
-        onShowToast('Dosya okunurken bir hata oluştu.');
+        onShowToast(t.toasts.fileReadError);
       }
     };
     reader.readAsText(file);
@@ -239,9 +241,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const formatDate = (isoStr: string) => {
     try {
       const d = new Date(isoStr);
-      return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
+      return d.toLocaleDateString(language === 'tr' ? 'tr-TR' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' });
     } catch {
-      return 'Yakın zamanda';
+      return language === 'tr' ? 'Yakın zamanda' : 'Recently';
     }
   };
 
@@ -261,10 +263,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <div className="dashboard-hero-header">
           <div className="dashboard-hero-title-group">
             <h1 className="dashboard-hero-title">
-              Ne tasarlamak istiyorsunuz?
+              {t.dashboard.heroTitle}
             </h1>
             <p className="dashboard-hero-subtitle">
-              Mobil uygulamalarınız ve web projeleriniz için ekran görüntüleri, mağaza bannerları, ikon paketleri ve yasal politikaları dakikalar içinde hazırlayın.
+              {t.dashboard.heroSubtitle}
             </p>
           </div>
 
@@ -273,10 +275,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
               type="button"
               className="dashboard-btn-import"
               onClick={() => fileInputRef.current?.click()}
-              title="Önceden indirilmiş bir .devtoo veya .json projesini içe aktar"
+              title={t.dashboard.openProjectTooltip}
             >
               <Upload size={14} color="#D90429" />
-              <span>Dosya Aç (.devtoo)</span>
+              <span>{t.dashboard.openProjectFile}</span>
             </button>
           </div>
         </div>
@@ -287,7 +289,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <input
             type="text"
             className="dashboard-search-input"
-            placeholder="Projelerinizde veya araçlarda arayın..."
+            placeholder={t.dashboard.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -296,7 +298,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               type="button"
               className="dashboard-search-clear"
               onClick={() => setSearchQuery('')}
-              title="Aramayı Temizle"
+              title={t.dashboard.clearSearch}
             >
               <X size={14} />
             </button>
@@ -308,7 +310,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <section className="dashboard-section">
         <div className="dashboard-section-header">
           <div className="dashboard-section-title-wrap">
-            <h2 className="dashboard-section-title">Yeni Tasarım Başlat</h2>
+            <h2 className="dashboard-section-title">{t.dashboard.startNewDesign}</h2>
           </div>
         </div>
 
@@ -324,13 +326,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </div>
             </div>
             <div className="quick-card-body">
-              <h3 className="quick-card-title">Mockup Editor</h3>
+              <h3 className="quick-card-title">{t.dashboard.mockupCardTitle}</h3>
               <p className="quick-card-desc">
-                iPhone, Galaxy ve Pixel çerçeveli profesyonel App Store & Google Play ekran görüntüleri.
+                {t.dashboard.mockupCardDesc}
               </p>
             </div>
             <div className="quick-card-action">
-              <span>Hemen Başla</span>
+              <span>{t.dashboard.getStarted}</span>
               <ArrowRight size={14} />
             </div>
           </div>
@@ -346,13 +348,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </div>
             </div>
             <div className="quick-card-body">
-              <h3 className="quick-card-title">Store Banner Maker</h3>
+              <h3 className="quick-card-title">{t.dashboard.bannerCardTitle}</h3>
               <p className="quick-card-desc">
-                Google Play Feature Graphic, mağaza vitrin bannerları ve pazarlama görselleri.
+                {t.dashboard.bannerCardDesc}
               </p>
             </div>
             <div className="quick-card-action" style={{ color: '#D97706' }}>
-              <span>Hemen Başla</span>
+              <span>{t.dashboard.getStarted}</span>
               <ArrowRight size={14} />
             </div>
           </div>
@@ -368,13 +370,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </div>
             </div>
             <div className="quick-card-body">
-              <h3 className="quick-card-title">App Icon Resizer</h3>
+              <h3 className="quick-card-title">{t.dashboard.iconCardTitle}</h3>
               <p className="quick-card-desc">
-                Tek bir görselden iOS, iPadOS ve Android için 30+ boyutta simge paketi oluşturun.
+                {t.dashboard.iconCardDesc}
               </p>
             </div>
             <div className="quick-card-action" style={{ color: '#2563EB' }}>
-              <span>Hemen Başla</span>
+              <span>{t.dashboard.getStarted}</span>
               <ArrowRight size={14} />
             </div>
           </div>
@@ -390,13 +392,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </div>
             </div>
             <div className="quick-card-body">
-              <h3 className="quick-card-title">Privacy Policy Studio</h3>
+              <h3 className="quick-card-title">{t.dashboard.privacyCardTitle}</h3>
               <p className="quick-card-desc">
-                Mobil uygulamanız için yasal gerekliliklere uygun gizlilik politikası ve veri güvenliği beyanı.
+                {t.dashboard.privacyCardDesc}
               </p>
             </div>
             <div className="quick-card-action" style={{ color: '#059669' }}>
-              <span>Hemen Başla</span>
+              <span>{t.dashboard.getStarted}</span>
               <ArrowRight size={14} />
             </div>
           </div>
@@ -407,7 +409,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <section className="dashboard-section">
         <div className="dashboard-section-header">
           <div className="dashboard-section-title-wrap">
-            <h2 className="dashboard-section-title">Son Tasarımlarım</h2>
+            <h2 className="dashboard-section-title">{t.dashboard.recentDesigns}</h2>
           </div>
         </div>
 
@@ -419,7 +421,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 key={project.id}
                 className="project-card"
                 onClick={() => handleOpenProject(project)}
-                title="Tasarımı açmak için tıklayın"
+                title={t.dashboard.openTooltip}
               >
                 {/* Visual Thumbnail */}
                 <div className="project-card-thumbnail">
@@ -446,13 +448,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       onClick={() => handleOpenProject(project)}
                     >
                       <ExternalLink size={13} />
-                      <span>Aç</span>
+                      <span>{t.dashboard.open}</span>
                     </button>
                     <button
                       type="button"
                       className="project-card-icon-btn"
                       onClick={(e) => handleExportProjectJson(project, e)}
-                      title=".devtoo dosyası olarak indir"
+                      title={t.dashboard.downloadDevtoo}
                     >
                       <Download size={14} />
                     </button>
@@ -460,7 +462,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       type="button"
                       className="project-card-icon-btn"
                       onClick={(e) => handleDeleteProject(project, e)}
-                      title="Tasarımı Sil"
+                      title={t.dashboard.deleteDesign}
                     >
                       <Trash2 size={14} />
                     </button>
@@ -473,7 +475,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     <h4 className="project-card-title">{project.name}</h4>
                   </div>
                   <div className="project-card-meta">
-                    <span>Otomatik Taslak</span>
+                    <span>{t.dashboard.autoDraft}</span>
                     <span>{formatDate(project.updated_at)}</span>
                   </div>
                 </div>
@@ -486,12 +488,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <Layers size={26} />
             </div>
             <h3 className="dashboard-empty-title">
-              {searchQuery ? 'Aramanızla eşleşen tasarım bulunamadı' : 'Henüz kayıtlı bir tasarımınız yok'}
+              {searchQuery ? t.dashboard.noSearchMatch : t.dashboard.noSavedDesigns}
             </h3>
             <p className="dashboard-empty-desc">
               {searchQuery 
-                ? 'Farklı bir arama terimi deneyin.'
-                : 'Yukarıdaki araçlardan birine tıklayarak hemen ilk tasarımınızı oluşturun veya bir .devtoo proje dosyasını içeri aktarın.'}
+                ? t.dashboard.tryDifferentSearch
+                : t.dashboard.emptyStatePrompt}
             </p>
             {!searchQuery && (
               <button
@@ -500,7 +502,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 onClick={() => onSelectTool('mockup-editor')}
               >
                 <Plus size={15} />
-                <span>İlk Mockup Tasarımını Başlat</span>
+                <span>{t.dashboard.startFirstMockup}</span>
               </button>
             )}
           </div>
@@ -515,7 +517,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           target="_blank"
           rel="noopener noreferrer"
           className="dashboard-footer-logo-link"
-          title="RieStudio'yu Ziyaret Et (riestudio.com.tr)"
+          title={t.dashboard.visitRieStudio}
         >
           <img
             src="/riestudio-light.png"
@@ -603,10 +605,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </div>
               <div style={{ flex: 1 }}>
                 <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
-                  Tasarımı Sil
+                  {t.dashboard.deleteDesign}
                 </h3>
                 <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                  <strong style={{ color: 'var(--text-primary)' }}>"{projectToDelete.name}"</strong> adlı tasarımı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
+                  <strong style={{ color: 'var(--text-primary)' }}>"{projectToDelete.name}"</strong> {language === 'tr' ? 'adlı tasarımı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.' : 'design will be permanently deleted. This action cannot be undone.'}
                 </p>
               </div>
             </div>
@@ -638,7 +640,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   transition: 'all 0.15s ease',
                 }}
               >
-                Vazgeç
+                {t.common.cancel}
               </button>
               <button
                 type="button"
@@ -660,7 +662,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 }}
               >
                 <Trash2 size={14} />
-                <span>Evet, Sil</span>
+                <span>{t.common.delete}</span>
               </button>
             </div>
           </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Download, X, FileImage, Tag, Sparkles, Check, Info } from 'lucide-react';
 import type { StoreBannerConfig } from '../../types/storeBanner';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface BannerExportModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ export const BannerExportModal: React.FC<BannerExportModalProps> = ({
   isExporting,
   config,
 }) => {
+  const { t, language } = useLanguage();
   const [selectedFormat, setSelectedFormat] = useState<'png' | 'jpeg'>('png');
   const [selectedScale, setSelectedScale] = useState<number>(config.exportScale || 1);
   const [customFilename, setCustomFilename] = useState<string>('');
@@ -46,21 +48,23 @@ export const BannerExportModal: React.FC<BannerExportModalProps> = ({
       label: '1x',
       width: config.width,
       height: config.height,
-      badge: isGooglePlay ? 'Resmi Boyut' : 'Standart',
+      badge: isGooglePlay
+        ? (language === 'tr' ? 'Resmi Boyut' : 'Official Size')
+        : (language === 'tr' ? 'Standart' : 'Standard'),
     },
     {
       scale: 2,
       label: '2x',
       width: config.width * 2,
       height: config.height * 2,
-      badge: 'Yüksek Çözünürlük',
+      badge: language === 'tr' ? 'Yüksek Çözünürlük' : 'High Resolution',
     },
     {
       scale: 3,
       label: '3x',
       width: config.width * 3,
       height: config.height * 3,
-      badge: 'Ultra Çözünürlük',
+      badge: language === 'tr' ? 'Ultra Çözünürlük' : 'Ultra Resolution',
     },
   ];
 
@@ -118,10 +122,10 @@ export const BannerExportModal: React.FC<BannerExportModalProps> = ({
             <Download size={20} color="var(--chili-primary)" />
             <div>
               <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>
-                Banner'ı İndir
+                {t.bannerMaker.exportModalTitle}
               </div>
               <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                Mağaza boyut ve kalite standartlarına uygun görsel çıktısı
+                {t.bannerMaker.exportSubtitle}
               </div>
             </div>
           </div>
@@ -151,12 +155,12 @@ export const BannerExportModal: React.FC<BannerExportModalProps> = ({
           <div>
             <div style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <FileImage size={14} color="var(--text-muted)" />
-              <span>Dosya Formatı</span>
+              <span>{t.mockup.exportModal.format}</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
               {[
-                { id: 'png' as const, label: 'PNG', badge: 'Kayıpsız / Mağaza Standardı' },
-                { id: 'jpeg' as const, label: 'JPEG', badge: 'Yüksek Kalite' },
+                { id: 'png' as const, label: 'PNG', badge: language === 'tr' ? 'Kayıpsız / Mağaza Standardı' : 'Lossless / Store Standard' },
+                { id: 'jpeg' as const, label: 'JPEG', badge: language === 'tr' ? 'Yüksek Kalite' : 'High Quality' },
               ].map((item) => {
                 const isSelected = selectedFormat === item.id;
                 return (
@@ -197,9 +201,9 @@ export const BannerExportModal: React.FC<BannerExportModalProps> = ({
             <div style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Tag size={14} color="var(--text-muted)" />
-                <span>Dosya Adı</span>
+                <span>{t.mockup.exportModal.filename}</span>
               </div>
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>İsteğe bağlı</span>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{language === 'tr' ? 'İsteğe bağlı' : 'Optional'}</span>
             </div>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <input
@@ -238,7 +242,7 @@ export const BannerExportModal: React.FC<BannerExportModalProps> = ({
           <div>
             <div style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Sparkles size={14} color="var(--text-muted)" />
-              <span>Dışa Aktarma Kalitesi</span>
+              <span>{t.mockup.exportModal.quality}</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
               {scaleOptions.map((opt) => {
@@ -314,11 +318,15 @@ export const BannerExportModal: React.FC<BannerExportModalProps> = ({
             <div>
               {isGooglePlay ? (
                 <span>
-                  Google Play Console, Öne Çıkan Grafik için <strong>kesinlikle 1024×500 px (1x)</strong> ve şeffaflıksız (opak) görsel zorunlu tutar. Mağazaya yüklemek için <strong>1x</strong> seçin. Portfolyo veya web tanıtımları için <strong>2x veya 3x</strong> çözünürlük kullanabilirsiniz.
+                  {language === 'tr'
+                    ? <>Google Play Console, Öne Çıkan Grafik için <strong>kesinlikle 1024×500 px (1x)</strong> ve şeffaflıksız (opak) görsel zorunlu tutar. Mağazaya yüklemek için <strong>1x</strong> seçin. Portfolyo veya web tanıtımları için <strong>2x veya 3x</strong> çözünürlük kullanabilirsiniz.</>
+                    : <>Google Play Console strictly requires <strong>1024×500 px (1x)</strong> and an opaque visual for Feature Graphics. Choose <strong>1x</strong> for store submission. Use <strong>2x or 3x</strong> for portfolio or web promo.</>}
                 </span>
               ) : (
                 <span>
-                  Doğrudan mağaza yüklemeleri için <strong>1x</strong>, yüksek çözünürlüklü web ve tanıtım kullanımı için <strong>2x veya 3x</strong> çözünürlük önerilir.
+                  {language === 'tr'
+                    ? <>Doğrudan mağaza yüklemeleri için <strong>1x</strong>, yüksek çözünürlüklü web ve tanıtım kullanımı için <strong>2x veya 3x</strong> çözünürlük önerilir.</>
+                    : <><strong>1x</strong> recommended for direct store uploads, <strong>2x or 3x</strong> for crisp web and promo usage.</>}
                 </span>
               )}
             </div>
@@ -353,7 +361,7 @@ export const BannerExportModal: React.FC<BannerExportModalProps> = ({
               cursor: isExporting ? 'not-allowed' : 'pointer',
             }}
           >
-            İptal
+            {t.common.cancel}
           </button>
           <button
             type="button"
@@ -378,7 +386,7 @@ export const BannerExportModal: React.FC<BannerExportModalProps> = ({
             }}
           >
             <Download size={15} />
-            <span>{isExporting ? 'Hazırlanıyor...' : `${selectedFormat.toUpperCase()} İndir`}</span>
+            <span>{isExporting ? t.common.generating : `${selectedFormat.toUpperCase()} ${t.common.download}`}</span>
           </button>
         </div>
       </div>

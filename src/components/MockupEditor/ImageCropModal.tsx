@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import ReactCrop, { type Crop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { Check, X, Crop as CropIcon, RotateCcw } from 'lucide-react';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface ImageCropModalProps {
   imageSrc: string;
@@ -20,6 +21,7 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
   onResetToOriginal,
   onCancel,
 }) => {
+  const { t, language } = useLanguage();
   const [crop, setCrop] = useState<Crop | undefined>(savedInitialCrop);
   const [completedCrop, setCompletedCrop] = useState<Crop | undefined>(savedInitialCrop);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -312,7 +314,7 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <CropIcon size={18} color="var(--chili-primary)" />
-            <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>Görseli Kırp ve Düzenle</span>
+            <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>{t.mockup.cropModal.title}</span>
             <span style={{
               fontSize: '11px',
               backgroundColor: 'var(--bg-subtle)',
@@ -322,7 +324,7 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
               fontWeight: 600,
               border: '1px solid var(--border-default)',
             }}>
-              Köşeler: Orantılı / Kenarlar: En-Boy
+              {language === 'tr' ? 'Köşeler: Orantılı / Kenarlar: Serbest' : 'Corners: Proportional / Edges: Free'}
             </span>
           </div>
           <button
@@ -335,6 +337,7 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
               padding: '4px',
               borderRadius: '6px'
             }}
+            title={t.common.close}
           >
             <X size={18} />
           </button>
@@ -392,16 +395,16 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
             className="btn-secondary"
             onClick={() => {
               if (onResetToOriginal) {
-                onResetToOriginal();
+                 onResetToOriginal();
               } else {
                 handleResetToDefault();
               }
             }}
-            title="Fotoğrafı ilk yüklendiği orijinal duruşuna döndür"
+            title={t.mockup.cropModal.reset}
             style={{ gap: '6px' }}
           >
             <RotateCcw size={14} />
-            <span>Orijinale Sıfırla</span>
+            <span>{t.mockup.cropModal.reset}</span>
           </button>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -409,7 +412,7 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
               className="btn-secondary"
               onClick={onCancel}
             >
-              İptal
+              {t.common.cancel}
             </button>
 
             <button
@@ -417,7 +420,7 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
               onClick={handleSaveCrop}
             >
               <Check size={16} />
-              <span>Kırpmayı Uygula</span>
+              <span>{t.mockup.cropModal.apply}</span>
             </button>
           </div>
         </div>

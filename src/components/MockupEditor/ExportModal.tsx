@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Download, X, FileImage, Layers, Check, Sparkles, Tag } from 'lucide-react';
 import appleSvg from '../../assets/apple.svg';
 import googlePlaySvg from '../../assets/googleplay.svg';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 export type ExportFormat = 'png' | 'jpeg' | 'svg' | 'webp';
 
@@ -78,6 +79,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   canvasHeight = 1920,
   isExporting,
 }) => {
+  const { t, language } = useLanguage();
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('png');
   const [selectedPresetCategory, setSelectedPresetCategory] = useState<ExportPresetCategory>('playstore');
   const [selectedPresetId, setSelectedPresetId] = useState<string>('playstore-1x');
@@ -229,10 +231,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             <Download size={20} color="var(--chili-primary)" />
             <div>
               <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>
-                Görseli İndir
+                {t.mockup.exportModal.title}
               </div>
               <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                App Store ve Play Store için optimize edilmiş hazır şablonlar
+                {language === 'tr' ? 'App Store ve Play Store için optimize edilmiş hazır şablonlar' : 'Presets optimized for App Store & Google Play'}
               </div>
             </div>
           </div>
@@ -251,7 +253,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               justifyContent: 'center',
               transition: 'all 0.15s ease',
             }}
-            title="Kapat"
+            title={t.common.close}
           >
             <X size={18} />
           </button>
@@ -264,7 +266,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             <div>
               <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Layers size={14} color="var(--text-muted)" />
-                <span>İndirme Kapsamı</span>
+                <span>{t.mockup.exportModal.scope}</span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <button
@@ -286,7 +288,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <span style={{ fontSize: '13px', fontWeight: 700, color: exportScope === 'active' ? '#FFFFFF' : 'var(--text-primary)' }}>
-                      Seçili Ekran
+                      {t.mockup.exportModal.activeScreenOnly}
                     </span>
                     {exportScope === 'active' && <Check size={16} color="#FFFFFF" />}
                   </div>
@@ -314,12 +316,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <span style={{ fontSize: '13px', fontWeight: 700, color: exportScope === 'all' ? '#FFFFFF' : 'var(--text-primary)' }}>
-                      Tüm Ekranlar ({screenCount})
+                      {t.mockup.exportModal.allScreensZip} ({screenCount})
                     </span>
                     {exportScope === 'all' && <Check size={16} color="#FFFFFF" />}
                   </div>
                   <span style={{ fontSize: '11px', color: exportScope === 'all' ? 'rgba(255, 255, 255, 0.85)' : 'var(--text-muted)' }}>
-                    ZIP Arşivi Olarak
+                    {language === 'tr' ? 'ZIP Arşivi Olarak' : 'As ZIP Archive'}
                   </span>
                 </button>
               </div>
@@ -330,11 +332,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           <div>
             <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <FileImage size={14} color="var(--text-muted)" />
-              <span>Dosya Formatı</span>
+              <span>{t.mockup.exportModal.format}</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
               {FORMAT_OPTIONS.map((item) => {
                 const isSelected = selectedFormat === item.id;
+                const badgeText = item.id === 'png' ? t.mockup.exportModal.lossless : item.id === 'svg' ? t.mockup.exportModal.vector : item.ext;
                 return (
                   <button
                     key={item.id}
@@ -362,7 +365,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                       {item.label}
                     </span>
                     <span style={{ fontSize: '10px', fontWeight: 500, color: isSelected ? 'rgba(255, 255, 255, 0.85)' : 'var(--text-muted)' }}>
-                      {item.badge ? item.badge : item.ext}
+                      {item.badge ? badgeText : item.ext}
                     </span>
                   </button>
                 );
@@ -375,10 +378,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Tag size={14} color="var(--text-muted)" />
-                <span>Dosya Adı</span>
+                <span>{t.mockup.exportModal.filename}</span>
               </div>
               <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 400 }}>
-                {exportScope === 'all' && screenCount > 1 ? 'ZIP ve dosya öneki' : 'Özel isim belirleyebilirsiniz'}
+                {exportScope === 'all' && screenCount > 1
+                  ? (language === 'tr' ? 'ZIP ve dosya öneki' : 'ZIP and file prefix')
+                  : (language === 'tr' ? 'Özel isim belirleyebilirsiniz' : 'You can specify a custom filename')}
               </span>
             </div>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
@@ -426,7 +431,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             <div>
               <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Sparkles size={14} color="var(--text-muted)" />
-                <span>Mağaza & Çözünürlük Şablonları</span>
+                <span>{t.mockup.exportModal.presetCategory}</span>
               </div>
 
               {/* Category Segmented Tabs */}
@@ -464,7 +469,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                   },
                   {
                     id: 'general' as const,
-                    label: 'Genel',
+                    label: language === 'tr' ? 'Genel' : 'General',
                     renderIcon: () => null,
                   },
                 ].map((tab) => {
@@ -570,7 +575,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             onClick={onClose}
             disabled={isExporting}
           >
-            İptal
+            {t.common.cancel}
           </button>
           <button
             type="button"
@@ -580,7 +585,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             style={{ padding: '8px 20px', minWidth: '130px', justifyContent: 'center' }}
           >
             <Download size={15} />
-            <span>{isExporting ? 'Hazırlanıyor...' : `${selectedFormat.toUpperCase()} İndir`}</span>
+            <span>{isExporting ? t.common.exporting : `${t.common.download} ${selectedFormat.toUpperCase()}`}</span>
           </button>
         </div>
       </div>

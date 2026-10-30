@@ -1,6 +1,7 @@
 import React from 'react';
 import { Download, Upload, Smartphone, Image as ImageIcon, Layout, ShieldCheck, Undo2, Redo2, Sun, Moon } from 'lucide-react';
 import { DevtooLogo } from './common/DevtooLogo';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface HeaderProps {
   activeTool?: string;
@@ -34,6 +35,33 @@ export const Header: React.FC<HeaderProps> = ({
   theme = 'light',
   onToggleTheme,
 }) => {
+  const { language, toggleLanguage, t } = useLanguage();
+
+  const renderGlobalControls = () => (
+    <>
+      <button
+        type="button"
+        className="btn-lang-toggle"
+        onClick={toggleLanguage}
+        title={language === 'tr' ? 'Switch to English (EN)' : "Türkçe'ye Geç (TR)"}
+        aria-label="Change Language"
+      >
+        <span className="lang-code">{language.toUpperCase()}</span>
+      </button>
+
+      {onToggleTheme && (
+        <button
+          type="button"
+          className="btn-theme-toggle"
+          onClick={onToggleTheme}
+          title={theme === 'dark' ? t.header.switchThemeLight : t.header.switchThemeDark}
+          aria-label={theme === 'dark' ? t.header.switchThemeLight : t.header.switchThemeDark}
+        >
+          {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+        </button>
+      )}
+    </>
+  );
 
   return (
     <header className={`devtoo-header ${activeTool === 'dashboard' ? 'floating-island-navbar' : ''}`}>
@@ -52,22 +80,22 @@ export const Header: React.FC<HeaderProps> = ({
             {activeTool === 'app-icon-resizer' ? (
               <>
                 <ImageIcon size={18} color="var(--chili-primary)" />
-                <span>App Icon Resizer</span>
+                <span>{t.sidebar.appIconResizer}</span>
               </>
             ) : activeTool === 'store-banner-maker' ? (
               <>
                 <Layout size={18} color="var(--chili-primary)" />
-                <span>Store Banner Maker</span>
+                <span>{t.sidebar.storeBannerMaker}</span>
               </>
             ) : activeTool === 'privacy-policy-studio' ? (
               <>
                 <ShieldCheck size={18} color="var(--chili-primary)" />
-                <span>Privacy Policy Studio</span>
+                <span>{t.sidebar.privacyPolicyStudio}</span>
               </>
             ) : (
               <>
                 <Smartphone size={18} color="var(--chili-primary)" />
-                <span>Mockup Editor</span>
+                <span>{t.sidebar.mockupEditor}</span>
               </>
             )}
           </div>
@@ -76,108 +104,78 @@ export const Header: React.FC<HeaderProps> = ({
 
       {activeTool === 'dashboard' && (
         <div className="header-actions">
-          {onToggleTheme && (
-            <button
-              type="button"
-              className="btn-theme-toggle"
-              onClick={onToggleTheme}
-              title={theme === 'dark' ? 'Açık Moda Geç' : 'Koyu Moda Geç'}
-              aria-label={theme === 'dark' ? 'Açık Moda Geç' : 'Koyu Moda Geç'}
-            >
-              {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
-            </button>
-          )}
+          {renderGlobalControls()}
         </div>
       )}
 
       {activeTool === 'mockup-editor' && (
         <div className="header-actions">
-        {onUndo && onRedo && (
-          <div style={{ display: 'flex', gap: '2px', backgroundColor: 'var(--bg-subtle)', padding: '2px', borderRadius: '8px', marginRight: '4px' }}>
-            <button
-              type="button"
-              className="btn-secondary"
-              style={{ padding: '6px 8px', border: 'none', background: 'transparent' }}
-              onClick={onUndo}
-              disabled={!canUndo}
-              title="Geri Al (Ctrl + Z)"
-            >
-              <Undo2 size={15} />
-            </button>
-            <button
-              type="button"
-              className="btn-secondary"
-              style={{ padding: '6px 8px', border: 'none', background: 'transparent' }}
-              onClick={onRedo}
-              disabled={!canRedo}
-              title="İleri Al (Ctrl + Y / Ctrl + Shift + Z)"
-            >
-              <Redo2 size={15} />
-            </button>
-          </div>
-        )}
+          {onUndo && onRedo && (
+            <div style={{ display: 'flex', gap: '2px', backgroundColor: 'var(--bg-subtle)', padding: '2px', borderRadius: '8px', marginRight: '4px' }}>
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{ padding: '6px 8px', border: 'none', background: 'transparent' }}
+                onClick={onUndo}
+                disabled={!canUndo}
+                title={t.header.undoTooltip}
+              >
+                <Undo2 size={15} />
+              </button>
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{ padding: '6px 8px', border: 'none', background: 'transparent' }}
+                onClick={onRedo}
+                disabled={!canRedo}
+                title={t.header.redoTooltip}
+              >
+                <Redo2 size={15} />
+              </button>
+            </div>
+          )}
 
-        {screenCount <= 1 && (
-          <button className="btn-secondary" onClick={onUploadClick}>
-            <Upload size={14} />
-            <span>Ekran Görüntüsü Yükle</span>
-          </button>
-        )}
+          {screenCount <= 1 && (
+            <button className="btn-secondary" onClick={onUploadClick}>
+              <Upload size={14} />
+              <span>{t.header.uploadScreenshot}</span>
+            </button>
+          )}
 
-        {screenCount > 1 && onExportAll && (
-          <button className="btn-secondary" onClick={onExportAll} disabled={isExporting} title="Tüm ekranları tek bir dosya olarak indir">
+          {screenCount > 1 && onExportAll && (
+            <button className="btn-secondary" onClick={onExportAll} disabled={isExporting} title={t.header.downloadAllScreens}>
+              <Download size={14} />
+              <span>{t.header.downloadAllScreens}</span>
+            </button>
+          )}
+
+          <button className="btn-chili" onClick={onExport} disabled={isExporting}>
             <Download size={14} />
-            <span>Tüm Ekranları İndir</span>
+            <span>{isExporting ? t.common.exporting : t.header.exportDesign}</span>
           </button>
-        )}
 
-        <button className="btn-chili" onClick={onExport} disabled={isExporting}>
-          <Download size={14} />
-          <span>{isExporting ? 'Dışa Aktarılıyor...' : 'İndir'}</span>
-        </button>
-
-        {onToggleTheme && (
-          <button
-            type="button"
-            className="btn-theme-toggle"
-            onClick={onToggleTheme}
-            title={theme === 'dark' ? 'Açık Moda Geç' : 'Koyu Moda Geç'}
-            aria-label={theme === 'dark' ? 'Açık Moda Geç' : 'Koyu Moda Geç'}
-          >
-            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-          </button>
-        )}
-      </div>
+          {renderGlobalControls()}
+        </div>
       )}
 
       {activeTool === 'app-icon-resizer' && (
         <div className="header-actions">
-          <button className="btn-secondary" onClick={onUploadClick} title={hasIconImage ? 'Görseli değiştir' : 'İkon görseli yükle'}>
+          <button className="btn-secondary" onClick={onUploadClick} title={hasIconImage ? t.header.changeIcon : t.header.uploadIcon}>
             <Upload size={14} />
-            <span>{hasIconImage ? 'Görseli Değiştir' : 'İkon Yükle'}</span>
+            <span>{hasIconImage ? t.header.changeIcon : t.header.uploadIcon}</span>
           </button>
 
           <button
             className="btn-chili"
             onClick={onExport}
             disabled={isExporting || !hasIconImage}
-            title={hasIconImage ? 'Tüm simge paketlerini (.ZIP) indir' : 'Lütfen önce bir ikon görseli yükleyin'}
+            title={hasIconImage ? t.header.iconDownloadTooltip : t.header.iconDownloadDisabledTooltip}
           >
             <Download size={14} />
-            <span>{isExporting ? 'Dışa Aktarılıyor...' : 'İndir'}</span>
+            <span>{isExporting ? t.common.exporting : t.common.download}</span>
           </button>
 
-          {onToggleTheme && (
-            <button
-              type="button"
-              className="btn-theme-toggle"
-              onClick={onToggleTheme}
-              title={theme === 'dark' ? 'Açık Moda Geç' : 'Koyu Moda Geç'}
-              aria-label={theme === 'dark' ? 'Açık Moda Geç' : 'Koyu Moda Geç'}
-            >
-              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-            </button>
-          )}
+          {renderGlobalControls()}
         </div>
       )}
 
@@ -191,7 +189,7 @@ export const Header: React.FC<HeaderProps> = ({
                 style={{ padding: '6px 8px', border: 'none', background: 'transparent' }}
                 onClick={onUndo}
                 disabled={!canUndo}
-                title="Geri Al (Ctrl + Z)"
+                title={t.header.undoTooltip}
               >
                 <Undo2 size={15} />
               </button>
@@ -201,39 +199,29 @@ export const Header: React.FC<HeaderProps> = ({
                 style={{ padding: '6px 8px', border: 'none', background: 'transparent' }}
                 onClick={onRedo}
                 disabled={!canRedo}
-                title="İleri Al (Ctrl + Y / Ctrl + Shift + Z)"
+                title={t.header.redoTooltip}
               >
                 <Redo2 size={15} />
               </button>
             </div>
           )}
 
-          <button className="btn-secondary" onClick={onUploadClick} title="Ekran görüntüsü yükle">
+          <button className="btn-secondary" onClick={onUploadClick} title={t.header.uploadScreenshot}>
             <Upload size={14} />
-            <span>Ekran Görüntüsü Yükle</span>
+            <span>{t.header.uploadScreenshot}</span>
           </button>
 
           <button
             className="btn-chili"
             onClick={onExport}
             disabled={isExporting}
-            title="Bannerı yüksek kalitede indir"
+            title={t.header.bannerDownloadTooltip}
           >
             <Download size={14} />
-            <span>{isExporting ? 'Oluşturuluyor...' : 'İndir'}</span>
+            <span>{isExporting ? t.common.generating : t.common.download}</span>
           </button>
 
-          {onToggleTheme && (
-            <button
-              type="button"
-              className="btn-theme-toggle"
-              onClick={onToggleTheme}
-              title={theme === 'dark' ? 'Açık Moda Geç' : 'Koyu Moda Geç'}
-              aria-label={theme === 'dark' ? 'Açık Moda Geç' : 'Koyu Moda Geç'}
-            >
-              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-            </button>
-          )}
+          {renderGlobalControls()}
         </div>
       )}
 
@@ -243,26 +231,15 @@ export const Header: React.FC<HeaderProps> = ({
             className="btn-chili"
             onClick={onExport}
             disabled={isExporting}
-            title="Gizlilik politikasını hazır HTML dosyası olarak indir"
+            title={t.header.policyDownloadTooltip}
           >
             <Download size={14} />
-            <span>HTML İndir</span>
+            <span>{t.header.downloadHtml}</span>
           </button>
 
-          {onToggleTheme && (
-            <button
-              type="button"
-              className="btn-theme-toggle"
-              onClick={onToggleTheme}
-              title={theme === 'dark' ? 'Açık Moda Geç' : 'Koyu Moda Geç'}
-              aria-label={theme === 'dark' ? 'Açık Moda Geç' : 'Koyu Moda Geç'}
-            >
-              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-            </button>
-          )}
+          {renderGlobalControls()}
         </div>
       )}
     </header>
   );
 };
-

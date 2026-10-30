@@ -197,7 +197,7 @@ export function getMockupDevices(config: MockupConfig): CanvasDeviceItem[] {
 export interface ToolItem {
   id: string;
   name: string;
-  category: 'Genel' | 'Geliştirici Araçları' | 'Mağaza & Tasarım' | 'Kod & Yardımcılar';
+  category: string;
   icon: string;
   isAvailable: boolean;
   badge?: string;

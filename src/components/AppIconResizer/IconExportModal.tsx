@@ -9,6 +9,7 @@ import appleSvg from '../../assets/apple.svg';
 import androidSvg from '../../assets/android.svg';
 import type { IconResizerConfig } from '../../types/iconResizer';
 import { ALL_ICON_SIZES, IOS_ICON_SIZES, ANDROID_ICON_SIZES } from '../../constants/iconSizes';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface IconExportModalProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
   exportProgressText,
   exportPercent,
 }) => {
+  const { t } = useLanguage();
   const [customZipName, setCustomZipName] = useState<string>('');
 
   useEffect(() => {
@@ -52,7 +54,7 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
 
   const handleStartExportAll = () => {
     if (selectedSpecs.length === 0) {
-      alert('Lütfen en az bir platform seçin.');
+      alert(t.iconResizer.exportModal.selectPlatformWarning);
       return;
     }
     onExport(undefined, customZipName);
@@ -113,10 +115,10 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
             <Download size={20} color="var(--chili-primary)" />
             <div>
               <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>
-                İkon Paketlerini Dışa Aktar
+                {t.iconResizer.exportModal.title}
               </div>
               <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                iOS ve Android için optimize edilmiş simge setleri
+                {t.iconResizer.exportModal.subtitle}
               </div>
             </div>
           </div>
@@ -136,7 +138,7 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
               justifyContent: 'center',
               transition: 'all 0.15s ease',
             }}
-            title="Kapat"
+            title={t.common.close}
           >
             <X size={18} />
           </button>
@@ -205,7 +207,7 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
           <div>
             <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Layers size={13} color="var(--chili-primary)" />
-              <span>Dışa Aktarılacak Platformlar</span>
+              <span>{t.iconResizer.exportModal.platforms}</span>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -245,13 +247,13 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
                   <img src={appleSvg} alt="Apple" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />
                   <div>
                     <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span>iOS & iPadOS (Xcode)</span>
+                      <span>{t.iconResizer.exportModal.iosCardTitle}</span>
                       <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', backgroundColor: 'var(--bg-subtle)', padding: '1px 6px', borderRadius: '4px' }}>
-                        {IOS_ICON_SIZES.length} Boyut
+                        {IOS_ICON_SIZES.length} {t.common.size}
                       </span>
                     </div>
                     <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '1px' }}>
-                      AppIcon.appiconset klasörü ve resmi Contents.json dosyası
+                      {t.iconResizer.exportModal.iosCardDesc}
                     </div>
                   </div>
                 </label>
@@ -262,10 +264,10 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
                   style={{ fontSize: '11px', padding: '5px 10px', flexShrink: 0 }}
                   onClick={() => handleStartExportSingle('ios')}
                   disabled={isExporting || !config.sourceImageUrl}
-                  title="Yalnızca iOS Xcode paketini (.ZIP) indir"
+                  title={t.iconResizer.exportModal.exportSingleButton('iOS')}
                 >
                   <Download size={12} />
-                  <span>Tekli İndir</span>
+                  <span>{t.iconResizer.exportModal.exportSingleButton('iOS')}</span>
                 </button>
               </div>
 
@@ -305,13 +307,13 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
                   <img src={androidSvg} alt="Android" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />
                   <div>
                     <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span>Android (Android Studio)</span>
+                      <span>{t.iconResizer.exportModal.androidCardTitle}</span>
                       <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', backgroundColor: 'var(--bg-subtle)', padding: '1px 6px', borderRadius: '4px' }}>
-                        {ANDROID_ICON_SIZES.length} Boyut
+                        {ANDROID_ICON_SIZES.length} {t.common.size}
                       </span>
                     </div>
                     <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '1px' }}>
-                      res/mipmap-* (mdpi ... xxxhdpi) + Google Play 512px
+                      {t.iconResizer.exportModal.androidCardDesc}
                     </div>
                   </div>
                 </label>
@@ -322,10 +324,10 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
                   style={{ fontSize: '11px', padding: '5px 10px', flexShrink: 0 }}
                   onClick={() => handleStartExportSingle('android')}
                   disabled={isExporting || !config.sourceImageUrl}
-                  title="Yalnızca Android mipmap paketini (.ZIP) indir"
+                  title={t.iconResizer.exportModal.exportSingleButton('Android')}
                 >
                   <Download size={12} />
-                  <span>Tekli İndir</span>
+                  <span>{t.iconResizer.exportModal.exportSingleButton('Android')}</span>
                 </button>
               </div>
             </div>
@@ -335,7 +337,7 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
           <div>
             <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Settings2 size={13} color="var(--chili-primary)" />
-              <span>Dosya Adı</span>
+              <span>{t.iconResizer.exportModal.zipNameLabel}</span>
             </div>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <input
@@ -425,7 +427,7 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
             onClick={onClose}
             disabled={isExporting}
           >
-            İptal
+            {t.common.cancel}
           </button>
 
           <button
@@ -437,8 +439,8 @@ export const IconExportModal: React.FC<IconExportModalProps> = ({
           >
             <span>
               {isExporting
-                ? 'Paketleniyor...'
-                : `Tümünü İndir (.ZIP) [${selectedSpecs.length}]`}
+                ? t.common.exporting
+                : t.iconResizer.exportModal.exportZipButton(selectedSpecs.length)}
             </span>
           </button>
         </div>

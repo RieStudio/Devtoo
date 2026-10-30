@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Smartphone, 
   Image as ImageIcon, 
@@ -10,60 +10,62 @@ import {
 } from 'lucide-react';
 import type { ToolItem } from '../types/mockup';
 import { DevtooLogo } from './common/DevtooLogo';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface SidebarProps {
   activeTool: string;
   onSelectTool: (id: string) => void;
 }
 
-const TOOLS: ToolItem[] = [
-  {
-    id: 'dashboard',
-    name: 'Ana Sayfa',
-    category: 'Genel',
-    icon: 'LayoutGrid',
-    isAvailable: true,
-    description: 'Tasarım merkezi ve son projeler'
-  },
-  {
-    id: 'mockup-editor',
-    name: 'Mockup Editor',
-    category: 'Geliştirici Araçları',
-    icon: 'Smartphone',
-    isAvailable: true,
-    description: 'App Store & Play Store ekran görüntüsü giydirme'
-  },
-  {
-    id: 'app-icon-resizer',
-    name: 'App Icon Resizer',
-    category: 'Geliştirici Araçları',
-    icon: 'Image',
-    isAvailable: true,
-    description: 'iOS & Android simge seti boyutlandırma'
-  },
-  {
-    id: 'store-banner-maker',
-    name: 'Store Banner Maker',
-    category: 'Geliştirici Araçları',
-    icon: 'Layout',
-    isAvailable: true,
-    description: 'Google Play Feature Graphic & Mağaza Bannerı'
-  },
-  {
-    id: 'privacy-policy-studio',
-    name: 'Privacy Policy Studio',
-    category: 'Geliştirici Araçları',
-    icon: 'ShieldCheck',
-    isAvailable: true,
-    description: 'Gizlilik politikası & Play Store Veri Güvenliği formu'
-  },
-];
-
 export const Sidebar: React.FC<SidebarProps> = ({ 
   activeTool, 
   onSelectTool,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+  const { t } = useLanguage();
+
+  const tools: ToolItem[] = useMemo(() => [
+    {
+      id: 'dashboard',
+      name: t.sidebar.home,
+      category: t.sidebar.generalCategory,
+      icon: 'LayoutGrid',
+      isAvailable: true,
+      description: t.sidebar.homeDesc
+    },
+    {
+      id: 'mockup-editor',
+      name: t.sidebar.mockupEditor,
+      category: t.sidebar.devToolsCategory,
+      icon: 'Smartphone',
+      isAvailable: true,
+      description: t.sidebar.mockupEditorDesc
+    },
+    {
+      id: 'app-icon-resizer',
+      name: t.sidebar.appIconResizer,
+      category: t.sidebar.devToolsCategory,
+      icon: 'Image',
+      isAvailable: true,
+      description: t.sidebar.appIconResizerDesc
+    },
+    {
+      id: 'store-banner-maker',
+      name: t.sidebar.storeBannerMaker,
+      category: t.sidebar.devToolsCategory,
+      icon: 'Layout',
+      isAvailable: true,
+      description: t.sidebar.storeBannerMakerDesc
+    },
+    {
+      id: 'privacy-policy-studio',
+      name: t.sidebar.privacyPolicyStudio,
+      category: t.sidebar.devToolsCategory,
+      icon: 'ShieldCheck',
+      isAvailable: true,
+      description: t.sidebar.privacyPolicyStudioDesc
+    },
+  ], [t]);
 
   const getIcon = (iconName: string) => {
     switch (iconName) {
@@ -81,7 +83,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   };
 
-  const categories = Array.from(new Set(TOOLS.map((t) => t.category)));
+  const categories = Array.from(new Set(tools.map((tItem) => tItem.category)));
 
   return (
     <aside className={`devtoo-sidebar ${isCollapsed ? 'is-collapsed' : ''}`}>
@@ -91,7 +93,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           className="sidebar-header-brand"
           onClick={() => onSelectTool('dashboard')}
           style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0px', overflow: 'visible' }}
-          title="Ana Sayfaya Git (Dashboard)"
+          title={t.sidebar.goToDashboard}
         >
           <div style={{ marginRight: '-4px', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
             <DevtooLogo size={34} variant="swift" />
@@ -106,8 +108,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           type="button"
           className="sidebar-toggle-btn"
           onClick={() => setIsCollapsed(!isCollapsed)}
-          title={isCollapsed ? 'Menüyü Genişlet' : 'Menüyü Daralt'}
-          aria-label={isCollapsed ? 'Menüyü Genişlet' : 'Menüyü Daralt'}
+          title={isCollapsed ? t.sidebar.expandMenu : t.sidebar.collapseMenu}
+          aria-label={isCollapsed ? t.sidebar.expandMenu : t.sidebar.collapseMenu}
         >
           {isCollapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
         </button>
@@ -118,7 +120,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {categories.map((cat) => (
           <div key={cat} className="nav-group">
             {!isCollapsed && <div className="nav-section-title">{cat}</div>}
-            {TOOLS.filter((t) => t.category === cat).map((tool) => {
+            {tools.filter((tItem) => tItem.category === cat).map((tool) => {
               const isActive = activeTool === tool.id;
               return (
                 <button

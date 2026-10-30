@@ -13,6 +13,7 @@ import {
   Plus, 
   Smartphone 
 } from 'lucide-react';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface MockupCanvasProps {
   screens: MockupConfig[];
@@ -339,6 +340,7 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
   deviceFrameRef,
   isExporting = false,
 }) => {
+  const { t } = useLanguage();
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [panOffset, setPanOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
@@ -1785,7 +1787,7 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
           <button
             type="button"
             className="zoom-btn"
-            title="Uzaklaştır"
+            title={t.mockup.zoomOut}
             onClick={handleZoomOut}
           >
             <ZoomOut size={14} />
@@ -1794,7 +1796,7 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
           <button
             type="button"
             className="zoom-btn zoom-percentage-text"
-            title="Otomatik Sığdır / Varsayılan Boyut"
+            title={t.mockup.resetZoom}
             onClick={handleZoomReset}
           >
             %{Math.round(effectiveZoom * 100)}
@@ -1803,7 +1805,7 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
           <button
             type="button"
             className="zoom-btn"
-            title="Yakınlaştır"
+            title={t.mockup.zoomIn}
             onClick={handleZoomIn}
           >
             <ZoomIn size={14} />
@@ -1814,7 +1816,7 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
           <button
             type="button"
             className="zoom-btn"
-            title="Ekrana Sığdır"
+            title={t.mockup.fitToScreen}
             onClick={handleZoomReset}
           >
             <Maximize2 size={13} />
@@ -1893,23 +1895,23 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                     ) : (
                       <span
                         className="screen-title-clickable"
-                        title="İsmi değiştirmek için tıklayın"
+                        title={t.mockup.clickToEditName}
                         onClick={(e) => {
                           e.stopPropagation();
                           if (screenCfg.id && screenCfg.id !== activeScreenId) {
                             onSelectScreen?.(screenCfg.id);
                           }
                           setEditingScreenId(screenCfg.id || `screen-${screenIndex}`);
-                          setEditingScreenTitle(screenCfg.screenTitle || `Ekran ${screenIndex + 1}`);
+                          setEditingScreenTitle(screenCfg.screenTitle || t.mockup.screenTitle(screenIndex + 1));
                         }}
                       >
-                        {screenCfg.screenTitle || `Ekran ${screenIndex + 1}`}
+                        {screenCfg.screenTitle || t.mockup.screenTitle(screenIndex + 1)}
                       </span>
                     )}
 
                     {isThisActiveScreen && (
                       <span className="screen-active-badge">
-                        Seçili
+                        {t.common.selected}
                       </span>
                     )}
                   </div>
@@ -1918,7 +1920,7 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                     <button
                       type="button"
                       className="screen-action-btn rotate-btn"
-                      title={screenCfg.width > screenCfg.height ? 'Dikey Görünüme Döndür (Portre)' : 'Yatay Görünüme Döndür (Manzara)'}
+                      title={screenCfg.width > screenCfg.height ? t.mockup.rotatePortrait : t.mockup.rotateLandscape}
                       onClick={(e) => {
                         e.stopPropagation();
                         if (screenCfg.id && screenCfg.id !== activeScreenId) {
@@ -1940,7 +1942,7 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                     <button
                       type="button"
                       className="screen-action-btn"
-                      title="Yeni Ekran Ekle"
+                      title={t.mockup.addNewScreen}
                       onClick={(e) => {
                         e.stopPropagation();
                         onAddScreen?.();
@@ -1952,7 +1954,7 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                     <button
                       type="button"
                       className="screen-action-btn"
-                      title="Bu Ekranı Çoğalt"
+                      title={t.mockup.duplicateScreen}
                       onClick={(e) => {
                         e.stopPropagation();
                         if (screenCfg.id) onDuplicateScreen?.(screenCfg.id);
@@ -1965,7 +1967,7 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                       <button
                         type="button"
                         className="screen-action-btn delete"
-                        title="Bu Ekranı Sil"
+                        title={t.mockup.deleteScreen}
                         onClick={(e) => {
                           e.stopPropagation();
                           if (screenCfg.id) onDeleteScreen?.(screenCfg.id);
@@ -1981,7 +1983,7 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
                     <button
                       type="button"
                       className={`screen-gap-snap-btn ${isGapSnapped ? 'is-snapped' : ''}`}
-                      title={isGapSnapped ? 'Ekran aralığını aç (48px)' : 'Ekranları birbirine yaklaştır (Panorama görünümü)'}
+                      title={isGapSnapped ? t.mockup.snapSpacingOpen : t.mockup.snapSpacingClose}
                       onClick={(e) => {
                         e.stopPropagation();
                         toggleGapSnap(screenIndex);

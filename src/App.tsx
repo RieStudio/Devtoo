@@ -11,6 +11,7 @@ import { MockupCanvas } from './components/MockupEditor/MockupCanvas';
 import { InspectorPanel } from './components/MockupEditor/InspectorPanel';
 import type { ExportFormat } from './components/MockupEditor/ExportModal';
 import type { ToolType } from './lib/storage';
+import { useLanguage } from './i18n/LanguageContext';
 
 // Code Splitting / Lazy Loading for optimal initial load time
 const Dashboard = lazy(() => import('./components/Dashboard/Dashboard').then(m => ({ default: m.Dashboard })));
@@ -128,6 +129,7 @@ export function App() {
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
   const [isCropModalOpen, setIsCropModalOpen] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const { t, language } = useLanguage();
 
   // Dark / Light Mode State & Sync
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -286,7 +288,7 @@ export function App() {
 
   const handleAddScreen = () => {
     if (screens.length >= 10) {
-      showToast('En fazla 10 ekran ekleyebilirsiniz.');
+      showToast(t.toasts.maxScreensReached);
       return;
     }
 
@@ -295,7 +297,7 @@ export function App() {
     const newScreen: MockupConfig = {
       ...JSON.parse(JSON.stringify(INITIAL_CONFIG)),
       id: newScreenId,
-      screenTitle: `Ekran ${newScreenIndex}`,
+      screenTitle: t.mockup.screenTitle(newScreenIndex),
       selectedTextId: null,
       selectedTextIds: [],
     };
@@ -313,7 +315,7 @@ export function App() {
 
   const handleDuplicateScreen = (screenId: string) => {
     if (screens.length >= 10) {
-      showToast('En fazla 10 ekran ekleyebilirsiniz.');
+      showToast(t.toasts.maxScreensReached);
       return;
     }
 
@@ -325,7 +327,7 @@ export function App() {
     const duplicated: MockupConfig = {
       ...JSON.parse(JSON.stringify(targetScreen)),
       id: newScreenId,
-      screenTitle: `Ekran ${newScreenIndex} (Kopya)`,
+      screenTitle: t.mockup.screenCopy(newScreenIndex),
       selectedTextId: null,
       selectedTextIds: [],
     };
@@ -453,14 +455,14 @@ export function App() {
 
       // Cannot transfer the only device away in device-only mode
       if (source.exportMode === 'device-only' && remainingSourceDevs.length === 0) {
-        showToast('Sadece cihaz modundayken cihaz başka ekrana aktarılamaz.');
+        showToast(t.toasts.deviceOnlyNoTransfer);
         return prevScreens;
       }
 
       // Devices in target screen + transferred device
       const targetDevs = getMockupDevices(target);
       if (targetDevs.length >= 6) {
-        showToast('Hedef ekranda en fazla 6 cihaz bulunabilir.');
+        showToast(t.toasts.maxDevicesReachedCanvas);
         return prevScreens;
       }
       const nextTargetDevs = [...targetDevs, transferredDev];
@@ -531,8 +533,8 @@ export function App() {
     });
 
     setActiveScreenId(targetScreenId);
-    const targetTitle = screens.find((s) => s.id === targetScreenId)?.screenTitle || 'Yeni ekrana';
-    showToast(`Cihaz ${targetTitle} aktarıldı`);
+    const targetTitle = screens.find((s) => s.id === targetScreenId)?.screenTitle || (language === 'tr' ? 'Yeni ekrana' : 'New screen');
+    showToast(t.toasts.deviceTransferred(targetTitle));
   };
 
   const handleTransferShape = (
@@ -590,8 +592,8 @@ export function App() {
     });
 
     setActiveScreenId(targetScreenId);
-    const targetTitle = screens.find((s) => s.id === targetScreenId)?.screenTitle || 'Yeni ekrana';
-    showToast(`Şekil ${targetTitle} aktarıldı`);
+    const targetTitle = screens.find((s) => s.id === targetScreenId)?.screenTitle || (language === 'tr' ? 'Yeni ekrana' : 'New screen');
+    showToast(t.toasts.shapeTransferred(targetTitle));
   };
 
   const handleUndo = () => {
@@ -715,14 +717,14 @@ export function App() {
           e.preventDefault();
           const currentLayers = activeScreenConfig.textLayers || [];
           if (currentLayers.length >= 20) {
-            showToast('En fazla 20 metin katmanı ekleyebilirsiniz.');
+            showToast(t.toasts.maxTextLayersReached);
             return;
           }
 
           const availableSlots = 20 - currentLayers.length;
           const layersToClone = clipboardRef.current.data.slice(0, availableSlots);
           if (layersToClone.length < clipboardRef.current.data.length) {
-            showToast('Maksimum 20 metin katmanı sınırına ulaşıldı.');
+            showToast(t.toasts.maxTextLayersLimit);
           }
 
           const clonedLayers = layersToClone.map((l) => ({
@@ -771,7 +773,7 @@ export function App() {
           // In device-only mode, device cannot be deleted
           if (activeScreenConfig.exportMode === 'device-only') {
             e.preventDefault();
-            showToast('Sadece cihaz modundayken cihaz silinemez.');
+            showToast(t.toasts.deviceSilinemezDeviceOnly);
             return;
           }
           // Delete selected device from screen
@@ -1054,7 +1056,7 @@ export function App() {
         const targetElement = isDevOnly ? deviceFrameRef.current : exportRef.current;
 
         if (!targetElement) {
-          showToast('Dışa aktarılacak ekran bulunamadı.');
+          showToast(t.toasts.noScreensToExport);
           return;
         }
 
@@ -1085,7 +1087,7 @@ export function App() {
       setIsExportModalOpen(false);
     } catch (err) {
       console.error('Dışa aktarma hatası:', err);
-      showToast('Görsel dışa aktarılırken bir hata oluştu. Lütfen tekrar deneyin.');
+      showToast(t.toasts.exportError);
     } finally {
       setIsExporting(false);
     }
@@ -1344,7 +1346,7 @@ export function App() {
               type="button"
               className="toast-close-btn"
               onClick={() => setToastMessage(null)}
-              title="Kapat"
+              title={t.common.close}
             >
               <X size={14} />
             </button>

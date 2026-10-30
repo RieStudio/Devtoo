@@ -35,6 +35,7 @@ import type {
 import type { ShapeLayer, ShapeType, TextLayer } from '../../types/mockup';
 import { BANNER_PRESETS, BANNER_GRADIENTS, getPresetLayoutPatch } from '../../constants/bannerPresets';
 import { DEVICE_MODELS } from '../../constants/devices';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const PHONE_MODELS = DEVICE_MODELS.filter((m) => m.category === 'phone');
 
@@ -78,6 +79,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
   onUploadBgImage,
   onShowToast,
 }) => {
+  const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState<TabType>('presets');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const pendingScrollSectionRef = useRef<string | null>(null);
@@ -417,7 +419,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
           type="button"
           className={`tab-btn ${activeTab === 'presets' ? 'is-active' : ''}`}
           onClick={() => setActiveTab('presets')}
-          title="Mağaza Boyutları"
+          title={t.bannerMaker.tabs.presets}
           style={{
             flex: 1,
             padding: '7px 4px',
@@ -436,14 +438,14 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
           }}
         >
           <Maximize2 size={15} color={activeTab === 'presets' ? 'var(--chili-primary)' : 'var(--text-secondary)'} />
-          <span>Boyut</span>
+          <span>{t.bannerMaker.tabs.presets}</span>
         </button>
 
         <button
           type="button"
           className={`tab-btn ${activeTab === 'background' ? 'is-active' : ''}`}
           onClick={() => setActiveTab('background')}
-          title="Arka Plan"
+          title={t.bannerMaker.tabs.background}
           style={{
             flex: 1,
             padding: '7px 4px',
@@ -462,14 +464,14 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
           }}
         >
           <Palette size={15} color={activeTab === 'background' ? 'var(--chili-primary)' : 'var(--text-secondary)'} />
-          <span>Arka Plan</span>
+          <span>{t.bannerMaker.tabs.background}</span>
         </button>
 
         <button
           type="button"
           className={`tab-btn ${activeTab === 'devices' ? 'is-active' : ''}`}
           onClick={() => setActiveTab('devices')}
-          title="Mockup Cihazlar"
+          title={t.bannerMaker.tabs.devices}
           style={{
             flex: 1,
             padding: '7px 4px',
@@ -488,14 +490,14 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
           }}
         >
           <Smartphone size={15} color={activeTab === 'devices' ? 'var(--chili-primary)' : 'var(--text-secondary)'} />
-          <span>Cihazlar</span>
+          <span>{t.bannerMaker.tabs.devices}</span>
         </button>
 
         <button
           type="button"
           className={`tab-btn ${activeTab === 'text' ? 'is-active' : ''}`}
           onClick={() => setActiveTab('text')}
-          title="Metin & Tipografi"
+          title={t.bannerMaker.tabs.text}
           style={{
             flex: 1,
             padding: '7px 4px',
@@ -514,14 +516,14 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
           }}
         >
           <Type size={15} color={activeTab === 'text' ? 'var(--chili-primary)' : 'var(--text-secondary)'} />
-          <span>Metin</span>
+          <span>{t.bannerMaker.tabs.text}</span>
         </button>
 
         <button
           type="button"
           className={`tab-btn ${activeTab === 'branding' ? 'is-active' : ''}`}
           onClick={() => setActiveTab('branding')}
-          title="Marka & Rozetler"
+          title={t.bannerMaker.tabs.branding}
           style={{
             flex: 1,
             padding: '7px 4px',
@@ -540,7 +542,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
           }}
         >
           <Award size={15} color={activeTab === 'branding' ? 'var(--chili-primary)' : 'var(--text-secondary)'} />
-          <span>Rozetler</span>
+          <span>{t.bannerMaker.tabs.branding}</span>
         </button>
       </div>
 
@@ -553,7 +555,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
             {/* Presets */}
             <div className="inspector-section">
               <div className="section-title" style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px' }}>
-                Mağaza Boyut Önayarı
+                {t.bannerMaker.presetsTitle}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 {BANNER_PRESETS.map((p) => {
@@ -614,12 +616,12 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                     <span style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                      Özel Boyut Ayarı
+                      {t.bannerMaker.customDimensions}
                     </span>
                     <button
                       type="button"
                       onClick={handleResetCustomDimensions}
-                      title="Varsayılan boyuta sıfırla (1200×600)"
+                      title={language === 'tr' ? 'Varsayılan boyuta sıfırla (1200×600)' : 'Reset to default dimensions (1200×600)'}
                       style={{
                         display: 'inline-flex',
                         alignItems: 'center',
@@ -640,7 +642,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <div style={{ flex: 1 }}>
                       <label style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
-                        Genişlik (px)
+                        {t.common.width} (px)
                       </label>
                       <input
                         type="text"
@@ -664,7 +666,7 @@ export const BannerInspectorPanel: React.FC<BannerInspectorPanelProps> = ({
                     </div>
                     <div style={{ flex: 1 }}>
                       <label style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
-                        Yükseklik (px)
+                        {t.common.height} (px)
                       </label>
                       <input
                         type="text"

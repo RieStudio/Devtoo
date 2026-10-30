@@ -3658,6 +3658,52 @@ input[type="range"] {
   transform: translateY(0);
 }
 
+/* Language Toggle Button */
+.btn-lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  background-color: var(--bg-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.floating-island-navbar .btn-lang-toggle {
+  border-radius: var(--radius-full);
+  width: 38px;
+  height: 38px;
+}
+
+.btn-lang-toggle:hover {
+  background-color: var(--bg-hover);
+  color: var(--chili-primary);
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+.btn-lang-toggle:active {
+  transform: translateY(0);
+}
+
+.btn-lang-toggle .lang-code {
+  font-size: 12px;
+  font-weight: 700;
+  color: inherit;
+  line-height: 1;
+}
+
 /* Custom Scrollbars in Dark Mode */
 [data-theme='dark'] ::-webkit-scrollbar-thumb {
   background: #2E2E2E;

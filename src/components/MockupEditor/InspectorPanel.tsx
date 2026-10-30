@@ -39,6 +39,7 @@ import {
   Shield
 } from 'lucide-react';
 import type { ShapeLayer, ShapeType } from '../../types/mockup';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface InspectorPanelProps {
   config: MockupConfig;
@@ -207,6 +208,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   onOpenCropModal,
   onShowToast,
 }) => {
+  const { t, language } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const colorPickerInputRef = useRef<HTMLInputElement>(null);
   const textColorPickerInputRef = useRef<HTMLInputElement>(null);
@@ -246,7 +248,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   // Add a new device to the current screen (maximum 6 devices)
   const handleAddDevice = () => {
     if (devices.length >= 6) {
-      alert('Bir ekrana en fazla 6 cihaz ekleyebilirsiniz.');
+      alert(t.toasts.maxDevicesReachedCanvas);
       return;
     }
 
@@ -316,10 +318,10 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<'phone' | OtherCategory>(initialCategory);
   
   const categoryLabels: Record<OtherCategory, string> = {
-    pc: 'Bilgisayar',
-    tab: 'Tablet',
-    tv: 'Televizyon',
-    watch: 'Akıllı Saat',
+    pc: t.mockup.pc,
+    tab: t.mockup.tablet,
+    tv: t.mockup.tv,
+    watch: t.mockup.watch,
   };
   const [otherCategoryName, setOtherCategoryName] = useState<string>(
     initialCategory !== 'phone' ? categoryLabels[initialCategory as OtherCategory] : ''
@@ -409,10 +411,11 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   const handleAddTextLayer = () => {
     const layers = config.textLayers || [];
     if (layers.length >= 20) {
+      const msg = language === 'tr' ? 'En fazla 20 metin katmanı ekleyebilirsiniz.' : 'You can add up to 20 text layers.';
       if (onShowToast) {
-        onShowToast('En fazla 20 metin katmanı ekleyebilirsiniz.');
+        onShowToast(msg);
       } else {
-        alert('En fazla 20 metin katmanı ekleyebilirsiniz.');
+        alert(msg);
       }
       return;
     }
@@ -425,7 +428,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
 
     const newLayer: TextLayer = {
       id: newId,
-      text: 'Yeni Metin',
+      text: language === 'tr' ? 'Yeni Metin' : 'New Text',
       x: baseOffsetX,
       y: baseOffsetY,
       fontSize: 22,
@@ -525,7 +528,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
       <div className="inspector-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Sliders size={16} color="#D90429" />
-          <span>Tasarım Özellikleri</span>
+          <span>{t.mockup.designProperties}</span>
         </div>
       </div>
 
@@ -533,7 +536,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
       <div className="inspector-section">
         <div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <Layers size={13} color="#D90429" />
-          <span>Çıktı Modu</span>
+          <span>{t.mockup.exportMode}</span>
         </div>
 
         <div className="export-mode-tab-group">
@@ -543,7 +546,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             onClick={() => onChangeConfig({ exportMode: 'full-canvas' })}
           >
             <ImageIcon size={13} />
-            <span>Tam Görsel</span>
+            <span>{t.mockup.fullCanvas}</span>
           </button>
           <button
             type="button"
@@ -556,7 +559,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             }}
           >
             <Smartphone size={13} />
-            <span>Sadece Cihaz</span>
+            <span>{t.mockup.deviceOnly}</span>
           </button>
         </div>
       </div>
@@ -567,7 +570,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '8px' }}>
             <div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '5px', margin: 0 }}>
               <Smartphone size={13} color="#D90429" />
-              <span>Cihazlar ({devices.length})</span>
+              <span>{t.mockup.devices(devices.length)}</span>
             </div>
             {devices.length > 0 && (
               <button
@@ -590,10 +593,10 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 }}
                 onClick={handleAddDevice}
                 disabled={devices.length >= 6}
-                title={devices.length >= 6 ? 'Maksimum 6 cihaza ulaşıldı' : 'Bu ekrana yeni bir cihaz ekleyin'}
+                title={devices.length >= 6 ? t.mockup.maxDevicesReached : t.mockup.addDevice}
               >
                 <Plus size={12} />
-                <span>Cihaz Ekle {devices.length >= 6 ? '(Maks. 6)' : ''}</span>
+                <span>{devices.length >= 6 ? t.mockup.addDeviceWithMax : t.mockup.addDevice}</span>
               </button>
             )}
           </div>
@@ -624,10 +627,10 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                     <Smartphone size={15} color={isSelected ? '#FFFFFF' : '#64748B'} />
                     <div>
                       <div style={{ fontSize: '12px', fontWeight: isSelected ? 700 : 600, color: isSelected ? '#FFFFFF' : '#1E293B' }}>
-                        Cihaz {idx + 1}: {devModel.name}
+                        {t.mockup.deviceTabLabel(idx + 1, devModel.name)}
                       </div>
                       <div style={{ fontSize: '10.5px', color: isSelected ? 'rgba(255, 255, 255, 0.85)' : '#64748B' }}>
-                        {dev.screenshotUrl ? 'Görsel yüklendi' : 'Görsel yok'} • {dev.deviceRotation ?? 0}°
+                        {dev.screenshotUrl ? t.mockup.imageUploaded : t.mockup.noImage} • {dev.deviceRotation ?? 0}°
                       </div>
                     </div>
                   </div>
@@ -645,7 +648,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                         }}
                       >
                         <span style={{ fontSize: '10px', fontWeight: 700, color: '#D90429' }}>
-                          Seçili
+                          {t.common.selected}
                         </span>
                         <button
                           type="button"
@@ -668,7 +671,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                             e.stopPropagation();
                             handleDeleteDevice(dev.id);
                           }}
-                          title="Bu cihazı kaldır"
+                          title={t.mockup.removeDevice}
                         >
                           <Trash2 size={13} />
                         </button>
@@ -693,7 +696,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                           e.stopPropagation();
                           handleDeleteDevice(dev.id);
                         }}
-                        title="Bu cihazı kaldır"
+                        title={t.mockup.removeDevice}
                       >
                         <Trash2 size={13} />
                       </button>
@@ -714,7 +717,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 }}
               >
                 <div style={{ fontSize: '12px', color: '#64748B', marginBottom: '8px' }}>
-                  Bu ekranda henüz cihaz yok.
+                  {t.mockup.noDeviceYet}
                 </div>
                 <button
                   type="button"
@@ -734,7 +737,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                   }}
                 >
                   <Plus size={13} />
-                  <span>Cihaz Ekle</span>
+                  <span>{t.mockup.addDevice}</span>
                 </button>
               </div>
             )}
@@ -746,7 +749,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
       {devices.length > 0 && (
         <div className="inspector-section">
           <div className="section-label">
-            <span>Ekran Görüntüsü</span>
+            <span>{t.mockup.screenshot}</span>
             {devices.length > 1 && (
               <span style={{ fontSize: '10.5px', fontWeight: 500, color: '#64748B', marginLeft: '6px' }}>
                 ({DEVICE_MODELS.find((m) => m.id === activeDevice.deviceType)?.name})
@@ -768,8 +771,8 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             onDrop={handleDrop}
           >
             <Upload size={20} className="dropzone-icon" />
-            <div className="dropzone-text">Görsel Yükle veya Sürükle</div>
-            <div className="dropzone-sub">PNG, JPG, WebP desteklenir</div>
+            <div className="dropzone-text">{t.mockup.uploadOrDrag}</div>
+            <div className="dropzone-sub">{t.mockup.formatsSupported}</div>
           </div>
 
           {activeDevice.screenshotUrl && (
@@ -780,7 +783,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 onClick={onOpenCropModal}
               >
                 <Crop size={14} color="#D90429" />
-                <span>Görseli Kırp</span>
+                <span>{t.mockup.cropImage}</span>
               </button>
 
               <button
@@ -789,7 +792,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 onClick={() => handleUpdateActiveDevice({ screenshotUrl: null, screenshotScale: 1, screenshotOffsetX: 0, screenshotOffsetY: 0 })}
               >
                 <Trash2 size={14} />
-                <span>Görseli Kaldır</span>
+                <span>{t.mockup.removeImage}</span>
               </button>
             </div>
           )}
@@ -800,10 +803,10 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
       {devices.length > 0 && (
         <div className="inspector-section">
           <div className="section-label">
-            <span>Cihaz Modeli</span>
+            <span>{t.mockup.deviceModel}</span>
             {devices.length > 1 && (
               <span style={{ fontSize: '10.5px', fontWeight: 500, color: '#64748B', marginLeft: '6px' }}>
-                (Seçili Cihaz)
+                {t.mockup.selectedDeviceText}
               </span>
             )}
           </div>
@@ -811,9 +814,9 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
           {/* Brand Tabs with 'Diğer' Button */}
           <div className="brand-tabs-group">
             {[
-              { id: 'apple', label: 'Apple' },
-              { id: 'samsung', label: 'Samsung' },
-              { id: 'google', label: 'Google' },
+              { id: 'apple', label: t.mockup.apple },
+              { id: 'samsung', label: t.mockup.samsung },
+              { id: 'google', label: t.mockup.google },
             ].map((tab) => {
               const isTabActive = selectedCategory === 'phone' && selectedBrand === tab.id;
               return (
@@ -843,7 +846,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 onClick={() => setIsOtherOpen((prev) => !prev)}
               >
                 <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {selectedCategory !== 'phone' ? otherCategoryName : 'Diğer'}
+                  {selectedCategory !== 'phone' ? otherCategoryName : t.mockup.otherCategory}
                 </span>
                 <ChevronDown size={11} style={{ flexShrink: 0, transform: isOtherOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s ease' }} />
               </button>
@@ -852,14 +855,14 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               {isOtherOpen && (
                 <div className="other-devices-popover">
                   <div className="other-devices-popover-header">
-                    Diğer Cihaz Türleri
+                    {t.mockup.otherDeviceTypes}
                   </div>
 
                   {[
-                    { id: 'pc', label: 'Bilgisayar', icon: Laptop },
-                    { id: 'tab', label: 'Tablet', icon: Tablet },
-                    { id: 'tv', label: 'Televizyon', icon: Tv },
-                    { id: 'watch', label: 'Akıllı Saat', icon: Watch },
+                    { id: 'pc', label: t.mockup.pc, icon: Laptop },
+                    { id: 'tab', label: t.mockup.tablet, icon: Tablet },
+                    { id: 'tv', label: t.mockup.tv, icon: Tv },
+                    { id: 'watch', label: t.mockup.watch, icon: Watch },
                   ].map((item) => {
                     const IconComponent = item.icon;
                     return (
@@ -1008,7 +1011,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
           {/* Color / Variant Selector if device has multiple color options */}
           {currentDeviceModel && currentDeviceModel.colors.length > 1 && (() => {
             const isSmartWatch = currentDeviceModel.category === 'watch';
-            const colorSectionTitle = isSmartWatch ? 'Kasa / Kordon Rengi' : 'Kasa Rengi';
+            const colorSectionTitle = isSmartWatch ? t.mockup.caseBandColor : t.mockup.caseColor;
             const activeColorObj = currentDeviceModel.colors.find((c) => c.id === activeDevice.deviceColor) || currentDeviceModel.colors[0];
 
             return (
@@ -1121,7 +1124,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
       {!isDeviceOnly && (
         <div className="inspector-section">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <div className="section-label" style={{ marginBottom: 0 }}>Arka Plan</div>
+            <div className="section-label" style={{ marginBottom: 0 }}>{t.mockup.background}</div>
             
             {/* Şekil Ekle Popover Wrapper */}
             <div style={{ position: 'relative' }} ref={shapePopoverRef}>
@@ -1145,10 +1148,10 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                   transition: 'background-color 0.15s ease',
                 }}
                 onClick={() => setIsShapePickerOpen(!isShapePickerOpen)}
-                title="Arka plana temel geometrik şekiller veya rozetler ekleyin"
+                title={t.mockup.addShape}
               >
                 <Plus size={11} />
-                <span>Şekil Ekle</span>
+                <span>{t.mockup.addShape}</span>
               </button>
 
               {/* Ufak Pencere / Popover */}
@@ -1169,17 +1172,17 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                   }}
                 >
                   <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px', paddingBottom: '4px', borderBottom: '1px solid var(--border-subtle)' }}>
-                    <span>Temel Şekiller</span>
+                    <span>{t.mockup.basicShapes}</span>
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
                     {[
-                      { type: 'rectangle' as ShapeType, label: 'Dikdörtgen', icon: <Square size={18} /> },
-                      { type: 'circle' as ShapeType, label: 'Daire', icon: <Circle size={18} /> },
-                      { type: 'triangle' as ShapeType, label: 'Üçgen', icon: <Triangle size={18} /> },
-                      { type: 'star' as ShapeType, label: 'Yıldız', icon: <Star size={18} /> },
-                      { type: 'heart' as ShapeType, label: 'Kalp', icon: <Heart size={18} /> },
-                      { type: 'badge' as ShapeType, label: 'Rozet', icon: <Shield size={18} /> },
+                      { type: 'rectangle' as ShapeType, label: t.mockup.shapes.square, icon: <Square size={18} /> },
+                      { type: 'circle' as ShapeType, label: t.mockup.shapes.circle, icon: <Circle size={18} /> },
+                      { type: 'triangle' as ShapeType, label: t.mockup.shapes.triangle, icon: <Triangle size={18} /> },
+                      { type: 'star' as ShapeType, label: t.mockup.shapes.star, icon: <Star size={18} /> },
+                      { type: 'heart' as ShapeType, label: t.mockup.shapes.heart, icon: <Heart size={18} /> },
+                      { type: 'badge' as ShapeType, label: t.mockup.shapes.badge, icon: <Shield size={18} /> },
                     ].map((item) => (
                       <button
                         key={item.type}
@@ -1226,19 +1229,19 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
           {(config.shapeLayers || []).length > 0 && (
             <div style={{ marginBottom: '12px' }}>
               <div style={{ fontSize: '11px', fontWeight: 600, color: '#64748B', marginBottom: '6px' }}>
-                Eklenen Bileşenler ({config.shapeLayers?.length})
+                {t.mockup.addedComponents(config.shapeLayers?.length || 0)}
               </div>
               <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
                 {(config.shapeLayers || []).map((shape, index) => {
                   const isSelected = config.selectedShapeId === shape.id;
                   const labelMap: Record<ShapeType, string> = {
-                    rectangle: 'Dikdörtgen',
-                    'rounded-rectangle': 'Yuvarlak Kutu',
-                    circle: 'Daire',
-                    triangle: 'Üçgen',
-                    star: 'Yıldız',
-                    heart: 'Kalp',
-                    badge: 'Rozet',
+                    rectangle: t.mockup.shapes.square,
+                    'rounded-rectangle': t.mockup.shapes.roundedRect,
+                    circle: t.mockup.shapes.circle,
+                    triangle: t.mockup.shapes.triangle,
+                    star: t.mockup.shapes.star,
+                    heart: t.mockup.shapes.heart,
+                    badge: t.mockup.shapes.badge,
                   };
                   return (
                     <button
@@ -1270,7 +1273,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                           e.stopPropagation();
                           handleDeleteSelectedShape(shape.id);
                         }}
-                        title="Bu bileşeni sil"
+                        title={t.common.delete}
                       >
                         &times;
                       </span>
@@ -1295,7 +1298,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '5px' }}>
                   <Shapes size={12} color="#D90429" />
-                  <span>Seçili Bileşen Ayarları</span>
+                  <span>{t.mockup.selectedComponentSettings}</span>
                 </span>
                 <button
                   type="button"
@@ -1311,17 +1314,17 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                     padding: '2px 4px',
                   }}
                   onClick={() => handleDeleteSelectedShape(selectedShape.id)}
-                  title="Bileşeni Sil"
+                  title={t.common.delete}
                 >
                   <Trash2 size={12} />
-                  <span>Sil</span>
+                  <span>{t.common.delete}</span>
                 </button>
               </div>
 
               {/* Şekil Rengi */}
               <div className="control-group" style={{ marginBottom: '8px' }}>
                 <div className="control-label">
-                  <span>Bileşen Rengi</span>
+                  <span>{t.mockup.componentColor}</span>
                   <span className="control-value">{selectedShape.color.toUpperCase()}</span>
                 </div>
                 <div className="color-picker-row" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -1380,7 +1383,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
                 <div className="control-group" style={{ marginBottom: 0 }}>
                   <div className="control-label" style={{ fontSize: '11px' }}>
-                    <span>Genişlik</span>
+                    <span>{t.common.width}</span>
                     <span className="control-value">{selectedShape.width}px</span>
                   </div>
                   <input
@@ -1402,7 +1405,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
 
                 <div className="control-group" style={{ marginBottom: 0 }}>
                   <div className="control-label" style={{ fontSize: '11px' }}>
-                    <span>Yükseklik</span>
+                    <span>{t.common.height}</span>
                     <span className="control-value">{selectedShape.height}px</span>
                   </div>
                   <input
@@ -1422,7 +1425,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '6px' }}>
                 <div className="control-group" style={{ marginBottom: 0 }}>
                   <div className="control-label" style={{ fontSize: '11px' }}>
-                    <span>Saydamlık</span>
+                    <span>{t.mockup.opacity}</span>
                     <span className="control-value">%{selectedShape.opacity ?? 100}</span>
                   </div>
                   <input
@@ -1438,7 +1441,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
 
                 <div className="control-group" style={{ marginBottom: 0 }}>
                   <div className="control-label" style={{ fontSize: '11px' }}>
-                    <span>Döndürme</span>
+                    <span>{t.common.rotation}</span>
                     <span className="control-value">{selectedShape.rotation ?? 0}°</span>
                   </div>
                   <input
@@ -1457,7 +1460,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               {(selectedShape.type === 'rectangle' || selectedShape.type === 'triangle') && (
                 <div className="control-group" style={{ marginBottom: '6px' }}>
                   <div className="control-label" style={{ fontSize: '11px' }}>
-                    <span>Köşeleri Yuvarlaştır</span>
+                    <span>{t.mockup.roundCorners}</span>
                     <span className="control-value">{selectedShape.borderRadius ?? 0}px</span>
                   </div>
                   <input
@@ -1489,45 +1492,45 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                     borderRadius: 0,
                   });
                 }}
-                title="Konumu merkeze alır, açıyı sıfırlar ve boyutları varsayılana getirir"
+                title={t.mockup.restoreOriginalTooltip}
               >
                 <RotateCcw size={12} color="#0F172A" />
-                <span>Orijinale Getir</span>
+                <span>{t.mockup.restoreOriginal}</span>
               </button>
             </div>
           ) : null}
 
           <div className="control-group">
-            <div className="control-label">Desen / Doku</div>
+            <div className="control-label">{t.mockup.patternTexture}</div>
             <select
               className="input-select"
               value={config.bgType}
               onChange={(e) => onChangeConfig({ bgType: e.target.value as BackgroundType })}
             >
-              <option value="solid">Düz Renk</option>
-              <option value="dots">Noktalı Izgara (Dot Matrix)</option>
-              <option value="grid">Kare Izgara (Dev Grid)</option>
+              <option value="solid">{t.mockup.patterns.solid}</option>
+              <option value="dots">{t.mockup.patterns.dots}</option>
+              <option value="grid">{t.mockup.patterns.grid}</option>
             </select>
           </div>
 
           <div className="control-group">
-            <div className="control-label">Gölge Efekti</div>
+            <div className="control-label">{t.mockup.shadowEffect}</div>
             <select
               className="input-select"
               value={activeDevice.shadowDepth || config.shadowDepth || 'medium'}
               onChange={(e) => handleUpdateActiveDevice({ shadowDepth: e.target.value as any })}
             >
-              <option value="none">Gölge Yok</option>
-              <option value="soft">Yumuşak Gölge</option>
-              <option value="medium">Standart Gölge</option>
-              <option value="dramatic">Derin Mağaza Gölgesi</option>
-              <option value="chili-glow">Vurgulu Gölge</option>
+              <option value="none">{t.mockup.shadowDepths.none}</option>
+              <option value="soft">{t.mockup.shadowDepths.soft}</option>
+              <option value="medium">{t.mockup.shadowDepths.medium}</option>
+              <option value="dramatic">{t.mockup.shadowDepths.dramatic}</option>
+              <option value="chili-glow">{t.mockup.shadowDepths.chiliGlow}</option>
             </select>
           </div>
 
           <div className="control-group">
             <div className="control-label">
-              <span>Renk Seçimi</span>
+              <span>{t.mockup.colorSelection}</span>
               <span className="control-value">{config.bgColor.toUpperCase()}</span>
             </div>
             
@@ -1545,7 +1548,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
 
               {/* Renk Paleti Açma Butonu ve Üstünde Açılan Native Color Picker */}
               <div
-                title="Özel Arka Plan Rengini Aç"
+                title={t.mockup.openCustomBgColor}
                 className={`color-swatch-btn custom-palette-btn ${
                   !PALETTE_PRESETS.includes(config.bgColor.toUpperCase()) ? 'selected' : ''
                 }`}
@@ -1594,15 +1597,15 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Move size={13} color="#D90429" />
-              <span>Cihaz Konumu ve Boyutu</span>
+              <span>{t.mockup.deviceTransform}</span>
             </div>
             {((activeDevice.deviceOffsetX ?? 0) !== 0 || (activeDevice.deviceOffsetY ?? 0) !== 0 || ((activeDevice.deviceScale ?? 1) !== 1) || ((activeDevice.deviceRotation ?? 0) !== 0)) && (
               <button
                 className="btn-text-action"
-                title="Konum ve Boyutu Sıfırla"
+                title={t.mockup.resetTransform}
                 onClick={() => handleUpdateActiveDevice({ deviceOffsetX: 0, deviceOffsetY: 0, deviceScale: 1, deviceRotation: 0 })}
               >
-                Sıfırla
+                {t.common.reset}
               </button>
             )}
           </div>
@@ -1612,7 +1615,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             <div className="control-label">
               <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                 <Maximize2 size={13} color="#64748B" />
-                <span>Cihaz Boyutu</span>
+                <span>{t.mockup.deviceScale}</span>
               </span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                 <span style={{ fontSize: '11px', color: '#64748B', fontFamily: 'var(--font-mono)' }}>%</span>
@@ -1654,7 +1657,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
           {/* Device Horizontal Position (X) */}
           <div className="control-group">
             <div className="control-label">
-              <span>Yatay Konum (X)</span>
+              <span>{t.mockup.horizontalPosX}</span>
               <span className="control-value">
                 {(activeDevice.deviceOffsetX ?? 0) > 0 ? `+${activeDevice.deviceOffsetX}` : (activeDevice.deviceOffsetX ?? 0)}px
               </span>
@@ -1670,7 +1673,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               />
               <button
                 className="stepper-mini-btn"
-                title="X Sıfırla (0px)"
+                title="X (0px)"
                 onClick={() => handleUpdateActiveDevice({ deviceOffsetX: 0 })}
               >
                 0
@@ -1681,7 +1684,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
           {/* Device Vertical Position (Y) */}
           <div className="control-group">
             <div className="control-label">
-              <span>Dikey Konum (Y)</span>
+              <span>{t.mockup.verticalPosY}</span>
               <span className="control-value">
                 {(activeDevice.deviceOffsetY ?? 0) > 0 ? `+${activeDevice.deviceOffsetY}` : (activeDevice.deviceOffsetY ?? 0)}px
               </span>
@@ -1697,7 +1700,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               />
               <button
                 className="stepper-mini-btn"
-                title="Y Sıfırla (0px)"
+                title="Y (0px)"
                 onClick={() => handleUpdateActiveDevice({ deviceOffsetY: 0 })}
               >
                 0
@@ -1710,7 +1713,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             <div className="control-label">
               <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                 <RotateCw size={13} color="#64748B" />
-                <span>Cihaz Döndürme</span>
+                <span>{t.mockup.deviceRotationLabel}</span>
               </span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                 <NumericBadgeInput
@@ -1750,7 +1753,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               />
               <button
                 className="stepper-mini-btn"
-                title="Döndürmeyi Sıfırla (0°)"
+                title="0°"
                 onClick={() => handleUpdateActiveDevice({ deviceRotation: 0 })}
               >
                 0°
@@ -1766,7 +1769,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               onClick={() => handleUpdateActiveDevice({ deviceOffsetX: 0, deviceOffsetY: 0, deviceRotation: 0 })}
             >
               <Crosshair size={12} color="#D90429" />
-              <span>Merkeze ve Düz Konuma Getir</span>
+              <span>{t.mockup.centerAndLevel}</span>
             </button>
           </div>
         </div>
@@ -1778,7 +1781,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '8px' }}>
             <div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', fontSize: '11.5px', margin: 0 }}>
               <Type size={13} color="#D90429" />
-              <span>Metin Katmanları</span>
+              <span>{t.mockup.textLayers}</span>
               <span style={{ fontSize: '10px', backgroundColor: '#F1F5F9', color: '#64748B', padding: '1px 6px', borderRadius: '10px', fontWeight: 700 }}>
                 {(config.textLayers || []).length}
               </span>
@@ -1802,10 +1805,10 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 flexShrink: 0,
               }}
               onClick={handleAddTextLayer}
-              title="Görsele yeni metin katmanı ekle"
+              title={t.mockup.addText}
             >
               <Plus size={11} />
-              <span>Metin Ekle</span>
+              <span>{t.mockup.addText}</span>
             </button>
           </div>
 
@@ -1838,7 +1841,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                       }}
                     >
                       <Type size={11} />
-                      <span className="layer-chip-text">{layer.text.trim() ? layer.text : `Metin ${index + 1}`}</span>
+                      <span className="layer-chip-text">{layer.text.trim() ? layer.text : `${language === 'tr' ? 'Metin' : 'Text'} ${index + 1}`}</span>
                       {(config.textLayers || []).length > 1 && (
                         <span
                           className="layer-chip-delete"
@@ -1846,7 +1849,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                             e.stopPropagation();
                             handleDeleteSelectedLayer(layer.id);
                           }}
-                          title="Bu metni sil"
+                          title={t.mockup.deleteLayer}
                         >
                           ×
                         </span>
@@ -1860,24 +1863,24 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 <>
                   {/* Text Input */}
                   <div className="control-group">
-                    <div className="control-label">Metin İçeriği</div>
+                    <div className="control-label">{t.mockup.textContent}</div>
                     <textarea
                       rows={2}
                       className="input-text"
                       style={{ resize: 'vertical', fontFamily: 'inherit' }}
                       value={selectedLayer.text}
                       onChange={(e) => handleUpdateSelectedLayer({ text: e.target.value })}
-                      placeholder="Görselde görünecek metni yazın..."
+                      placeholder={t.mockup.textPlaceholder}
                     />
                   </div>
 
                   {/* Word Format Ribbon */}
                   <div className="control-group">
-                    <div className="control-label">Biçimlendirme</div>
+                    <div className="control-label">{t.mockup.formatting}</div>
                     <div style={{ display: 'flex', gap: '4px', backgroundColor: '#F1F3F5', padding: '4px', borderRadius: '8px' }}>
                       <button
                         type="button"
-                        title="Kalın (Bold)"
+                        title={t.mockup.bold}
                         className={`format-ribbon-btn ${selectedLayer.isBold ? 'active' : ''}`}
                         onClick={() => handleUpdateSelectedLayer({ isBold: !selectedLayer.isBold })}
                       >
@@ -1885,7 +1888,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                       </button>
                       <button
                         type="button"
-                        title="İtalik (Italic)"
+                        title={t.mockup.italic}
                         className={`format-ribbon-btn ${selectedLayer.isItalic ? 'active' : ''}`}
                         onClick={() => handleUpdateSelectedLayer({ isItalic: !selectedLayer.isItalic })}
                       >
@@ -1893,7 +1896,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                       </button>
                       <button
                         type="button"
-                        title="Altı Çizili (Underline)"
+                        title={t.mockup.underline}
                         className={`format-ribbon-btn ${selectedLayer.isUnderline ? 'active' : ''}`}
                         onClick={() => handleUpdateSelectedLayer({ isUnderline: !selectedLayer.isUnderline })}
                       >
@@ -1904,7 +1907,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
 
                       <button
                         type="button"
-                        title="Sola Hizala"
+                        title={t.mockup.alignLeft}
                         className={`format-ribbon-btn ${selectedLayer.textAlign === 'left' ? 'active' : ''}`}
                         onClick={() => handleUpdateSelectedLayer({ textAlign: 'left' })}
                       >
@@ -1912,7 +1915,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                       </button>
                       <button
                         type="button"
-                        title="Ortala"
+                        title={t.mockup.alignCenter}
                         className={`format-ribbon-btn ${(!selectedLayer.textAlign || selectedLayer.textAlign === 'center') ? 'active' : ''}`}
                         onClick={() => handleUpdateSelectedLayer({ textAlign: 'center' })}
                       >
@@ -1920,7 +1923,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                       </button>
                       <button
                         type="button"
-                        title="Sağa Hizala"
+                        title={t.mockup.alignRight}
                         className={`format-ribbon-btn ${selectedLayer.textAlign === 'right' ? 'active' : ''}`}
                         onClick={() => handleUpdateSelectedLayer({ textAlign: 'right' })}
                       >
@@ -1931,7 +1934,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
 
                   {/* Yazı Tipi Ailesi */}
                   <div className="control-group">
-                    <div className="control-label">Yazı Tipi</div>
+                    <div className="control-label">{t.mockup.fontFamily}</div>
                     <select
                       className="input-select"
                       value={selectedLayer.fontFamily || 'inter'}
@@ -1971,7 +1974,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                   {/* Font Size Slider */}
                   <div className="control-group">
                     <div className="control-label">
-                      <span>Metin Boyutu</span>
+                      <span>{t.mockup.fontSize}</span>
                       <span className="control-value">{selectedLayer.fontSize}px</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1985,7 +1988,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                       />
                       <button
                         className="stepper-mini-btn"
-                        title="Varsayılana Sıfırla (24px)"
+                        title="24px"
                         onClick={() => handleUpdateSelectedLayer({ fontSize: 24 })}
                       >
                         24
@@ -1996,7 +1999,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                   {/* Satırlar Arası Uzaklık (Line Height) Slider & Manual Input */}
                   <div className="control-group">
                     <div className="control-label">
-                      <span>Satır Aralığı</span>
+                      <span>{t.mockup.lineSpacing}</span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <input
                           type="number"
@@ -2038,7 +2041,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                       />
                       <button
                         className="stepper-mini-btn"
-                        title="Varsayılana Sıfırla (1.2)"
+                        title="1.2"
                         onClick={() => handleUpdateSelectedLayer({ lineHeight: 1.2 })}
                       >
                         1.2
@@ -2049,7 +2052,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                   {/* Color Picker */}
                   <div className="control-group">
                     <div className="control-label">
-                      <span>Metin Rengi</span>
+                      <span>{t.mockup.textColor}</span>
                       <span className="control-value">{selectedLayer.color.toUpperCase()}</span>
                     </div>
                     <div className="color-picker-row" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -2065,7 +2068,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
 
                       {/* Özel Metin Rengi Açma Butonu ve Üstünde Açılan Native Color Picker */}
                       <div
-                        title="Özel Metin Rengini Aç"
+                        title={t.mockup.openCustomBgColor}
                         className={`color-swatch-btn custom-palette-btn ${
                           !TEXT_PALETTE_PRESETS.includes(selectedLayer.color.toUpperCase()) ? 'selected' : ''
                         }`}
@@ -2109,7 +2112,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                   {/* Position X & Y Sliders */}
                   <div className="control-group">
                     <div className="control-label">
-                      <span>Yatay Konum (X)</span>
+                      <span>{t.mockup.horizontalPosX}</span>
                       <span className="control-value">{selectedLayer.x > 0 ? `+${selectedLayer.x}` : selectedLayer.x}px</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -2123,7 +2126,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                       />
                       <button
                         className="stepper-mini-btn"
-                        title="X Sıfırla (0px)"
+                        title="X (0px)"
                         onClick={() => handleUpdateSelectedLayer({ x: 0 })}
                       >
                         0
@@ -2133,7 +2136,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
 
                   <div className="control-group">
                     <div className="control-label">
-                      <span>Dikey Konum (Y)</span>
+                      <span>{t.mockup.verticalPosY}</span>
                       <span className="control-value">{selectedLayer.y > 0 ? `+${selectedLayer.y}` : selectedLayer.y}px</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -2147,7 +2150,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                       />
                       <button
                         className="stepper-mini-btn"
-                        title="Y Sıfırla (0px)"
+                        title="Y (0px)"
                         onClick={() => handleUpdateSelectedLayer({ y: 0 })}
                       >
                         0
@@ -2158,7 +2161,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                   {/* Rotation Slider */}
                   <div className="control-group">
                     <div className="control-label">
-                      <span>Döndürme Açısı</span>
+                      <span>{t.mockup.deviceRotationLabel}</span>
                       <span className="control-value">{selectedLayer.rotation || 0}°</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -2172,7 +2175,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                       />
                       <button
                         className="stepper-mini-btn"
-                        title="Döndürmeyi Sıfırla (0°)"
+                        title="0°"
                         onClick={() => handleUpdateSelectedLayer({ rotation: 0 })}
                       >
                         0°
@@ -2188,7 +2191,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                       onClick={() => handleUpdateSelectedLayer({ x: 0, y: 0, rotation: 0, width: undefined })}
                     >
                       <Crosshair size={12} color="#D90429" />
-                      <span>Merkeze Ortala (0, 0)</span>
+                      <span>{t.mockup.centerText}</span>
                     </button>
 
                     {(config.textLayers || []).length > 1 && (
@@ -2197,7 +2200,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                         className="btn-secondary"
                         style={{ fontSize: '11px', padding: '6px 10px', justifyContent: 'center', color: '#EF4444' }}
                         onClick={() => handleDeleteSelectedLayer(selectedLayer.id)}
-                        title="Bu metni sil"
+                        title={t.mockup.deleteLayer}
                       >
                         <Trash2 size={13} />
                       </button>
@@ -2221,17 +2224,17 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 }}>
                   <Type size={20} color="#94A3B8" />
                   <div style={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}>
-                    Seçili Metin Yok
+                    {t.mockup.noSelectedText}
                   </div>
                   <div style={{ fontSize: '11px', color: '#94A3B8', maxWidth: '200px', lineHeight: '1.4' }}>
-                    Düzenlemek için görseldeki bir metne veya yukarıdaki metin çiplerine tıklayın.
+                    {t.mockup.clickToEditText}
                   </div>
                 </div>
               )}
             </>
           ) : (
             <div style={{ textAlign: 'center', padding: '16px', fontSize: '12px', color: '#64748B' }}>
-              Henüz metin eklenmemiş.
+              {t.mockup.noTextYet}
               <button
                 type="button"
                 className="btn-chili"
@@ -2239,7 +2242,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 onClick={handleAddTextLayer}
               >
                 <Plus size={13} />
-                <span>İlk Metni Ekle</span>
+                <span>{t.mockup.addFirstText}</span>
               </button>
             </div>
           )}

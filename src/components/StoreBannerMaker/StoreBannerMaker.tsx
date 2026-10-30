@@ -6,6 +6,7 @@ import { BannerCanvasPreview } from './BannerCanvasPreview';
 import { BannerInspectorPanel } from './BannerInspectorPanel';
 import { BannerExportModal } from './BannerExportModal';
 import { ImageCropModal } from '../MockupEditor/ImageCropModal';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface StoreBannerMakerProps {
   isVisible?: boolean;
@@ -32,6 +33,7 @@ export const StoreBannerMaker: React.FC<StoreBannerMakerProps> = ({
   onRegisterLoadData,
   onShowToast,
 }) => {
+  const { language } = useLanguage();
   const [config, setConfig] = useState<StoreBannerConfig>(() => {
     try {
       const saved = localStorage.getItem('devtoo_banner_config');
@@ -148,9 +150,11 @@ export const StoreBannerMaker: React.FC<StoreBannerMakerProps> = ({
         selectedDeviceId: deviceId,
       });
 
-      if (onShowToast) onShowToast('Ekran görüntüsü cihaza yerleştirildi.');
+      if (onShowToast) {
+        onShowToast(language === 'tr' ? 'Ekran görüntüsü cihaza yerleştirildi.' : 'Screenshot placed in device.');
+      }
     });
-  }, [config.devices, onShowToast]);
+  }, [config.devices, onShowToast, language]);
 
   // Crop Device Screenshot
   const handleCropDeviceScreenshot = (deviceId: string) => {
@@ -162,7 +166,9 @@ export const StoreBannerMaker: React.FC<StoreBannerMakerProps> = ({
   const handleUploadAppIcon = () => {
     openFilePicker('image/png,image/jpeg,image/webp,image/svg+xml', (base64) => {
       handleUpdateConfig({ appIconUrl: base64, showAppIcon: true });
-      if (onShowToast) onShowToast('Uygulama ikonu güncellendi.');
+      if (onShowToast) {
+        onShowToast(language === 'tr' ? 'Uygulama ikonu güncellendi.' : 'App icon updated.');
+      }
     });
   };
 
@@ -170,7 +176,9 @@ export const StoreBannerMaker: React.FC<StoreBannerMakerProps> = ({
   const handleUploadBgImage = () => {
     openFilePicker('image/png,image/jpeg,image/webp', (base64) => {
       handleUpdateConfig({ bgImageUrl: base64, bgType: 'image' });
-      if (onShowToast) onShowToast('Arka plan görseli uygulandı.');
+      if (onShowToast) {
+        onShowToast(language === 'tr' ? 'Arka plan görseli uygulandı.' : 'Background image applied.');
+      }
     });
   };
 
@@ -316,12 +324,14 @@ export const StoreBannerMaker: React.FC<StoreBannerMakerProps> = ({
       setIsExportModalOpen(false);
     } catch (err) {
       console.error('Banner export error:', err);
-      if (onShowToast) onShowToast('Dışa aktarma sırasında bir hata oluştu.');
+      if (onShowToast) {
+        onShowToast(language === 'tr' ? 'Dışa aktarma sırasında bir hata oluştu.' : 'An error occurred during export.');
+      }
     } finally {
       setIsExporting(false);
       if (onExportStateChange) onExportStateChange(false);
     }
-  }, [config, onExportStateChange, onShowToast]);
+  }, [config, onExportStateChange, onShowToast, language]);
 
   // Register callbacks for top Header integration
   useEffect(() => {
@@ -461,7 +471,9 @@ export const StoreBannerMaker: React.FC<StoreBannerMakerProps> = ({
 
             handleUpdateConfig({ devices: updatedDevices });
             setIsCropModalOpen(false);
-            if (onShowToast) onShowToast('Görsel kırpıldı ve güncellendi.');
+            if (onShowToast) {
+              onShowToast(language === 'tr' ? 'Görsel kırpıldı ve güncellendi.' : 'Image cropped and updated.');
+            }
           }}
           onResetToOriginal={() => {
             const orig = cropTargetDevice.originalScreenshotUrl || cropTargetDevice.screenshotUrl;

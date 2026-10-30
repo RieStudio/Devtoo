@@ -12,6 +12,7 @@ import {
   generatePolicyHtml, 
   generateDataSafetyCheatSheet 
 } from '../../utils/policyGenerator';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface PolicyPreviewPaneProps {
   config: PrivacyPolicyConfig;
@@ -22,6 +23,7 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
   config,
   onShowToast,
 }) => {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'preview' | 'data-safety' | 'hosting'>('preview');
   const [isCopied, setIsCopied] = useState<boolean>(false);
 
@@ -33,10 +35,10 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
     try {
       await navigator.clipboard.writeText(markdownContent);
       setIsCopied(true);
-      if (onShowToast) onShowToast('Gizlilik politikası panoya kopyalandı.');
+      if (onShowToast) onShowToast(t.privacyStudio.policyCopiedToast);
       setTimeout(() => setIsCopied(false), 2000);
     } catch {
-      if (onShowToast) onShowToast('Kopyalama başarısız oldu.');
+      if (onShowToast) onShowToast(t.privacyStudio.copyFailedToast);
     }
   };
 
@@ -77,9 +79,9 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
         {/* Sekmeler */}
         <div style={{ display: 'flex', gap: '6px', backgroundColor: 'var(--bg-subtle)', padding: '4px', borderRadius: '10px' }}>
           {[
-            { id: 'preview' as const, label: 'Politika Önizlemesi' },
-            { id: 'data-safety' as const, label: 'Play Store Veri Güvenliği', badge: 'Rehber' },
-            { id: 'hosting' as const, label: 'Canlı Link & Hosting' },
+            { id: 'preview' as const, label: t.privacyStudio.previewTab },
+            { id: 'data-safety' as const, label: t.privacyStudio.dataSafetyTab, badge: t.privacyStudio.guideBadge },
+            { id: 'hosting' as const, label: t.privacyStudio.hostingTab },
           ].map((tab) => {
             const isSelected = activeTab === tab.id;
             return (
@@ -131,7 +133,7 @@ export const PolicyPreviewPane: React.FC<PolicyPreviewPaneProps> = ({
               style={{ padding: '6px 12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '5px' }}
             >
               {isCopied ? <Check size={14} color="#16A34A" /> : <Copy size={14} />}
-              <span>{isCopied ? 'Kopyalandı!' : 'Metni Kopyala'}</span>
+              <span>{isCopied ? t.privacyStudio.copied : t.privacyStudio.copyText}</span>
             </button>
           </div>
         )}

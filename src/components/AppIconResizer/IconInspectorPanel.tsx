@@ -5,6 +5,7 @@ import {
   Smartphone
 } from 'lucide-react';
 import type { IconResizerConfig, CornerRadiusType } from '../../types/iconResizer';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface IconInspectorPanelProps {
   config: IconResizerConfig;
@@ -29,6 +30,7 @@ export const IconInspectorPanel: React.FC<IconInspectorPanelProps> = ({
   onTriggerUpload,
   onOpenCropModal,
 }) => {
+  const { t } = useLanguage();
   const colorPickerRef = useRef<HTMLInputElement>(null);
 
   return (
@@ -39,7 +41,7 @@ export const IconInspectorPanel: React.FC<IconInspectorPanelProps> = ({
           <div className="inspector-section">
             <div className="icon-source-card">
               <div className="source-thumb-box">
-                <img src={config.sourceImageUrl} alt="Kaynak Görsel" className="source-thumb-img" />
+                <img src={config.sourceImageUrl} alt={t.iconResizer.sourceImage} className="source-thumb-img" />
               </div>
               <div className="source-meta-box">
                 <div className="source-meta-title" title={config.sourceImageName}>
@@ -48,7 +50,7 @@ export const IconInspectorPanel: React.FC<IconInspectorPanelProps> = ({
                 <div className="source-meta-res">
                   {config.sourceImageWidth > 0 && config.sourceImageHeight > 0
                     ? `${config.sourceImageWidth} × ${config.sourceImageHeight} px`
-                    : '1024 × 1024 px (Önerilen)'}
+                    : t.iconResizer.recommendedSize}
                 </div>
                 <div style={{ display: 'flex', gap: '6px', marginTop: '6px' }}>
                   <button
@@ -57,7 +59,7 @@ export const IconInspectorPanel: React.FC<IconInspectorPanelProps> = ({
                     onClick={onTriggerUpload}
                     style={{ fontSize: '11px', color: '#D90429', fontWeight: 600 }}
                   >
-                    Görseli Değiştir
+                    {t.iconResizer.changeImage}
                   </button>
                   {onOpenCropModal && (
                     <button
@@ -66,7 +68,7 @@ export const IconInspectorPanel: React.FC<IconInspectorPanelProps> = ({
                       onClick={onOpenCropModal}
                       style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}
                     >
-                      Kırp
+                      {t.iconResizer.crop}
                     </button>
                   )}
                 </div>
@@ -79,13 +81,13 @@ export const IconInspectorPanel: React.FC<IconInspectorPanelProps> = ({
         <div className="inspector-section">
           <div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Smartphone size={13} color="#D90429" />
-            <span>Uygulama Adı</span>
+            <span>{t.iconResizer.appName}</span>
           </div>
 
           <input
             type="text"
             className="input-text"
-            placeholder="Örn: Devtoo App"
+            placeholder={t.iconResizer.appNamePlaceholder}
             value={config.appName}
             onChange={(e) => onChangeConfig({ appName: e.target.value })}
             style={{ fontSize: '12px' }}
@@ -96,15 +98,15 @@ export const IconInspectorPanel: React.FC<IconInspectorPanelProps> = ({
         <div className="inspector-section">
           <div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Sliders size={13} color="#D90429" />
-            <span>İkon Düzenleme</span>
+            <span>{t.iconResizer.iconCustomization}</span>
           </div>
 
           {/* Arka Plan Dolgusu (Transparent or Solid) */}
           <div className="control-group" style={{ marginBottom: '10px' }}>
             <div className="control-label">
-              <span>Arka Plan Dolgusu</span>
+              <span>{t.iconResizer.backgroundFill}</span>
               <span className="control-value">
-                {config.isTransparentBg ? 'Saydam' : config.bgColor.toUpperCase()}
+                {config.isTransparentBg ? t.iconResizer.transparent : config.bgColor.toUpperCase()}
               </span>
             </div>
 
@@ -126,7 +128,7 @@ export const IconInspectorPanel: React.FC<IconInspectorPanelProps> = ({
                 }}
                 onClick={() => onChangeConfig({ isTransparentBg: true })}
               >
-                Saydam (PNG)
+                {t.iconResizer.transparentPng}
               </button>
               <button
                 type="button"
@@ -144,7 +146,7 @@ export const IconInspectorPanel: React.FC<IconInspectorPanelProps> = ({
                 }}
                 onClick={() => onChangeConfig({ isTransparentBg: false })}
               >
-                Düz Renk
+                {t.iconResizer.solidColor}
               </button>
             </div>
 
@@ -173,7 +175,7 @@ export const IconInspectorPanel: React.FC<IconInspectorPanelProps> = ({
 
                 {/* Custom Color Pipette Button */}
                 <div
-                  title="Özel Arka Plan Rengi Seç"
+                  title={t.iconResizer.pickCustomBgColor}
                   className={`color-swatch-btn custom-palette-btn ${
                     !COLOR_PRESETS.includes(config.bgColor.toUpperCase()) ? 'selected' : ''
                   }`}
@@ -218,7 +220,7 @@ export const IconInspectorPanel: React.FC<IconInspectorPanelProps> = ({
           {/* İç Kenar Boşluğu (Padding / Inset) Slider */}
           <div className="control-group" style={{ marginBottom: '10px' }}>
             <div className="control-label">
-              <span>İç Boşluk (Padding)</span>
+              <span>{t.iconResizer.padding}</span>
               <span className="control-value">%{config.paddingPercent}</span>
             </div>
             <input
@@ -235,15 +237,15 @@ export const IconInspectorPanel: React.FC<IconInspectorPanelProps> = ({
           {config.previewDevice === 'android' && (
             <div className="control-group">
               <div className="control-label">
-                <span>Önizleme Maske Tipi</span>
+                <span>{t.iconResizer.previewMaskType}</span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
                 {(
                   [
-                    { id: 'squircle', label: 'Squircle' },
-                    { id: 'circle', label: 'Daire' },
-                    { id: 'rounded', label: 'Yuvarlak' },
-                    { id: 'square', label: 'Kare' },
+                    { id: 'squircle', label: t.iconResizer.cornerTypes.squircle },
+                    { id: 'circle', label: t.iconResizer.cornerTypes.circle },
+                    { id: 'rounded', label: t.iconResizer.cornerTypes.rounded },
+                    { id: 'square', label: t.iconResizer.cornerTypes.square },
                   ] as { id: CornerRadiusType; label: string }[]
                 ).map((item) => (
                   <button

@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import type { PrivacyPolicyConfig, ThirdPartyServiceId } from '../../types/privacyPolicy';
 import { THIRD_PARTY_SERVICES } from '../../constants/privacyPolicyPresets';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface PolicyConfigPanelProps {
   config: PrivacyPolicyConfig;
@@ -18,6 +19,7 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
   config,
   onChange,
 }) => {
+  const { t, language } = useLanguage();
   const [showDeletionHelp, setShowDeletionHelp] = useState<boolean>(false);
 
   const handleToggleService = (serviceId: ThirdPartyServiceId) => {
@@ -57,7 +59,7 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
         backgroundColor: 'var(--bg-card)',
       }}>
         <h2 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>
-          Politika & Veri Ayarları
+          {t.privacyStudio.panelTitle}
         </h2>
       </div>
 
@@ -65,20 +67,20 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
         {/* Bölüm 1: Temel Bilgiler */}
         <div>
           <div style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>
-            Temel Bilgiler
+            {t.privacyStudio.basicInfo}
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <div>
               <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
-                Uygulama / Oyun Adı
+                {t.privacyStudio.appName}
               </label>
               <div style={{ position: 'relative' }}>
                 <input
                   type="text"
                   value={config.appName}
                   onChange={(e) => onChange({ appName: e.target.value })}
-                  placeholder="Örn: Flappy Bird"
+                  placeholder={t.privacyStudio.appNamePlaceholder}
                   style={{
                     width: '100%',
                     padding: '8px 10px',
@@ -96,14 +98,14 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
 
             <div>
               <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
-                Geliştirici / Şirket Adı
+                {t.privacyStudio.companyName}
               </label>
               <div style={{ position: 'relative' }}>
                 <input
                   type="text"
                   value={config.companyName}
                   onChange={(e) => onChange({ companyName: e.target.value })}
-                  placeholder="Örn: RieStudio veya Ad Soyad"
+                  placeholder={t.privacyStudio.companyPlaceholder}
                   style={{
                     width: '100%',
                     padding: '8px 10px',
@@ -121,7 +123,7 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
 
             <div>
               <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
-                İletişim / Destek E-postası
+                {t.privacyStudio.contactEmail}
               </label>
               <div style={{ position: 'relative' }}>
                 <input
@@ -166,7 +168,7 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
                 }}
               >
                 <Gamepad2 size={14} color={config.appType === 'game' ? 'var(--chili-primary)' : 'var(--text-secondary)'} />
-                <span>Mobil Oyun</span>
+                <span>{t.privacyStudio.mobileGame}</span>
               </button>
               <button
                 type="button"
@@ -188,7 +190,7 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
                 }}
               >
                 <Smartphone size={14} color={config.appType === 'app' ? 'var(--chili-primary)' : 'var(--text-secondary)'} />
-                <span>Mobil Uygulama</span>
+                <span>{t.privacyStudio.mobileApp}</span>
               </button>
             </div>
           </div>
@@ -198,14 +200,14 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
             <span style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              Entegre Edilen SDK'lar
+              {t.privacyStudio.integratedSdks}
             </span>
             <span style={{ fontSize: '10.5px', color: 'var(--chili-primary)', fontWeight: 600 }}>
-              Kritik
+              {t.privacyStudio.critical}
             </span>
           </div>
           <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '10px' }}>
-            Oyununuzda/uygulamanızda aktif olan kütüphaneleri seçin:
+            {t.privacyStudio.sdksDesc}
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -245,7 +247,7 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
                         {srv.name}
                       </div>
                       <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
-                        {srv.category === 'ads' ? 'Reklam' : srv.category === 'analytics' ? 'Analitik / Çökme' : srv.category === 'iap' ? 'Ödeme / Satın Alma' : 'Oyun Servisi'}
+                        {srv.category === 'ads' ? t.privacyStudio.categoryAds : srv.category === 'analytics' ? t.privacyStudio.categoryAnalytics : srv.category === 'iap' ? t.privacyStudio.categoryIap : t.privacyStudio.categoryGameService}
                       </div>
                     </div>
                   </div>
@@ -258,7 +260,7 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
         {/* Bölüm 3: Kullanıcı ve Mağaza Kuralları */}
         <div>
           <div style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px' }}>
-            Kullanıcı & İzin Kuralları
+            {t.privacyStudio.userPermissionRules}
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -271,7 +273,7 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
             }}>
               <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
                 <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  Kullanıcı Kaydı / Hesap Var mı?
+                  {t.privacyStudio.hasUserAccounts}
                 </span>
                 <input
                   type="checkbox"
@@ -285,14 +287,14 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
                 <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px dashed var(--border-default)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--chili-primary)', fontSize: '11px', fontWeight: 600, marginBottom: '6px' }}>
                     <AlertTriangle size={13} />
-                    <span>Google Play Şartı: Hesap Silme URL'i Zorunludur!</span>
+                    <span>{t.privacyStudio.playStoreAccountDeletionWarning}</span>
                   </div>
                   <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                     <input
                       type="url"
                       value={config.features.accountDeletionUrl || ''}
                       onChange={(e) => handleUpdateFeature('accountDeletionUrl', e.target.value)}
-                      placeholder="https://forms.gle/... veya web linki"
+                      placeholder={t.privacyStudio.accountDeletionUrlPlaceholder}
                       style={{
                         width: '100%',
                         padding: '6px 28px 6px 8px',
@@ -367,10 +369,10 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
               <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
                 <div>
                   <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                    Çocuklara / Ailelere Yönelik mi?
+                    {language === 'tr' ? 'Çocuklara / Ailelere Yönelik mi?' : 'Targeted at Children / Families?'}
                   </div>
                   <div style={{ fontSize: '10.5px', color: 'var(--text-secondary)' }}>
-                    13 yaş altı kitle (COPPA & Aileler Politikası)
+                    {language === 'tr' ? '13 yaş altı kitle (COPPA & Aileler Politikası)' : 'Under 13 audience (COPPA & Families Policy)'}
                   </div>
                 </div>
                 <input
@@ -385,7 +387,7 @@ export const PolicyConfigPanel: React.FC<PolicyConfigPanelProps> = ({
             {/* Dil Seçeneği */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '6px' }}>
               <span style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                Politika Dili
+                {language === 'tr' ? 'Politika Çıktı Dili' : 'Policy Output Language'}
               </span>
               <div style={{ display: 'flex', gap: '4px', backgroundColor: 'var(--bg-card)', padding: '3px', borderRadius: '6px', border: '1px solid var(--border-default)' }}>
                 <button

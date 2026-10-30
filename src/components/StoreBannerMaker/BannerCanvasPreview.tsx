@@ -15,6 +15,7 @@ import type { ShapeType } from '../../types/mockup';
 import { DeviceFrame } from '../MockupEditor/DeviceFrame';
 import { renderShapeSvgContent } from '../MockupEditor/MockupCanvas';
 import { DevtooLogo } from '../common/DevtooLogo';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 type CanvasDragMode = 
   | 'none' 
@@ -195,6 +196,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
   isVisible = true,
   isExporting = false,
 }) => {
+  const { t } = useLanguage();
   const viewportRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -2035,7 +2037,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
         <button
           type="button"
           className="zoom-btn"
-          title="Uzaklaştır"
+          title={t.mockup.zoomOut}
           onClick={handleZoomOut}
         >
           <ZoomOut size={14} />
@@ -2044,7 +2046,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
         <button
           type="button"
           className="zoom-btn zoom-percentage-text"
-          title="Otomatik Sığdır / Varsayılan Boyut"
+          title={t.mockup.resetZoom}
           onClick={handleZoomReset}
         >
           %{Math.round(zoomLevel * 100)}
@@ -2053,7 +2055,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
         <button
           type="button"
           className="zoom-btn"
-          title="Yakınlaştır"
+          title={t.mockup.zoomIn}
           onClick={handleZoomIn}
         >
           <ZoomIn size={14} />
@@ -2064,7 +2066,7 @@ export const BannerCanvasPreview: React.FC<BannerCanvasPreviewProps> = ({
         <button
           type="button"
           className="zoom-btn"
-          title="Ekrana Sığdır"
+          title={t.mockup.fitToScreen}
           onClick={handleZoomReset}
         >
           <Maximize2 size={13} />
